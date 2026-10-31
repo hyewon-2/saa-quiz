@@ -775,6 +775,13 @@
   initCloud();
 
   if ('serviceWorker' in navigator && location.protocol === 'https:') {
-    navigator.serviceWorker.register('sw.js').catch(() => {});
+    // 새 버전의 서비스 워커가 활성화되면 한 번 새로고침해서 바로 최신 화면을 보여 준다 (첫 설치 때는 제외)
+    const hadController = !!navigator.serviceWorker.controller;
+    let reloaded = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!hadController || reloaded || route() === 'quiz') return;
+      reloaded = true; location.reload();
+    });
+    navigator.serviceWorker.register('sw.js').then(r => r.update()).catch(() => {});
   }
 })();
