@@ -1,4 +1,4 @@
-const CACHE = 'saa-quiz-v1';
+const CACHE = 'saa-quiz-v2';
 const ASSETS = [
   './', 'index.html', 'css/style.css', 'js/app.js', 'manifest.webmanifest', 'icon.svg',
   'data/compute.js', 'data/storage.js', 'data/database.js', 'data/networking.js',

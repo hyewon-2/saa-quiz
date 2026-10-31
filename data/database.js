@@ -106,4 +106,20 @@ QB.push(
   exp: '**Aurora Serverless v2**는 부하에 따라 용량(ACU)을 초 단위로 자동 조정하고, 쓴 만큼만 비용을 낸다. 간헐적이고 예측하기 어려운 워크로드에 맞다(최소 용량을 0으로 설정해 유휴 시 자동 일시 중지도 가능). 예약 인스턴스는 상시 사용할 때 유리하다. EC2 직접 설치는 관리 부담이 크다.',
   tip: '관계형 + 간헐적/예측 불가 + 서버리스 → Aurora Serverless v2.',
 },
+{
+  id: 'db-13', cat: 'database', domain: 'performance', svc: ['DocumentDB'],
+  q: '온프레미스 MongoDB에 JSON 문서 형태의 상품 카탈로그를 저장하고 있다. MongoDB 드라이버와 쿼리를 거의 그대로 쓰면서, 백업·패치·복제를 관리하지 않는 AWS 관리형 서비스로 옮기고 싶다. 가장 적합한 선택은?',
+  opts: ['Amazon DynamoDB', 'Amazon DocumentDB (MongoDB 호환)', 'Amazon RDS for MySQL', 'Amazon Neptune'],
+  ans: [1],
+  exp: '**DocumentDB**는 **MongoDB API와 호환**되는 완전 관리형 문서 데이터베이스다. 기존 드라이버와 도구를 거의 그대로 쓸 수 있다. DynamoDB도 문서를 저장할 수 있지만 API가 달라서 코드를 다시 짜야 한다. Neptune은 그래프 데이터베이스다.',
+  tip: 'MongoDB → DocumentDB. 그래프(소셜 관계, 추천) → Neptune. Cassandra → Keyspaces. 시계열 → Timestream.',
+},
+{
+  id: 'db-14', cat: 'database', domain: 'cost', svc: ['DynamoDB TTL'],
+  q: 'DynamoDB 테이블에 사용자 세션 데이터를 저장한다. 세션은 24시간이 지나면 필요 없지만 테이블에 계속 남아 스토리지 비용이 늘고 있다. 쓰기 용량을 소모하지 않고 만료된 항목을 자동으로 삭제하는 가장 효율적인 방법은?',
+  opts: ['매시간 Lambda로 테이블을 스캔해 오래된 항목을 삭제한다', '만료 시각(epoch 초)을 담은 속성을 두고 DynamoDB TTL을 켠다', '매일 테이블을 새로 만든다', 'DynamoDB Streams로 삭제한다'],
+  ans: [1],
+  exp: '**DynamoDB TTL**은 지정한 속성의 타임스탬프가 지나면 항목을 **자동으로 삭제**하고, 이 삭제에는 **쓰기 용량을 소모하지 않는다(무료)**. 보통 만료 후 며칠 안에 삭제된다. 삭제 이벤트는 Streams로 받아 아카이브할 수도 있다. 스캔과 삭제를 직접 하면 읽기·쓰기 용량을 모두 소모한다.',
+  tip: '"만료 데이터 자동 삭제", "추가 비용 없이" → DynamoDB TTL.',
+},
 );

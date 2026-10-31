@@ -111,4 +111,20 @@ QB.push(
   exp: '**CloudFront**는 전 세계 엣지 로케이션에 콘텐츠를 **캐싱**해서 사용자 가까이에서 응답하므로 원본 부하와 지연 시간이 모두 줄어든다. 동적 콘텐츠도 AWS 백본망과 연결 재사용으로 빨라진다. 리전마다 복제하면 비용과 복잡도가 크다. Global Accelerator는 캐싱을 하지 않는다.',
   tip: '"정적 콘텐츠", "전 세계", "캐싱" → CloudFront.',
 },
+{
+  id: 'net-13', cat: 'networking', domain: 'secure', svc: ['VPC 흐름 로그'],
+  q: '프라이빗 서브넷의 애플리케이션 서버가 DB 서버에 간헐적으로 연결되지 않는다. 네트워크 엔지니어는 어떤 트래픽이 보안 그룹이나 NACL에서 거부(REJECT)되는지 IP·포트 단위로 확인하고 싶다. 어떤 기능을 써야 하는가?',
+  opts: ['AWS CloudTrail', 'VPC 흐름 로그(Flow Logs)', 'AWS X-Ray', 'Route 53 쿼리 로그'],
+  ans: [1],
+  exp: '**VPC 흐름 로그**는 VPC, 서브넷, ENI 단위로 **IP 트래픽 메타데이터**(출발지·목적지 IP와 포트, 프로토콜, ACCEPT/REJECT)를 CloudWatch Logs, S3, Firehose에 기록한다. 연결 문제를 해결하거나 보안을 분석할 때 쓴다. 패킷 내용은 담기지 않으며, 패킷 자체를 보려면 Traffic Mirroring을 쓴다. CloudTrail은 API 호출 기록이다.',
+  tip: '"허용/거부된 트래픽 확인" → Flow Logs. 패킷 내용 검사 → Traffic Mirroring.',
+},
+{
+  id: 'net-14', cat: 'networking', domain: 'performance', svc: ['Route 53 프라이빗 호스팅 영역'],
+  q: 'VPC 안의 마이크로서비스들이 IP 주소 대신 `orders.internal.example.com` 같은 내부 도메인 이름으로 서로를 찾게 하고 싶다. 이 이름은 인터넷에서 조회되면 안 된다. 어떻게 해야 하는가?',
+  opts: ['Route 53 퍼블릭 호스팅 영역을 만든다', 'Route 53 프라이빗 호스팅 영역을 만들어 VPC에 연결한다(enableDnsHostnames·enableDnsSupport 활성화)', '각 인스턴스의 /etc/hosts 파일을 수정한다', 'CloudFront 대체 도메인 이름을 설정한다'],
+  ans: [1],
+  exp: '**프라이빗 호스팅 영역**은 **연결된 VPC 안에서만** 조회되는 DNS 영역이다. VPC 설정에서 DNS 확인과 DNS 호스트 이름이 켜져 있어야 한다. 온프레미스와 DNS를 서로 조회하려면 **Route 53 Resolver 인바운드·아웃바운드 엔드포인트**를 쓴다. hosts 파일 방식은 확장성이 없다.',
+  tip: 'VPC 내부 전용 DNS → Private Hosted Zone. 온프레미스↔AWS DNS → Route 53 Resolver 엔드포인트.',
+},
 );

@@ -127,4 +127,20 @@ QB.push(
   exp: '**S3 이벤트 알림 → Lambda**는 업로드가 일어날 때 바로 실행되고, 동시 실행 수가 자동으로 늘어나며, 쓴 만큼만 비용을 낸다. 서버를 관리할 필요가 없어 운영 오버헤드가 가장 적다. EC2 스캔, EC2 플릿, Batch 방식은 인스턴스를 관리해야 하거나 처리가 지연된다.',
   tip: '"이벤트 기반", "가변 트래픽", "운영 최소" → Lambda (단, 15분 실행 제한).',
 },
+{
+  id: 'cmp-13', cat: 'compute', domain: 'cost', svc: ['Graviton'],
+  q: 'Java로 작성된 웹 애플리케이션이 x86 기반 m5 인스턴스에서 실행된다. 애플리케이션은 ARM 아키텍처에서도 동작한다. 성능은 유지하거나 높이면서 컴퓨팅 비용을 줄이는 가장 간단한 방법은?',
+  opts: ['같은 크기의 AWS Graviton 기반 인스턴스(예: m7g)로 바꾼다', 'm5 인스턴스 수를 절반으로 줄인다', '인스턴스를 전용 호스트로 옮긴다', '버스터블 t2 인스턴스로 바꾼다'],
+  ans: [0],
+  exp: '**AWS Graviton**(ARM 기반) 인스턴스는 비슷한 x86 인스턴스보다 **가격 대비 성능이 최대 40% 좋다.** Java처럼 ARM에서 바로 동작하는 런타임이라면 인스턴스 유형만 바꾸면 된다. 인스턴스 수를 무작정 줄이면 성능이 떨어진다. t2는 이전 세대 버스터블 인스턴스라 지속적인 부하에 맞지 않는다.',
+  tip: '"가격 대비 성능", "ARM 호환" → Graviton. Lambda와 Fargate도 arm64를 지원한다.',
+},
+{
+  id: 'cmp-14', cat: 'compute', domain: 'performance', svc: ['Elastic Beanstalk'],
+  q: '소규모 개발팀이 Python 웹 애플리케이션을 빠르게 배포하고 싶다. 로드 밸런서, Auto Scaling, 모니터링이 자동으로 구성되어야 하지만, 필요하면 기반 EC2 인스턴스에 접근해 설정을 바꿀 수 있어야 한다. 인프라 지식이 많지 않은 팀에 가장 적합한 서비스는?',
+  opts: ['AWS Elastic Beanstalk', 'AWS CloudFormation으로 모든 리소스를 직접 정의한다', 'Amazon EC2를 수동으로 구성한다', 'AWS Outposts'],
+  ans: [0],
+  exp: '**Elastic Beanstalk**에 코드를 올리면 EC2, ALB, Auto Scaling, CloudWatch 모니터링 같은 환경을 **자동으로 프로비저닝하고 관리**한다. 그러면서도 기반 리소스에 대한 제어권은 유지된다. 블루/그린, 롤링 같은 배포 방식도 지원한다. CloudFormation은 강력하지만 모든 리소스를 직접 정의해야 한다.',
+  tip: '"코드만 올리면 인프라 자동 구성(PaaS)", "개발자가 인프라 몰라도" → Elastic Beanstalk.',
+},
 );

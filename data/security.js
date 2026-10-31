@@ -129,4 +129,20 @@ QB.push(
   exp: '**ACM** 퍼블릭 인증서는 **무료**이고, DNS 검증을 쓰면 **자동으로 갱신**된다. ALB, CloudFront, API Gateway에 바로 연결할 수 있다. CloudFront에서 쓰려면 인증서를 반드시 **us-east-1** 리전에서 발급해야 한다.',
   tip: 'CloudFront용 ACM 인증서 = us-east-1. ACM 인증서는 리전 리소스라 ALB와 같은 리전에서 발급해야 한다.',
 },
+{
+  id: 'sec-14', cat: 'security', domain: 'secure', svc: ['IAM Access Analyzer'],
+  q: '보안팀이 조직 안의 S3 버킷, KMS 키, IAM 역할, Lambda 함수 중에서 **조직 외부의 계정이나 퍼블릭**에 접근 권한이 열려 있는 리소스를 찾아내려 한다. 가장 적합한 서비스는?',
+  opts: ['IAM Access Analyzer', 'Amazon Macie', 'AWS Trusted Advisor', 'Amazon Detective'],
+  ans: [0],
+  exp: '**IAM Access Analyzer**는 리소스 기반 정책을 자동 추론으로 분석해서 **신뢰 영역(계정이나 조직) 밖으로 공유된 리소스**를 찾아낸다. 사용하지 않는 권한을 찾아내거나, CloudTrail 활동을 바탕으로 최소 권한 정책을 만들어 주는 기능도 있다. Macie는 S3의 민감 데이터를 찾는 서비스다.',
+  tip: '"외부/퍼블릭 공유 리소스 탐지", "최소 권한 정책 생성" → IAM Access Analyzer.',
+},
+{
+  id: 'sec-15', cat: 'security', domain: 'secure', svc: ['Amazon Inspector'],
+  q: '회사가 EC2 인스턴스, ECR의 컨테이너 이미지, Lambda 함수에 알려진 소프트웨어 취약점(CVE)이나 의도치 않은 네트워크 노출이 있는지 지속적으로 자동 스캔하려 한다. 어떤 서비스를 써야 하는가?',
+  opts: ['Amazon GuardDuty', 'Amazon Inspector', 'AWS Shield', 'AWS Config'],
+  ans: [1],
+  exp: '**Amazon Inspector**는 EC2(SSM Agent 기반 또는 에이전트 없는 스캔), **ECR 이미지**, **Lambda**의 소프트웨어 취약점(CVE)과 네트워크 도달 가능성을 **지속적으로 자동 스캔**하고, 위험도 점수를 매겨 결과를 보여 준다. GuardDuty는 로그 기반 위협 탐지이고, Config는 구성 규정 준수를 평가한다.',
+  tip: '취약점(CVE) 스캔 → Inspector. 위협 행위 탐지 → GuardDuty. 민감 데이터 → Macie.',
+},
 );

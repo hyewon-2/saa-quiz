@@ -90,4 +90,20 @@ QB.push(
   exp: '**EventBridge**는 AWS 서비스 이벤트(EC2 상태 변경 등)를 **이벤트 패턴 규칙**으로 걸러 대상(Lambda, SNS, Step Functions 등)에 보낸다. **EventBridge Scheduler(cron/rate)**로 예약 작업을 실행할 수 있고, **SaaS 파트너 이벤트 소스**도 받을 수 있다.',
   tip: '이벤트 라우팅·예약(cron)·SaaS 통합 → EventBridge.',
 },
+{
+  id: 'int-11', cat: 'integration', domain: 'cost', svc: ['SQS 긴 폴링'],
+  q: 'SQS 대기열은 대부분 비어 있는데, 소비자 애플리케이션이 계속 ReceiveMessage를 호출해서 빈 응답이 많이 생기고 API 요청 비용이 늘고 있다. 메시지 처리 지연을 늘리지 않고 비용을 줄이는 방법은?',
+  opts: ['ReceiveMessageWaitTimeSeconds를 1~20초로 설정해 긴 폴링(long polling)을 켠다', '가시성 제한 시간을 늘린다', '지연 대기열을 설정한다', '대기열을 FIFO로 바꾼다'],
+  ans: [0],
+  exp: '**긴 폴링**은 메시지가 없을 때 최대 20초까지 기다렸다가, 그 사이에 메시지가 들어오면 바로 반환한다. **빈 응답과 API 호출 수가 크게 줄어** 비용이 줄고, 메시지가 도착하면 즉시 받으므로 처리 지연도 늘지 않는다. 짧은 폴링(기본값 0초)은 일부 서버만 샘플링해서 빈 응답이 자주 생긴다.',
+  tip: '"빈 응답/폴링 비용 감소" → Long Polling(WaitTimeSeconds > 0, 최대 20).',
+},
+{
+  id: 'int-12', cat: 'integration', domain: 'resilient', svc: ['Amazon MQ'],
+  q: '온프레미스 애플리케이션이 Apache ActiveMQ와 AMQP, STOMP, MQTT 같은 표준 프로토콜로 메시지를 주고받는다. 애플리케이션 코드를 바꾸지 않고 메시지 브로커를 AWS 관리형 서비스로 옮기고 싶다. 가장 적합한 서비스는?',
+  opts: ['Amazon SQS', 'Amazon SNS', 'Amazon MQ', 'Amazon Kinesis Data Streams'],
+  ans: [2],
+  exp: '**Amazon MQ**는 **Apache ActiveMQ와 RabbitMQ**용 관리형 브로커로, JMS, AMQP, STOMP, MQTT, OpenWire 같은 **업계 표준 프로토콜**을 지원한다. 기존 애플리케이션을 코드 변경 없이 옮길 수 있다. SQS와 SNS는 AWS 고유 API를 쓰므로 코드를 바꿔야 한다. 새로 만드는 클라우드 네이티브 앱이라면 SQS와 SNS가 확장성 면에서 더 낫다.',
+  tip: '"기존 브로커/표준 프로토콜(JMS, AMQP, MQTT) 유지" → Amazon MQ. 신규 → SQS/SNS.',
+},
 );

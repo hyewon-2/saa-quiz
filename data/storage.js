@@ -144,4 +144,20 @@ QB.push(
   exp: '**AWS Backup**은 여러 AWS 서비스의 백업을 백업 계획(일정, 보존 기간, 교차 리전·교차 계정 복사)으로 **중앙에서 관리**한다. Organizations와 연동하면 모든 계정에 정책을 한꺼번에 적용할 수 있다. Data Lifecycle Manager는 EBS 스냅샷과 AMI 전용이다.',
   tip: '"여러 서비스·계정 백업 중앙 관리" → AWS Backup. 랜섬웨어 대비 → Backup Vault Lock.',
 },
+{
+  id: 'sto-15', cat: 'storage', domain: 'cost', svc: ['S3 요청자 지불'],
+  q: '연구 기관이 수백 TB의 공개 데이터 세트를 S3로 다른 AWS 계정의 파트너들에게 제공한다. 파트너들이 데이터를 다운로드할 때 생기는 요청 비용과 데이터 전송 비용을 연구 기관이 아니라 파트너가 내게 하려면?',
+  opts: ['S3 Transfer Acceleration을 켠다', '버킷에 요청자 지불(Requester Pays)을 켠다', '데이터를 Glacier로 옮긴다', 'CloudFront 배포를 만든다'],
+  ans: [1],
+  exp: '**요청자 지불 버킷**에서는 버킷 소유자가 스토리지 비용만 내고, **요청과 데이터 다운로드 비용은 요청자가** 낸다. 요청자는 AWS로 인증해야 하고, 요청에 `x-amz-request-payer` 헤더를 넣어야 한다(익명 접근 불가).',
+  tip: '"다운로드 비용을 데이터 소비자가 부담" → Requester Pays.',
+},
+{
+  id: 'sto-16', cat: 'storage', domain: 'cost', svc: ['EBS gp3'],
+  q: '회사가 EBS gp2 볼륨 수백 개를 쓰고 있다. 대부분 3,000 IOPS 이하로 쓰이는데, 그중 일부는 IOPS를 확보하려고 필요 이상으로 큰 용량을 할당했다. 다운타임 없이 성능을 유지하면서 비용을 줄이는 방법은?',
+  opts: ['볼륨을 gp3로 변경(Elastic Volumes)하고 필요한 IOPS와 처리량을 따로 지정한다', '볼륨을 sc1으로 변경한다', '볼륨을 io2로 변경한다', '스냅샷을 만든 뒤 볼륨을 삭제한다'],
+  ans: [0],
+  exp: '**gp3**는 gp2보다 GB당 가격이 약 20% 저렴하고, 용량과 관계없이 **기본 3,000 IOPS와 125MB/s**를 제공한다. IOPS와 처리량을 **용량과 따로** 늘릴 수도 있다. gp2는 IOPS가 용량에 비례해서(GB당 3 IOPS) 성능 때문에 용량을 과하게 잡는 경우가 많다. Elastic Volumes로 **온라인 상태에서** 볼륨 유형을 바꿀 수 있다. sc1은 HDD라 성능이 크게 떨어진다.',
+  tip: 'gp2 → gp3 전환 = 대표적인 무중단 비용 최적화.',
+},
 );

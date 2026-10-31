@@ -85,4 +85,28 @@ QB.push(
   exp: '**EC2 복구 작업**(또는 지원되는 인스턴스의 기본 자동 복구)은 인스턴스를 다른 하드웨어로 옮기면서 **인스턴스 ID, 프라이빗 IP, 탄력적 IP, 메타데이터를 그대로 유지**한다. ASG(1/1/1)도 자가 복구는 되지만 **새 인스턴스**를 띄우므로 ID와 IP가 바뀐다.',
   tip: '"같은 인스턴스 ID/IP 유지" + 하드웨어 장애 → CloudWatch 알람 recover 작업.',
 },
+{
+  id: 'mgt-11', cat: 'management', domain: 'cost', svc: ['비용 할당 태그', 'Cost Explorer'],
+  q: '여러 부서가 같은 AWS 계정을 쓰고 있다. 재무팀은 매달 부서별·프로젝트별 AWS 비용을 나눠 보고 싶어 한다. 가장 적합한 방법은?',
+  opts: ['부서마다 리전을 다르게 쓴다', '리소스에 Department·Project 태그를 붙이고 결제 콘솔에서 비용 할당 태그로 활성화한 뒤 Cost Explorer에서 태그별로 분석한다', 'CloudTrail 로그를 분석한다', 'AWS Budgets만 만든다'],
+  ans: [1],
+  exp: '**비용 할당 태그**는 결제 콘솔에서 **활성화해야** 비용 데이터에 반영된다. 활성화하면 Cost Explorer나 비용 보고서(CUR/Data Exports)에서 태그 기준으로 비용을 나눠 볼 수 있다. 태그 정책(Organizations)으로 태그 규칙을 강제할 수도 있다. 리전으로 나누는 방식은 비현실적이다.',
+  tip: '"부서별/프로젝트별 비용" → 비용 할당 태그 활성화. 계정 단위 분리 → Organizations 통합 결제.',
+},
+{
+  id: 'mgt-12', cat: 'management', domain: 'cost', svc: ['Organizations 통합 결제'],
+  q: '회사에 독립적으로 결제하는 AWS 계정이 10개 있다. 결제를 하나로 합치고, 계정 전체 사용량을 합쳐 S3·데이터 전송 볼륨 할인을 받고, 한 계정의 사용하지 않는 예약 인스턴스·Savings Plans 할인을 다른 계정에서도 쓰고 싶다. 어떻게 해야 하는가?',
+  opts: ['각 계정에서 따로 예약 인스턴스를 산다', 'AWS Organizations를 만들고 모든 계정을 초대해 통합 결제(consolidated billing)를 쓴다', '모든 워크로드를 계정 하나로 합친다', 'Cost Explorer에서 계정을 연결한다'],
+  ans: [1],
+  exp: '**Organizations 통합 결제**는 관리 계정에서 청구서 하나로 결제하고, 모든 계정의 사용량을 **합산해 볼륨 할인 구간**을 적용하며, 예약 인스턴스와 Savings Plans 할인을 **계정 간에 공유**한다(공유는 끌 수도 있다). 워크로드를 계정 하나로 합치면 보안 경계가 사라진다.',
+  tip: '"여러 계정 결제 통합 + 할인 공유" → Organizations Consolidated Billing.',
+},
+{
+  id: 'mgt-13', cat: 'management', domain: 'cost', svc: ['Instance Scheduler', 'EventBridge Scheduler'],
+  q: '개발·테스트용 EC2 인스턴스와 RDS 인스턴스는 평일 오전 9시부터 오후 7시까지만 쓰이는데, 지금은 24시간 실행되고 있다. 운영 부담을 최소화하면서 비용을 줄이는 방법은?',
+  opts: ['예약 인스턴스를 구매한다', 'AWS Instance Scheduler(또는 EventBridge Scheduler)로 업무 시간 외에는 인스턴스를 자동으로 중지하고 업무 시간에 시작한다', '인스턴스를 스팟으로 바꾼다', '인스턴스 크기를 줄인다'],
+  ans: [1],
+  exp: '하루 10시간, 주 5일만 쓰면 사용 시간은 주 168시간 중 50시간이다. 업무 시간 외에 **자동으로 중지**하면 컴퓨팅 비용을 약 70% 줄일 수 있다. Instance Scheduler on AWS나 EventBridge Scheduler로 EC2와 RDS의 시작·중지를 예약한다. 예약 인스턴스는 상시 실행하는 워크로드에 맞고, 이 경우에는 오히려 낭비다.',
+  tip: '"업무 시간에만 사용" → 예약 시작/중지. RI·Savings Plans는 24/7 워크로드용.',
+},
 );
