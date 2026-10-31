@@ -1,8 +1,9 @@
-const CACHE = 'saa-quiz-v2';
+const CACHE = 'saa-quiz-v3';
 const ASSETS = [
   './', 'index.html', 'css/style.css', 'js/app.js', 'manifest.webmanifest', 'icon.svg',
   'data/compute.js', 'data/storage.js', 'data/database.js', 'data/networking.js',
   'data/security.js', 'data/integration.js', 'data/analytics.js', 'data/management.js',
+  'data/batch-02.js',
 ];
 
 self.addEventListener('install', e => {
