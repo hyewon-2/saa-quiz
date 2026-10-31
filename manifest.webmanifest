@@ -1,0 +1,11 @@
+{
+  "name": "SAA Quiz — AWS SAA-C03 연습",
+  "short_name": "SAA Quiz",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0e131b",
+  "theme_color": "#0e131b",
+  "lang": "ko",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}

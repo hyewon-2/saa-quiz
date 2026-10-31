@@ -1,0 +1,62 @@
+window.QB = window.QB || [];
+QB.push(
+{
+  id: 'ana-01', cat: 'analytics', domain: 'cost', svc: ['Athena'],
+  q: '보안팀이 S3에 저장된 CloudTrail 로그를 가끔 SQL로 조회해 특정 사용자의 활동을 확인하려 한다. 인프라를 관리하고 싶지 않고, 쿼리를 실행할 때만 비용을 내고 싶다. 가장 적합한 서비스는?',
+  opts: ['Amazon Redshift 프로비저닝 클러스터', 'Amazon Athena', 'Amazon EMR', 'Amazon RDS로 로그를 적재'],
+  ans: [1],
+  exp: '**Athena**는 **S3의 데이터를 그대로 표준 SQL로 쿼리**하는 서버리스 서비스이고, **스캔한 데이터양만큼** 비용을 낸다. 가끔 실행하는 애드혹 분석에 가장 적합하다. Redshift 클러스터나 EMR은 상시 운영 비용과 관리 부담이 있다.',
+  tip: 'S3 + 애드혹 SQL + 서버리스 → Athena.',
+},
+{
+  id: 'ana-02', cat: 'analytics', domain: 'cost', svc: ['Athena', 'Parquet'],
+  q: 'Athena로 수 TB의 CSV 로그를 쿼리하는데, 쿼리가 느리고 비용이 많이 나온다. 대부분의 쿼리는 특정 날짜 범위와 일부 컬럼만 조회한다. 성능을 높이고 비용을 줄이는 방법은? (2개 선택)',
+  opts: [
+    '데이터를 Apache Parquet 같은 컬럼 기반 형식으로 변환하고 압축한다',
+    '날짜(year/month/day) 기준으로 S3 데이터를 파티셔닝한다',
+    'S3 스토리지 클래스를 Standard-IA로 바꾼다',
+    '모든 파일을 하나의 큰 CSV로 합친다',
+    'S3 Transfer Acceleration을 켠다',
+  ],
+  ans: [0, 1],
+  exp: 'Athena는 **스캔한 바이트 수**로 요금을 매긴다. **컬럼 기반 형식(Parquet/ORC)**은 필요한 컬럼만 읽고 압축률도 높다. **파티셔닝**하면 쿼리 조건에 맞는 파티션만 스캔한다. 둘 다 스캔량을 크게 줄인다. Standard-IA는 검색 비용 때문에 오히려 비용이 늘 수 있다.',
+  tip: 'Athena 최적화 = 컬럼 형식 + 압축 + 파티션. 변환은 Glue ETL이나 Firehose로.',
+},
+{
+  id: 'ana-03', cat: 'analytics', domain: 'performance', svc: ['Glue'],
+  q: 'S3에 여러 형식(JSON, CSV)의 데이터가 계속 쌓이고 있다. 스키마를 자동으로 찾아 카탈로그로 만들고, 서버리스 ETL로 정제해서 Athena와 Redshift Spectrum에서 쿼리하고 싶다. 어떤 서비스를 써야 하는가?',
+  opts: ['AWS Glue (크롤러, 데이터 카탈로그, ETL 작업)', 'AWS DataSync', 'Amazon Kinesis Data Streams', 'AWS DMS'],
+  ans: [0],
+  exp: '**Glue 크롤러**는 데이터 소스를 스캔해서 스키마를 추론하고 **Glue 데이터 카탈로그**에 테이블을 만든다. 이 카탈로그는 Athena, Redshift Spectrum, EMR이 함께 쓰는 메타스토어다. **Glue ETL**은 서버리스 Spark 작업으로 데이터를 변환한다. DataSync는 데이터 전송 서비스, DMS는 DB 마이그레이션 서비스다.',
+  tip: '서버리스 ETL + 메타데이터 카탈로그 → Glue. 데이터 레이크 권한(행/열 수준) 관리 → Lake Formation.',
+},
+{
+  id: 'ana-04', cat: 'analytics', domain: 'cost', svc: ['EMR'],
+  q: '데이터 엔지니어링 팀이 온프레미스에서 운영하는 Hadoop·Spark 작업을 코드 변경을 최소화하면서 AWS로 옮기려 한다. 작업은 매일 밤 몇 시간 동안 실행되며 비용을 줄이고 싶다. 가장 적합한 방법은?',
+  opts: [
+    'EC2에 Hadoop을 직접 설치해 상시 운영한다',
+    'Amazon EMR을 쓰고, 작업할 때만 클러스터를 띄운 뒤 태스크 노드에 스팟 인스턴스를 활용한다',
+    '모든 작업을 Lambda로 다시 작성한다',
+    'Amazon Redshift로 옮긴다',
+  ],
+  ans: [1],
+  exp: '**EMR**은 Hadoop, Spark, Hive, Presto 같은 빅데이터 프레임워크를 관리형으로 실행한다. 기존 코드를 거의 그대로 쓸 수 있다. **일시적(transient) 클러스터**로 작업할 때만 띄우고, 데이터를 저장하지 않는 **태스크 노드는 스팟**으로 쓰면 비용이 크게 줄어든다(EMRFS로 S3에 데이터 저장). Lambda는 15분 제한이 있어 맞지 않는다.',
+  tip: 'Hadoop/Spark 마이그레이션 → EMR. 코어 노드 = 온디맨드, 태스크 노드 = 스팟.',
+},
+{
+  id: 'ana-05', cat: 'analytics', domain: 'performance', svc: ['QuickSight'],
+  q: '경영진이 Redshift와 Athena 데이터를 바탕으로 한 대화형 대시보드를 웹 브라우저와 모바일에서 보고 싶어 한다. 서버 없이 사용자 수만큼 비용을 내는 BI 서비스는?',
+  opts: ['Amazon QuickSight', 'Amazon OpenSearch Dashboards', 'Amazon CloudWatch 대시보드', 'AWS Glue DataBrew'],
+  ans: [0],
+  exp: '**QuickSight**는 서버리스 **BI 시각화** 서비스다. Redshift, Athena, RDS, S3 등 여러 데이터 소스에 연결해 대시보드를 만들고 웹이나 모바일로 공유한다. CloudWatch 대시보드는 운영 지표를 모니터링하는 용도다. OpenSearch Dashboards는 로그 검색과 분석에 쓴다.',
+  tip: 'BI 대시보드 → QuickSight. 로그 검색/전문 검색 → OpenSearch.',
+},
+{
+  id: 'ana-06', cat: 'analytics', domain: 'secure', svc: ['Lake Formation'],
+  q: 'S3 기반 데이터 레이크에서 분석가 그룹별로 접근 권한을 다르게 줘야 한다. 예를 들어 마케팅팀은 고객 테이블의 이름·이메일 열을 볼 수 없고, 한국 지사는 한국 고객 행만 볼 수 있어야 한다. Athena와 Redshift Spectrum 모두에 같은 권한이 적용되어야 한다. 가장 적합한 방법은?',
+  opts: ['S3 버킷 정책으로 접두사별 권한을 준다', 'AWS Lake Formation으로 테이블·열·행 수준 권한을 중앙에서 관리한다', '팀마다 데이터 사본을 별도 버킷에 만든다', 'IAM 정책으로 Athena 작업 그룹을 나눈다'],
+  ans: [1],
+  exp: '**Lake Formation**은 Glue 데이터 카탈로그 위에서 **데이터베이스·테이블·열·행·셀 수준**의 세분화된 권한을 중앙에서 관리하고, 이 권한을 Athena, Redshift Spectrum, EMR, Glue에 똑같이 적용한다. S3 버킷 정책은 객체 단위라서 열이나 행 수준으로 제어할 수 없다. 데이터를 복사하면 관리 부담과 불일치 위험이 커진다.',
+  tip: '데이터 레이크 + 열/행 수준 보안 + 중앙 권한 → Lake Formation.',
+},
+);

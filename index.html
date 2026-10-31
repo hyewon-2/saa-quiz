@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>SAA Quiz</title>
+  <meta name="description" content="AWS Solutions Architect Associate (SAA-C03) 서비스별 연습 문제와 오답노트">
+  <meta name="theme-color" content="#f5f6f8" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0e131b" media="(prefers-color-scheme: dark)">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="SAA Quiz">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon.svg">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#/"><span class="logo">SAA</span><span class="brand-text">Quiz <small>C03</small></span></a>
+    <nav class="topnav">
+      <a href="#/" data-nav="">홈</a>
+      <a href="#/notes" data-nav="notes">오답노트</a>
+      <a href="#/settings" data-nav="settings">설정</a>
+    </nav>
+  </header>
+  <main id="app" class="wrap"></main>
+
+  <script src="data/compute.js"></script>
+  <script src="data/storage.js"></script>
+  <script src="data/database.js"></script>
+  <script src="data/networking.js"></script>
+  <script src="data/security.js"></script>
+  <script src="data/integration.js"></script>
+  <script src="data/analytics.js"></script>
+  <script src="data/management.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
