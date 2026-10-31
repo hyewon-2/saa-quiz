@@ -27,7 +27,14 @@
   const BY_ID = new Map(QS.map(q => [q.id, q]));
 
   // ───────── 저장소 ─────────
-  const KEY = 'saa-quiz:v1';
+  // 비로그인: 'saa-quiz:v1', 로그인: 'saa-quiz:v1:<uid>' — 같은 기기에서도 사용자별로 기록이 분리된다
+  const BASE_KEY = 'saa-quiz:v1';
+  const LAST_UID_KEY = 'saa-quiz:lastUid';
+  const lsGet = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+  const lsSet = (k, v) => { try { v === null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (e) { /* 무시 */ } };
+  const cloud = { enabled: !!(window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.apiKey), user: null, status: '', db: null, timer: null };
+  let KEY = BASE_KEY;
+  if (cloud.enabled && lsGet(LAST_UID_KEY)) KEY = BASE_KEY + ':' + lsGet(LAST_UID_KEY);   // 로그인 확인 전에도 내 기록을 먼저 보여 준다
   const defaults = () => ({
     stats: {},          // id -> { n, c, w, streak, t }
     marks: {},          // id -> true (북마크)
@@ -36,15 +43,20 @@
     last: null,         // 마지막 결과
     settings: { theme: 'auto', count: 20, instant: false },
   });
-  const store = load();
-  function load() {
+  let store = load();
+  function load(key = KEY) {
     try {
-      const s = JSON.parse(localStorage.getItem(KEY));
+      const s = JSON.parse(lsGet(key));
       if (s) { const d = defaults(); return { ...d, ...s, settings: { ...d.settings, ...s.settings } }; }
     } catch (e) { /* 저장소 사용 불가 */ }
     return defaults();
   }
-  function save() { try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) { /* 무시 */ } }
+  function save() { lsSet(KEY, JSON.stringify(store)); schedulePush(); }
+  function useAccount(uid) {
+    KEY = uid ? BASE_KEY + ':' + uid : BASE_KEY;
+    lsSet(LAST_UID_KEY, uid || null);
+    store = load();
+  }
 
   // ───────── 유틸 ─────────
   const $ = (s, el = document) => el.querySelector(s);
@@ -64,6 +76,101 @@
     document.body.appendChild(t); setTimeout(() => t.classList.add('show'), 10);
     setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 1800);
   }
+
+  // ───────── 로그인 · 클라우드 동기화 (Firebase) ─────────
+  const FIREBASE_SDK = 'https://www.gstatic.com/firebasejs/10.12.2/firebase-';
+  const loadScript = src => new Promise((ok, fail) => {
+    const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = fail; document.head.appendChild(s);
+  });
+  const hasProgress = s => Object.keys(s.stats).length > 0;
+  const userDoc = () => cloud.db.collection('users').doc(cloud.user.uid);
+
+  // 두 기기 기록 합치기: 문제별로 더 많이 푼 쪽(같으면 최근 쪽)을 채택
+  function mergeProgress(target, src) {
+    for (const [id, s] of Object.entries(src.stats || {})) {
+      const m = target.stats[id];
+      if (!m || s.n > m.n || (s.n === m.n && s.t > m.t)) target.stats[id] = s;
+    }
+    Object.assign(target.marks, src.marks || {});
+    const seen = new Set(target.history.map(h => h.t));
+    target.history = [...target.history, ...(src.history || []).filter(h => !seen.has(h.t))]
+      .sort((a, b) => b.t - a.t).slice(0, 50);
+  }
+
+  async function initCloud() {
+    if (!cloud.enabled) return;
+    try {
+      if (!window.firebase) for (const m of ['app', 'auth', 'firestore']) await loadScript(`${FIREBASE_SDK}${m}-compat.js`);
+      firebase.initializeApp(window.FIREBASE_CONFIG);
+      cloud.db = firebase.firestore();
+      firebase.auth().onAuthStateChanged(onAuth);
+    } catch (e) {
+      cloud.status = '로그인 서버에 연결하지 못했어요 (오프라인이면 기기 기록으로 계속 풀 수 있어요)';
+      updateAuthUI();
+    }
+  }
+  async function onAuth(user) {
+    const guest = load(BASE_KEY);
+    if (!user) {
+      cloud.user = null;
+      if (KEY !== BASE_KEY) { useAccount(null); rerender(); }
+      return updateAuthUI();
+    }
+    cloud.user = { uid: user.uid, name: user.displayName || user.email, email: user.email, photo: user.photoURL };
+    if (KEY !== BASE_KEY + ':' + user.uid) useAccount(user.uid);
+    // 처음 로그인하면 로그인 전에 이 기기에서 푼 기록을 내 계정으로 옮겨 준다
+    if (!hasProgress(store) && hasProgress(guest)) mergeProgress(store, guest);
+    await pull();
+    rerender();
+  }
+  async function pull() {
+    if (!cloud.user) return;
+    cloud.status = '동기화 중…'; updateAuthUI();
+    try {
+      const snap = await userDoc().get();
+      if (snap.exists) mergeProgress(store, snap.data());
+      lsSet(KEY, JSON.stringify(store));
+      await push();
+    } catch (e) { cloud.status = '동기화 실패 — 기기에 저장해 두고 다음에 다시 시도해요'; updateAuthUI(); }
+  }
+  function schedulePush() {
+    if (!cloud.user) return;
+    clearTimeout(cloud.timer); cloud.timer = setTimeout(push, 2000);
+  }
+  async function push() {
+    if (!cloud.user || !cloud.db) return;
+    clearTimeout(cloud.timer);
+    try {
+      await userDoc().set({ stats: store.stats, marks: store.marks, history: store.history, updatedAt: Date.now() });
+      cloud.status = `동기화됨 · ${fmtDate(Date.now())}`;
+    } catch (e) { cloud.status = '동기화 실패 — 기기에 저장해 두고 다음에 다시 시도해요'; }
+    updateAuthUI();
+  }
+  async function signIn() {
+    if (!window.firebase) return toast('로그인 준비 중이에요. 잠시 후 다시 눌러 주세요');
+    const provider = new firebase.auth.GoogleAuthProvider();
+    try { await firebase.auth().signInWithPopup(provider); }
+    catch (e) {
+      if (e.code === 'auth/popup-blocked' || e.code === 'auth/operation-not-supported-in-this-environment') return firebase.auth().signInWithRedirect(provider);
+      if (e.code !== 'auth/popup-closed-by-user' && e.code !== 'auth/cancelled-popup-request') toast('로그인에 실패했어요: ' + (e.code || e.message));
+    }
+  }
+  async function signOut() {
+    await push();
+    await firebase.auth().signOut();
+    toast('로그아웃했어요');
+  }
+  function updateAuthUI() {
+    const b = $('#authBtn'); if (!b) return;
+    b.hidden = !cloud.enabled;
+    if (cloud.user) {
+      b.innerHTML = cloud.user.photo ? `<img src="${esc(cloud.user.photo)}" alt="" referrerpolicy="no-referrer">` : esc(cloud.user.name.slice(0, 1));
+      b.title = cloud.user.name; b.dataset.mode = 'account';
+    } else { b.textContent = '로그인'; b.title = 'Google 계정으로 로그인'; b.dataset.mode = 'login'; }
+    const s = $('#syncStatus'); if (s) s.textContent = cloud.status;
+  }
+  // 문제 푸는 도중에는 화면을 갈아엎지 않는다
+  function rerender() { if (route() !== 'quiz' || !store.session) render(); updateAuthUI(); }
 
   // ───────── 학습 통계 ─────────
   const stat = id => store.stats[id];
@@ -194,6 +301,9 @@
     const o = overall(), cat = accBy('cat'), dom = accBy('domain'), s = store.session;
     const counts = [10, 20, 30, 0];
     app.innerHTML = `
+      ${cloud.enabled && !cloud.user ? `<button class="card login-banner" data-act="login">
+          <div><b>Google로 로그인하기</b><div class="muted small">로그인하면 내 기록이 저장되고 휴대폰·PC에서 이어서 풀 수 있어요</div></div>
+          <span class="go">로그인 →</span></button>` : ''}
       ${s ? `<button class="card resume" data-act="resume">
           <div><div class="eyebrow">진행 중인 학습</div><b>${esc(s.title)}</b>
           <span class="muted"> · ${s.mode === 'exam' ? Object.keys(s.ans).length : Object.keys(s.done).length}/${s.ids.length}</span></div>
@@ -436,8 +546,20 @@
   // ───────── 설정 ─────────
   function viewSettings() {
     const t = store.settings.theme;
+    const u = cloud.user;
     app.innerHTML = `
       <h1>설정</h1>
+      ${cloud.enabled ? `<h2>계정</h2>
+      <section class="card form">
+        ${u ? `<div class="field"><div class="account">${u.photo ? `<img src="${esc(u.photo)}" alt="" referrerpolicy="no-referrer">` : ''}
+            <div><b>${esc(u.name)}</b><div class="muted small">${esc(u.email || '')}</div></div></div>
+            <button class="btn ghost sm" data-act="logout">로그아웃</button></div>
+            <div class="muted small" id="syncStatus">${esc(cloud.status)}</div>
+            <button class="btn ghost" data-act="sync">지금 동기화</button>`
+          : `<p class="muted small">Google 계정으로 로그인하면 학습 기록이 계정에 저장돼요. 사람마다 기록이 따로 관리되고, 휴대폰과 PC에서 자동으로 이어져요.</p>
+            <button class="btn primary" data-act="login">Google로 로그인</button>
+            <div class="muted small" id="syncStatus">${esc(cloud.status)}</div>`}
+      </section>` : ''}
       <section class="card form">
         <div class="field"><div><b>화면 테마</b></div>
           <div class="seg">${[['auto', '자동'], ['light', '라이트'], ['dark', '다크']].map(([k, n]) =>
@@ -528,6 +650,9 @@
       }
       case 'ntab': noteTab = d.k; noteCat = ''; return viewNotes();
       case 'ncat': noteCat = d.k; return viewNotes();
+      case 'login': return signIn();
+      case 'logout': return signOut();
+      case 'sync': return pull().then(() => toast('동기화했어요'));
       case 'theme': store.settings.theme = d.k; save(); applyTheme(); return viewSettings();
       case 'instant': store.settings.instant = b.checked; return save();
       case 'export': {
@@ -569,9 +694,22 @@
     if (k === 'b') return $('[data-act="mark"]')?.click();
   });
 
+  $('#authBtn')?.addEventListener('click', e => {
+    const b = e.currentTarget;
+    if (b.dataset.mode === 'account') go('#/settings'); else signIn();
+  });
+  // 다른 기기에서 푼 기록을 앱으로 돌아올 때 받아 오고, 앱을 떠날 때는 바로 올린다
+  document.addEventListener('visibilitychange', () => {
+    if (!cloud.user) return;
+    if (document.visibilityState === 'hidden') push();
+    else pull().then(rerender);
+  });
+
   window.addEventListener('hashchange', render);
   applyTheme();
   render();
+  updateAuthUI();
+  initCloud();
 
   if ('serviceWorker' in navigator && location.protocol === 'https:') {
     navigator.serviceWorker.register('sw.js').catch(() => {});
