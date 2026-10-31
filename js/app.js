@@ -9,7 +9,7 @@
     networking:  { name: '네트워킹',      icon: '🌐', desc: 'VPC · Route 53 · CloudFront · DX · TGW' },
     security:    { name: '보안·자격증명', icon: '🔐', desc: 'IAM · KMS · Secrets Manager · WAF · GuardDuty' },
     integration: { name: '애플리케이션 통합', icon: '🔗', desc: 'SQS · SNS · EventBridge · Kinesis · Step Functions' },
-    analytics:   { name: '분석',          icon: '📊', desc: 'Athena · Glue · EMR · QuickSight · Lake Formation' },
+    analytics:   { name: '분석·AI/ML',    icon: '📊', desc: 'Athena · Glue · EMR · Redshift 연계 · Rekognition · Bedrock' },
     management:  { name: '관리·DR·비용',  icon: '🛠️', desc: 'CloudWatch · CloudTrail · Config · Backup · DR 전략' },
   };
   const DOMAINS = {
