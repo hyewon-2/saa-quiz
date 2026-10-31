@@ -290,7 +290,7 @@
     clearInterval(timer); timer = null;
     const r = route();
     document.querySelectorAll('[data-nav]').forEach(a => a.classList.toggle('active', a.dataset.nav === r));
-    const view = { '': viewHome, quiz: viewQuiz, result: viewResult, notes: viewNotes, settings: viewSettings }[r] || viewHome;
+    const view = { '': viewHome, quiz: viewQuiz, result: viewResult, notes: viewNotes, concepts: viewConcepts, settings: viewSettings }[r] || viewHome;
     view();
     window.scrollTo(0, 0);
   }
@@ -328,6 +328,7 @@
           <button class="mode" data-act="start" data-kind="new" ${QS.length - o.seen ? '' : 'disabled'}><span class="mi">🆕</span><b>안 푼 문제 <em>${QS.length - o.seen}</em></b><small>아직 보지 않은 문제만</small></button>
           <button class="mode" data-act="start" data-kind="marks" ${o.marks ? '' : 'disabled'}><span class="mi">⭐</span><b>북마크 <em>${o.marks}</em></b><small>표시해 둔 문제</small></button>
           <button class="mode" data-act="start" data-kind="random"><span class="mi">🎲</span><b>랜덤</b><small>전체에서 무작위</small></button>
+          <a class="mode" href="#/concepts"><span class="mi">📘</span><b>개념 정리</b><small>분야별 핵심 개념·비교표·시험 키워드</small></a>
         </div>
       </section>
 
@@ -414,6 +415,7 @@
               <span class="muted small">· ${DOMAINS[q.domain].name}</span></div>
             <div class="exp">${md(q.exp)}</div>
             ${q.tip ? `<div class="tip"><b>시험 포인트</b> ${md(q.tip)}</div>` : ''}
+            ${CONCEPTS.some(c => c.cat === q.cat) ? `<a class="concept-link" href="#/concepts?cat=${q.cat}">📘 ${CATS[q.cat].name} 개념 정리 보기</a>` : ''}
           </div>` : ''}
 
         ${exam ? `<details class="nav-grid"><summary>문제 목록 · 답함 ${progress}/${s.ids.length} · 검토 ${Object.values(s.flag).filter(Boolean).length}</summary>
@@ -543,6 +545,64 @@
     `;
   }
 
+  // ───────── 개념 정리 ─────────
+  const CONCEPTS = (window.CONCEPTS || []).filter(c => CATS[c.cat]);
+  let conceptQuery = '';
+  // "- "로 시작하는 줄은 목록, 나머지는 문단
+  function conceptBody(text) {
+    const out = []; let list = [];
+    const flush = () => { if (list.length) out.push(`<ul>${list.map(li => `<li>${md(li)}</li>`).join('')}</ul>`); list = []; };
+    for (const line of (text || '').split('\n')) {
+      if (line.startsWith('- ')) list.push(line.slice(2));
+      else { flush(); if (line.trim()) out.push(`<p>${md(line)}</p>`); }
+    }
+    flush();
+    return out.join('');
+  }
+  function conceptCard(c, open) {
+    const t = c.table;
+    return `<details class="card concept" ${open ? 'open' : ''}>
+      <summary><b>${esc(c.title)}</b>${c.summary ? `<span class="muted small">${esc(c.summary)}</span>` : ''}</summary>
+      <div class="concept-body">
+        ${conceptBody(c.body)}
+        ${t ? `<div class="table-wrap"><table>
+          <thead><tr>${t.head.map(h => `<th>${md(h)}</th>`).join('')}</tr></thead>
+          <tbody>${t.rows.map(r => `<tr>${r.map(x => `<td>${md(x)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>` : ''}
+        ${c.keys ? `<div class="tip"><b>시험 키워드</b><ul>${c.keys.map(k => `<li>${md(k)}</li>`).join('')}</ul></div>` : ''}
+      </div></details>`;
+  }
+  function conceptCat() { return new URLSearchParams(location.hash.split('?')[1] || '').get('cat') || ''; }
+  function renderConceptList() {
+    const box = $('#conceptList'); if (!box) return;
+    const cat = conceptCat(), q = conceptQuery.trim().toLowerCase();
+    const text = c => [c.title, c.summary, c.body, ...(c.keys || []), ...(c.table ? c.table.rows.flat() : [])].join(' ').toLowerCase();
+    const list = CONCEPTS.filter(c => (!cat || c.cat === cat) && (!q || text(c).includes(q)));
+    box.innerHTML = Object.keys(CATS).filter(k => list.some(c => c.cat === k)).map(k => `<section>
+        <div class="sec-head"><h2>${CATS[k].icon} ${CATS[k].name}</h2>
+          <button class="btn ghost sm" data-act="start" data-kind="cat" data-arg="${k}">이 분야 문제 풀기 →</button></div>
+        ${list.filter(c => c.cat === k).map(c => conceptCard(c, !!q || !!cat)).join('')}
+      </section>`).join('') || '<div class="empty">검색 결과가 없어요</div>';
+  }
+  function viewConcepts() {
+    const cat = conceptCat();
+    app.innerHTML = `
+      <h1>개념 정리</h1>
+      <p class="muted small">분야별 핵심 개념, 비교표, 시험 키워드를 모았어요. 카드를 누르면 펼쳐져요.</p>
+      <input id="conceptSearch" class="search" type="search" placeholder="검색 (예: NAT, Glacier, FIFO)" value="${esc(conceptQuery)}">
+      <div class="filter">
+        <a href="#/concepts" class="${!cat ? 'on' : ''}">전체</a>
+        ${Object.entries(CATS).map(([k, c]) => `<a href="#/concepts?cat=${k}" class="${cat === k ? 'on' : ''}">${c.icon} ${c.name}</a>`).join('')}
+      </div>
+      <div id="conceptList"></div>`;
+    renderConceptList();
+  }
+  // 검색창은 다시 그리지 않고 결과만 갱신해야 한글 입력(IME)이 끊기지 않는다
+  app.addEventListener('input', e => {
+    if (e.target.id !== 'conceptSearch') return;
+    conceptQuery = e.target.value;
+    renderConceptList();
+  });
+
   // ───────── 설정 ─────────
   function viewSettings() {
     const t = store.settings.theme;
@@ -568,9 +628,11 @@
           <input type="checkbox" class="switch" data-act="instant" ${store.settings.instant ? 'checked' : ''}></label>
       </section>
 
-      <h2>기록 백업 · 기기 간 옮기기</h2>
-      <section class="card form">
-        <p class="muted small">학습 기록은 이 브라우저에만 저장돼요. 휴대폰과 PC 기록을 맞추려면 한쪽에서 백업 코드를 복사해서 다른 쪽에 붙여넣으세요.</p>
+      <details class="card form advanced" ${cloud.enabled ? '' : 'open'}>
+        <summary><b>${cloud.enabled ? '고급: 수동 백업 · 복원' : '기록 백업 · 기기 간 옮기기'}</b></summary>
+        <p class="muted small">${u ? '로그인 중이라 기록은 계정에 자동으로 동기화돼요. 아래 기능은 파일로 따로 보관하고 싶을 때만 쓰세요.'
+          : cloud.enabled ? '위에서 로그인하면 휴대폰·PC 기록이 자동으로 이어져요. 로그인 없이 옮기고 싶을 때만 백업 코드를 쓰세요.'
+          : '학습 기록은 이 브라우저에만 저장돼요. 휴대폰과 PC 기록을 맞추려면 한쪽에서 백업 코드를 복사해서 다른 쪽에 붙여넣으세요.'}</p>
         <div class="btns">
           <button class="btn primary" data-act="export">백업 코드 복사</button>
           <button class="btn ghost" data-act="download">파일로 저장</button>
@@ -580,10 +642,11 @@
           <button class="btn ghost" data-act="import" data-merge="1">합치기</button>
           <button class="btn ghost" data-act="import">덮어쓰기</button>
         </div>
-      </section>
+      </details>
 
       <h2>초기화</h2>
       <section class="card form">
+        ${u ? '<p class="muted small">로그인 중에는 계정에 저장된 기록도 함께 지워져요.</p>' : ''}
         <button class="btn danger" data-act="reset">모든 학습 기록 지우기</button>
       </section>
       <p class="muted small center">문제 ${QS.length}개 · SAA-C03 기준</p>

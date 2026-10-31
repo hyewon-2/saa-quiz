@@ -1,9 +1,9 @@
-const CACHE = 'saa-quiz-v9';
+const CACHE = 'saa-quiz-v10';
 const ASSETS = [
   './', 'index.html', 'css/style.css', 'js/app.js', 'js/firebase-config.js', 'manifest.webmanifest', 'icon.svg',
   'data/compute.js', 'data/storage.js', 'data/database.js', 'data/networking.js',
   'data/security.js', 'data/integration.js', 'data/analytics.js', 'data/management.js',
-  'data/batch-02.js', 'data/batch-03.js', 'data/batch-04.js', 'data/batch-05.js', 'data/batch-06.js',
+  'data/batch-02.js', 'data/batch-03.js', 'data/batch-04.js', 'data/batch-05.js', 'data/batch-06.js', 'data/concepts.js',
 ];
 
 self.addEventListener('install', e => {

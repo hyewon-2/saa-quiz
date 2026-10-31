@@ -247,8 +247,31 @@ section { margin: 0 0 24px; }
 .tabs button.on em { color: inherit; opacity: .75; }
 .filter { display: flex; gap: 6px; overflow-x: auto; padding: 4px 0 12px; scrollbar-width: none; }
 .filter::-webkit-scrollbar { display: none; }
-.filter button { flex-shrink: 0; padding: 6px 12px; border-radius: 99px; border: 1px solid var(--line); background: var(--surface); font-size: .82rem; font-weight: 600; white-space: nowrap; }
-.filter button.on { border-color: var(--accent); background: var(--accent-soft); }
+.filter button, .filter a { flex-shrink: 0; padding: 6px 12px; border-radius: 99px; border: 1px solid var(--line); background: var(--surface); font-size: .82rem; font-weight: 600; white-space: nowrap; }
+.filter button.on, .filter a.on { border-color: var(--accent); background: var(--accent-soft); }
+
+/* ── 개념 정리 ── */
+.search { width: 100%; font: inherit; padding: 11px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--text); margin: 4px 0 6px; }
+.concept { margin-bottom: 10px; padding: 0; overflow: hidden; }
+.concept summary { cursor: pointer; list-style: none; padding: 14px 16px; display: flex; flex-direction: column; gap: 2px; }
+.concept summary::-webkit-details-marker { display: none; }
+.concept summary b::after { content: " ▾"; color: var(--muted); font-weight: 400; }
+.concept[open] summary b::after { content: " ▴"; }
+.concept-body { padding: 0 16px 16px; line-height: 1.7; }
+.concept-body p { margin: 0 0 10px; }
+.concept-body ul { margin: 0 0 10px; padding-left: 20px; }
+.concept-body li { margin: 3px 0; }
+.concept-body .tip ul { margin: 4px 0 0; }
+.table-wrap { overflow-x: auto; margin: 4px 0 12px; border: 1px solid var(--line); border-radius: 10px; }
+.table-wrap table { border-collapse: collapse; width: 100%; font-size: .88rem; }
+.table-wrap th, .table-wrap td { padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+.table-wrap th { background: var(--surface-2); font-weight: 700; white-space: nowrap; }
+.table-wrap tr:last-child td { border-bottom: 0; }
+.table-wrap td:first-child { font-weight: 600; white-space: nowrap; }
+.concept-link { display: inline-block; margin-top: 12px; font-weight: 700; font-size: .9rem; color: var(--warn); }
+.advanced summary { cursor: pointer; }
+.advanced[open] summary { margin-bottom: 4px; }
+a.mode { color: inherit; }
 
 .note { margin-bottom: 10px; padding: 14px; }
 .note summary { cursor: pointer; list-style: none; }
@@ -287,8 +310,9 @@ textarea { width: 100%; font: inherit; font-size: .85rem; padding: 10px; border-
   .stat b { font-size: 1.15rem; }
   .modes, .cats { gap: 8px; }
   .mode { padding: 12px; }
-  .brand-text small { display: none; }
-  .topnav a { padding: 6px 7px; }
+  .brand-text { display: none; }
+  .topnav { gap: 0; }
+  .topnav a { padding: 6px 7px; font-size: .86rem; }
 }
 @media (min-width: 760px) {
   .modes { grid-template-columns: repeat(3, 1fr); }
