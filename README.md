@@ -1,5 +1,7 @@
 # SAA Quiz
 
+> 오리지널 문제 800개 · 개념 정리 40개 · Google 로그인 동기화
+
 AWS Certified Solutions Architect – Associate (SAA-C03) 대비 연습 문제 사이트입니다.
 서버 없이 GitHub Pages에서 동작하고, 휴대폰과 PC 모두에서 쓸 수 있으며, 한 번 열어 두면 오프라인에서도 동작합니다.
 
