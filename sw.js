@@ -1,9 +1,9 @@
-const CACHE = 'saa-quiz-v11';
+const CACHE = 'saa-quiz-v13';
 const ASSETS = [
   './', 'index.html', 'css/style.css', 'js/app.js', 'js/firebase-config.js', 'manifest.webmanifest', 'icon.svg',
   'data/compute.js', 'data/storage.js', 'data/database.js', 'data/networking.js',
   'data/security.js', 'data/integration.js', 'data/analytics.js', 'data/management.js',
-  'data/batch-02.js', 'data/batch-03.js', 'data/batch-04.js', 'data/batch-05.js', 'data/batch-06.js', 'data/batch-07.js', 'data/concepts.js',
+  'data/batch-02.js', 'data/batch-03.js', 'data/batch-04.js', 'data/batch-05.js', 'data/batch-06.js', 'data/batch-07.js', 'data/batch-08.js', 'data/concepts.js',
 ];
 const NETWORK_TIMEOUT = 4000;
 
