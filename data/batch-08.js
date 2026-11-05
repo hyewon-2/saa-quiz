@@ -5,10 +5,10 @@ QB.push(
   id: 'b08-01', cat: 'storage', domain: 'cost', svc: ['S3 수명 주기'],
   q: '감사 로그는 처음 30일은 자주 조회하고, 30일~1년은 분기에 한 번 정도 조회하되 즉시 읽어야 하며, 1년 뒤부터는 거의 조회하지 않고(조회하면 이틀 기다려도 됨) 7년 뒤 삭제해야 한다. 가장 비용 효율적인 수명 주기 구성은?',
   opts: [
-    'Standard → 30일 후 Glacier Instant Retrieval → 365일 후 Glacier Deep Archive → 2,555일 후 만료',
-    'Standard → 30일 후 Deep Archive → 7년 후 만료',
-    '처음부터 Glacier Flexible Retrieval에 저장한다',
-    'Standard에 7년 동안 둔다',
+    'Standard → 30일 후 Glacier IR → 1년 후 Deep Archive → 7년 후 만료',
+    'Standard → 30일 후 Glacier Deep Archive → 1년 후 Glacier IR로 되돌림 → 7년 후 만료',
+    '처음부터 Glacier Flexible Retrieval에 저장하고 7년 후 만료한다',
+    'Standard에 7년 동안 두고 만료 규칙만 건다',
   ],
   ans: [0],
   exp: '분기에 한 번 조회하지만 **즉시 읽어야 하는** 기간에는 **Glacier Instant Retrieval**(밀리초 조회, 최소 90일)이 맞다. 1년 뒤에는 이틀까지 기다릴 수 있으므로 가장 저렴한 **Deep Archive**로 옮기고, 7년 뒤에 만료시킨다. 30일 만에 Deep Archive로 보내면 1년 안에 조회할 때 즉시 읽을 수 없다.',
@@ -18,10 +18,10 @@ QB.push(
   id: 'b08-02', cat: 'compute', domain: 'cost', svc: ['Compute Optimizer', 'Savings Plans'],
   q: '회사가 EC2 비용을 줄이려 한다. 많은 인스턴스가 과하게 프로비저닝되어 있고, 워크로드는 앞으로 3년간 꾸준할 예정이다. 가장 효과적인 순서는?',
   opts: [
-    'Compute Optimizer로 먼저 적정 크기로 줄인 뒤, 줄어든 사용량을 기준으로 Savings Plans를 약정한다',
+    'Compute Optimizer로 크기를 줄인 뒤 Savings Plans를 약정한다',
     '먼저 현재 사용량 기준으로 3년 Savings Plans를 약정한 뒤 나중에 크기를 줄인다',
-    '모든 인스턴스를 스팟으로 바꾼다',
-    '인스턴스 수를 무작정 절반으로 줄인다',
+    '모든 인스턴스를 스팟으로 바꾸고 중단되면 온디맨드로 자동 전환되게 구성해 약정 없이 비용을 낮춘다',
+    '인스턴스 수를 일괄적으로 절반으로 줄인다',
   ],
   ans: [0],
   exp: '**적정 크기 조정(rightsizing)을 먼저** 해야 한다. 과하게 프로비저닝된 상태를 기준으로 약정하면 쓰지 않는 용량에 대해 할인된 금액을 계속 내게 된다. 크기를 줄인 뒤 **Cost Explorer의 Savings Plans 권장 사항**을 참고해 약정한다.',
@@ -30,7 +30,7 @@ QB.push(
 {
   id: 'b08-03', cat: 'compute', domain: 'cost', svc: ['스팟', 'CI/CD'],
   q: 'CI 파이프라인의 빌드·테스트 작업이 매일 수천 번 실행된다. 작업 하나는 10분 이내로 끝나고, 실패하면 자동으로 다시 실행된다. 빌드 러너 인프라 비용을 가장 많이 줄이는 방법은?',
-  opts: ['여러 인스턴스 유형을 쓰는 스팟 기반 Auto Scaling 그룹에서 빌드 러너를 실행한다', '3년 예약 인스턴스로 러너를 상시 운영한다', '전용 호스트를 쓴다', '가장 큰 온디맨드 인스턴스 하나로 처리한다'],
+  opts: ['여러 유형의 스팟 기반 Auto Scaling 그룹에서 러너를 실행한다', '피크 수요에 맞춰 3년 예약 인스턴스로 빌드 러너를 상시 운영하고 남는 시간에는 유휴 상태로 둔다', '전용 호스트에서 러너를 실행한다', '가장 큰 온디맨드 인스턴스 하나로 처리한다'],
   ans: [0],
   exp: '짧고 **재시도할 수 있는** 작업은 **스팟**에 딱 맞는다. 여러 인스턴스 유형을 쓰면 용량을 확보하기 쉬워지고 중단 위험도 줄어든다. 빌드 수요가 들쭉날쭉하므로 상시 예약하면 낭비가 생긴다.',
   tip: '짧은·재시도 가능·상태 없음 → 스팟.',
@@ -38,7 +38,7 @@ QB.push(
 {
   id: 'b08-04', cat: 'database', domain: 'cost', svc: ['Graviton', 'RDS'],
   q: 'RDS for PostgreSQL을 db.m5.2xlarge로 운영 중이다. 애플리케이션과 엔진 버전을 바꾸지 않고, 비슷하거나 더 좋은 성능으로 인스턴스 비용을 줄이는 가장 간단한 방법은?',
-  opts: ['같은 크기의 Graviton 기반 인스턴스 클래스로 변경한다', 'db.t3.micro로 낮춘다', 'Multi-AZ를 끈다', 'EC2에 PostgreSQL을 직접 설치한다'],
+  opts: ['같은 크기의 Graviton 기반 인스턴스 클래스로 변경한다', 'db.t3.medium으로 낮춰 버스트 크레딧으로 피크를 처리한다', '운영 인스턴스의 Multi-AZ를 꺼서 대기 인스턴스 비용을 없앤다', 'EC2에 PostgreSQL을 직접 설치해 관리형 요금을 없앤다'],
   ans: [0],
   exp: 'RDS와 Aurora는 **Graviton(ARM) 인스턴스 클래스**를 지원하고, 같은 크기의 x86 대비 **가격 대비 성능이 더 좋다.** 관리형 엔진이라 애플리케이션 코드를 바꿀 필요가 없다. Multi-AZ를 끄면 비용은 줄지만 운영 DB의 가용성이 떨어진다.',
   tip: 'EC2·RDS·ElastiCache·Lambda·Fargate 모두 Graviton으로 비용 절감 가능.',
@@ -46,7 +46,7 @@ QB.push(
 {
   id: 'b08-05', cat: 'database', domain: 'cost', svc: ['DynamoDB 용량 모드'],
   q: 'DynamoDB 테이블은 하루 종일 초당 약 2,000건의 쓰기가 꾸준히 들어오고, 변동은 ±10% 정도다. 현재 온디맨드 모드로 운영 중인데 비용이 높다. 비용을 줄이려면?',
-  opts: ['프로비저닝 용량 모드로 바꾸고 Auto Scaling을 설정하며, 장기적으로 예약 용량을 구매한다', '온디맨드 모드를 유지한다', '테이블을 여러 개로 나눈다', 'DAX를 추가한다'],
+  opts: ['프로비저닝 모드로 바꾸고 Auto Scaling과 예약 용량을 쓴다', '온디맨드 모드를 유지하고 쓰기를 SQS로 버퍼링해 시간대별 요청 수를 고르게 만들어 단가를 낮춘다', '테이블을 여러 개로 나눈다', 'DAX를 추가해 쓰기 비용을 줄인다'],
   ans: [0],
   exp: '트래픽이 **꾸준하고 예측 가능**하면 **프로비저닝 모드**가 온디맨드보다 훨씬 저렴하다. Auto Scaling으로 작은 변동에 대응하고, 기본 사용량에는 **예약 용량**을 사서 비용을 더 줄인다. 온디맨드는 예측할 수 없거나 급증하는 트래픽에 맞다. DAX는 쓰기 비용을 줄이지 않는다.',
   tip: '꾸준한 트래픽 → Provisioned(+Auto Scaling, Reserved Capacity).',
@@ -62,7 +62,7 @@ QB.push(
 {
   id: 'b08-07', cat: 'compute', domain: 'cost', svc: ['Lambda vs 컨테이너'],
   q: '실시간 추천 API가 하루 24시간 초당 수천 건의 요청을 일정하게 처리한다. 지금은 Lambda로 운영 중인데 월 비용이 매우 높다. 성능을 유지하며 비용을 줄이는 방법으로 가장 적절한 것은?',
-  opts: ['ECS on Fargate 또는 EC2로 옮기고 Compute Savings Plans를 적용한다', 'Lambda 메모리를 최소로 줄인다', 'Lambda 제한 시간을 늘린다', 'Lambda 예약된 동시성을 0으로 설정한다'],
+  opts: ['Fargate나 EC2로 옮기고 Compute Savings Plans를 적용한다', 'Lambda 메모리를 최소로 줄여 GB-초 요금을 낮추고 응답이 느려지는 것은 재시도로 보완한다', 'Lambda 제한 시간을 늘린다', 'Lambda 예약된 동시성을 0으로 설정한다'],
   ans: [0],
   exp: '**상시 고부하** 워크로드는 Lambda의 요청당 과금보다 **항상 켜진 컨테이너나 인스턴스**가 더 저렴한 경우가 많다. **Compute Savings Plans**는 Fargate, EC2, Lambda에 모두 적용되어 할인을 더 받을 수 있다. 메모리를 무작정 줄이면 지연이 늘고, 예약된 동시성을 0으로 두면 서비스가 멈춘다.',
   tip: '서버리스가 항상 최저가는 아니다 — 꾸준한 고부하는 컨테이너/EC2 + 약정.',
@@ -70,7 +70,7 @@ QB.push(
 {
   id: 'b08-08', cat: 'networking', domain: 'cost', svc: ['CloudFront 가격 등급'],
   q: 'CloudFront로 배포하는 서비스의 사용자는 북미와 유럽에만 있다. 그런데 전 세계 모든 엣지 로케이션을 쓰는 기본 설정 때문에 일부 요청이 비싼 지역의 엣지에서 처리되고 있다. 비용을 줄이는 방법은?',
-  opts: ['CloudFront 가격 등급을 Price Class 100으로 바꾼다', 'CloudFront를 제거하고 S3에서 직접 제공한다', 'TTL을 0으로 설정한다', '원본을 다른 리전으로 옮긴다'],
+  opts: ['CloudFront 가격 등급을 Price Class 100으로 바꾼다', 'CloudFront를 제거하고 S3에서 직접 제공해 엣지 요금을 없앤다', 'TTL을 0으로 설정해 비싼 엣지 저장을 줄인다', '원본을 사용자와 가까운 리전으로 옮긴다'],
   ans: [0],
   exp: 'CloudFront **가격 등급**은 사용할 엣지 로케이션 범위를 제한한다. **Price Class 100**은 가장 저렴한 지역(북미, 유럽)만 쓴다. 다른 지역 사용자는 지연이 늘 수 있지만, 사용자가 해당 지역에만 있다면 비용만 줄어든다.',
   tip: '사용자 지역 한정 + CloudFront 비용 → Price Class.',

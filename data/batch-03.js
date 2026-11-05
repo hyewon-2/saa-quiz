@@ -299,7 +299,7 @@ QB.push(
 {
   id: 'sec-26', cat: 'security', domain: 'secure', svc: ['ALB 인증', 'Cognito'],
   q: '사내 웹 애플리케이션 여러 개가 ALB 뒤에서 실행된다. 애플리케이션 코드를 바꾸지 않고, 사내 IdP(OIDC)나 Cognito로 로그인한 사용자만 접근하게 하려면?',
-  opts: ['ALB 리스너 규칙에 authenticate-oidc 또는 authenticate-cognito 작업을 추가한다', '각 애플리케이션 코드에 OIDC 라이브러리를 넣어 로그인 기능을 애플리케이션마다 따로 구현하고 배포한다', '보안 그룹에 사내 직원의 IP만 허용해 로그인 없이 접근을 제한한다', 'WAF 규칙으로 로그인 쿠키가 있는 요청만 ALB 뒤로 통과시킨다'],
+  opts: ['ALB 리스너 규칙에 authenticate-oidc/cognito 작업을 추가한다', '각 애플리케이션 코드에 OIDC 라이브러리를 넣어 로그인 기능을 애플리케이션마다 따로 구현하고 배포한다', '보안 그룹에 사내 직원의 IP만 허용해 로그인 없이 접근을 제한한다', 'WAF 규칙으로 로그인 쿠키가 있는 요청만 ALB 뒤로 통과시킨다'],
   ans: [0],
   exp: '**ALB 사용자 인증** 기능은 리스너 규칙에서 **OIDC IdP나 Cognito 사용자 풀**로 인증을 처리하고, 인증된 요청에만 대상으로 전달한다. 사용자 정보는 헤더(`x-amzn-oidc-*`)로 넘겨준다. 애플리케이션 코드는 인증을 구현할 필요가 없다.',
   tip: '"코드 변경 없이 웹 앱 앞단 로그인" → ALB authenticate 액션.',

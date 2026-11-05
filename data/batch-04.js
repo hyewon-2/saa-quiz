@@ -66,7 +66,7 @@ QB.push(
 {
   id: 'db-32', cat: 'database', domain: 'cost', svc: ['DynamoDB Standard-IA 테이블 클래스'],
   q: 'DynamoDB 테이블에 수년 치 주문 이력 수 TB가 저장되어 있다. 이 테이블은 거의 읽거나 쓰지 않는데 스토리지가 비용의 대부분을 차지한다. 애플리케이션을 바꾸지 않고 비용을 줄이는 방법은?',
-  opts: ['테이블 클래스를 Standard-Infrequent Access로 바꾼다', '온디맨드 용량 모드로 바꿔 쓰지 않는 시간의 스토리지 요금을 없앤다', 'DAX를 추가해 테이블에서 읽는 데이터의 저장 비용을 줄인다', '글로벌 테이블로 바꿔 데이터를 저렴한 리전으로 옮겨 저장한다'],
+  opts: ['테이블 클래스를 Standard-Infrequent Access로 바꾼다', '온디맨드 용량 모드로 바꿔 테이블을 쓰지 않는 시간의 스토리지 요금이 나오지 않게 한다', 'DAX를 추가해 테이블에서 읽는 데이터의 저장 비용을 줄인다', '글로벌 테이블로 바꿔 데이터를 저렴한 리전으로 옮겨 저장한다'],
   ans: [0],
   exp: '**Standard-IA 테이블 클래스**는 **스토리지 비용을 최대 60%** 낮추는 대신 읽기·쓰기 요청 비용이 더 높다. 스토리지가 비용의 대부분을 차지하고 접근이 드문 테이블에 적합하다. 테이블 클래스는 API 호출만으로 바꿀 수 있고 성능, 내구성, 가용성은 같다. 오래된 데이터를 S3로 내보내는 방법도 함께 검토할 수 있다.',
   tip: 'DynamoDB 스토리지 비용 위주 → Standard-IA 테이블 클래스.',
@@ -219,7 +219,7 @@ QB.push(
 {
   id: 'net-35', cat: 'networking', domain: 'resilient', svc: ['Route 53 ARC'],
   q: '대규모 결제 시스템이 두 리전에서 액티브-스탠바이로 운영된다. 리전 장애 시 운영자가 **DNS 컨트롤 플레인에 의존하지 않고** 안정적으로 트래픽을 수동 전환할 수 있어야 하고, 대기 리전이 전환할 준비가 되었는지 계속 점검해야 한다. 가장 적합한 서비스는?',
-  opts: ['Amazon Route 53 Application Recovery Controller', 'Route 53 단순 라우팅', 'CloudFront 원본 그룹', 'AWS Backup'],
+  opts: ['Amazon Route 53 Application Recovery Controller', 'Route 53 장애 조치 레코드와 수동 TTL 조정을 조합한 운영 절차', 'CloudFront 원본 그룹으로 두 리전을 묶는 구성', 'AWS Backup'],
   ans: [0],
   exp: '**Route 53 ARC**는 고가용성 데이터 플레인 API로 상태를 바꾸는 **라우팅 제어**(on/off 스위치), 대기 리전의 용량과 구성을 점검하는 **준비 상태 확인**, 실수로 전부 꺼 버리는 것을 막는 **안전 규칙**, AZ 단위로 트래픽을 빼는 **영역 이동(zonal shift)**을 제공한다. 미션 크리티컬한 다중 리전 장애 조치에 쓴다.',
   tip: '미션 크리티컬 다중 리전/AZ 장애 조치 통제 → Route 53 ARC (Zonal shift 포함).',
@@ -251,7 +251,7 @@ QB.push(
 {
   id: 'sto-40', cat: 'storage', domain: 'resilient', svc: ['FSx for Windows Multi-AZ'],
   q: 'FSx for Windows File Server로 운영하는 부서 공유 드라이브는 AZ 하나에 장애가 나도 계속 사용할 수 있어야 한다. 어떤 구성이 필요한가?',
-  opts: ['FSx for Windows File Server를 다중 AZ 배포 유형으로 만든다', '단일 AZ 파일 시스템을 두 개 만들고 DFS로 묶어 수동으로 복사한다', '파일 공유를 EFS로 옮겨 여러 AZ에서 SMB로 접근하게 한다', '일일 백업만 켜고 장애가 나면 다른 AZ에 복원한다'],
+  opts: ['파일 시스템을 다중 AZ 배포 유형으로 만든다', '단일 AZ 파일 시스템을 두 개 만들고 DFS로 묶어 수동으로 복사한다', '파일 공유를 EFS로 옮겨 여러 AZ에서 SMB로 접근하게 한다', '일일 백업만 켜고 장애가 나면 다른 AZ에 복원한다'],
   ans: [0],
   exp: '**Multi-AZ 배포**는 다른 AZ에 대기 파일 서버를 두고 **동기식으로 복제**하며, 장애가 나면 **자동으로 장애 조치**한다. DNS 이름은 그대로 유지된다. 단일 AZ 배포는 AZ에 장애가 나면 쓸 수 없다. EFS는 SMB를 지원하지 않는다.',
   tip: 'FSx Windows/ONTAP/OpenZFS 고가용성 → Multi-AZ 배포 유형.',

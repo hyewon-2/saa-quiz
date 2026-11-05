@@ -152,9 +152,9 @@ QB.push(
   id: 'cmp-43', cat: 'compute', domain: 'resilient', svc: ['3계층 아키텍처'],
   q: '단일 EC2 인스턴스에서 웹 서버와 MySQL을 함께 실행하는 쇼핑몰을 확장 가능하고 고가용성인 구조로 바꾸려 한다. 운영 부담을 최소화하려면 어떤 조합이 가장 적합한가?',
   opts: [
-    'Multi-AZ ALB + 여러 AZ에 걸친 EC2 Auto Scaling 그룹 + Amazon RDS for MySQL Multi-AZ',
+    'Multi-AZ ALB + 다중 AZ Auto Scaling + RDS Multi-AZ',
     '더 큰 EC2 인스턴스 하나로 수직 확장 + 매일 EBS 스냅샷으로 백업',
-    '두 AZ에 EC2를 하나씩 두고 각각 MySQL을 설치해 스크립트로 동기화',
+    '두 AZ에 EC2를 하나씩 두고 각각 MySQL을 설치해 스크립트로 데이터를 맞추며 Route 53으로 분산',
     'Route 53 단순 라우팅 + 단일 EC2 + 탄력적 IP로 장애 시 교체',
   ],
   ans: [0],
@@ -262,10 +262,10 @@ QB.push(
   id: 'sec-32', cat: 'security', domain: 'secure', svc: ['암호화 설계'],
   q: '규정상 다음을 모두 만족해야 한다: ① 데이터는 저장 시 암호화, ② 전송 중 암호화, ③ 키 사용 기록 감사. S3와 RDS를 쓰는 애플리케이션에 가장 적합한 조합은? (2개 선택)',
   opts: [
-    'S3는 SSE-KMS, RDS는 KMS 키로 스토리지 암호화를 켠다',
-    'S3 버킷 정책으로 aws:SecureTransport를 강제하고, RDS 연결은 SSL/TLS를 강제한다',
+    'S3는 SSE-KMS, RDS는 KMS 스토리지 암호화를 켠다',
+    'S3는 aws:SecureTransport, RDS는 SSL/TLS 연결을 강제한다',
     'S3 버전 관리를 켜서 객체마다 암호화 이력을 키 사용 기록으로 남긴다',
-    'RDS 읽기 전용 복제본을 만들어 쓰기 연결과 읽기 연결을 암호화 구간으로 분리한다',
+    'RDS 읽기 전용 복제본을 만들어 쓰기 연결과 읽기 연결을 서로 다른 암호화 구간으로 분리한다',
     '보안 그룹을 0.0.0.0/0에 열고 TLS 인증서로 접근을 통제한다',
   ],
   ans: [0, 1],
@@ -307,7 +307,7 @@ QB.push(
 {
   id: 'int-33', cat: 'integration', domain: 'cost', svc: ['SQS vs Kinesis vs SNS'],
   q: '각 요구 사항에 맞는 서비스를 바르게 짝지은 것은?\n① 작업을 워커들에게 나눠 주고, 처리한 메시지는 삭제\n② 한 메시지를 여러 구독자에게 동시에 푸시\n③ 대용량 실시간 스트림을 여러 소비자가 순서대로 재생',
-  opts: ['① SQS ② SNS ③ Kinesis Data Streams', '① SNS ② SQS ③ Firehose', '① Kinesis ② SQS ③ SNS', '① EventBridge ② Kinesis ③ SQS'],
+  opts: ['① SQS ② SNS ③ Kinesis Data Streams', '① SNS ② SQS ③ Kinesis Data Firehose', '① Kinesis Data Streams ② SQS ③ SNS FIFO', '① EventBridge ② Kinesis Data Streams ③ SQS'],
   ans: [0],
   exp: '**SQS**는 풀(pull) 방식의 **작업 대기열**로, 소비자 하나가 메시지를 처리하고 삭제한다. **SNS**는 푸시 방식의 **pub/sub 팬아웃**이다. **Kinesis Data Streams**는 순서가 보장된 **스트림**으로, 여러 소비자가 같은 데이터를 독립적으로 읽고 재생할 수 있다.',
   tip: '대기열 = SQS · 팬아웃 = SNS · 스트림/재생 = Kinesis · 이벤트 라우팅 = EventBridge.',
@@ -315,7 +315,7 @@ QB.push(
 {
   id: 'cmp-45', cat: 'compute', domain: 'performance', svc: ['컴퓨팅 선택'],
   q: '각 요구 사항에 가장 알맞은 컴퓨팅 서비스를 짝지은 것은?\n① 5초 안에 끝나는 이벤트 기반 이미지 처리\n② 30분 이상 걸리는 컨테이너 배치 작업, 서버 관리 X\n③ GPU와 특정 커널 설정이 필요한 ML 학습 서버',
-  opts: ['① Lambda ② ECS on Fargate ③ EC2', '① EC2 ② Lambda ③ Fargate', '① Fargate ② Lambda ③ Lambda', '① Batch ② EC2 ③ Lambda'],
+  opts: ['① Lambda ② ECS on Fargate ③ EC2', '① EC2 Spot ② Lambda ③ ECS on Fargate', '① ECS on Fargate ② Lambda ③ Lambda(GPU)', '① AWS Batch ② EC2 ③ Lambda(GPU)'],
   ans: [0],
   exp: '**짧은 이벤트 기반 처리**에는 **Lambda**(최대 15분), **15분을 넘는 컨테이너 작업에 서버 관리가 필요 없다면** **Fargate**, **GPU나 커널, OS 수준 제어**가 필요하면 **EC2**가 맞다. Lambda는 15분 제한 때문에 ②에 쓸 수 없고, GPU도 지원하지 않는다.',
   tip: 'Lambda ≤15분/GPU 없음 · Fargate = 서버리스 컨테이너(GPU 없음) · EC2 = 완전 제어.',

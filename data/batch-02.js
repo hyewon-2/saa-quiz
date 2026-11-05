@@ -395,7 +395,7 @@ QB.push(
 {
   id: 'mgt-15', cat: 'management', domain: 'resilient', svc: ['Application Migration Service'],
   q: '회사가 온프레미스 VMware 서버 200대를 최소한의 다운타임으로 EC2에 **리호스트(lift-and-shift)**하려 한다. 서버 OS와 애플리케이션은 바꾸지 않고, 블록 수준으로 계속 복제하다가 짧은 시간 안에 전환하고 싶다. 어떤 서비스가 적합한가?',
-  opts: ['AWS Application Migration Service', 'AWS DMS', 'AWS DataSync', 'AWS Snowball'],
+  opts: ['AWS Application Migration Service', 'AWS DMS 지속 복제로 서버 전체를 EC2로 옮기는 방식', 'AWS DataSync로 서버 디스크 파일을 EC2로 복사하는 방식', 'AWS Snowball로 VM 이미지를 옮겨 EC2로 가져오는 방식'],
   ans: [0],
   exp: '**AWS MGN**은 원본 서버의 디스크를 **블록 수준으로 계속 복제**하다가, 테스트를 거쳐 짧은 다운타임으로 EC2로 **전환(cutover)**하는 리호스팅 서비스다. 물리 서버, VMware, Hyper-V, 다른 클라우드에서 옮길 때 모두 쓸 수 있다. DMS는 데이터베이스, DataSync는 파일 데이터를 옮기는 서비스다.',
   tip: '서버 lift-and-shift → MGN. DB → DMS. 파일 → DataSync. DR 복제 → Elastic Disaster Recovery.',
