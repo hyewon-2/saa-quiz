@@ -4,7 +4,7 @@ QB.push(
   id: 'sto-01', cat: 'storage', domain: 'cost', svc: ['S3 수명 주기', 'S3 Standard-IA'],
   q: '로그 파일을 S3에 저장한다. 처음 30일 동안은 자주 조회하고, 그 뒤로는 거의 조회하지 않지만 조회할 때는 밀리초 단위로 바로 읽어야 한다. 1년이 지나면 삭제해도 된다. 가장 비용 효율적인 방법은?',
   opts: [
-    '수명 주기 규칙으로 30일 후 S3 Standard-IA로 전환하고, 365일 후 만료(삭제)한다',
+    '수명 주기 규칙으로 30일 후 S3 Standard-IA로 전환하고, 365일 후 만료한다',
     '수명 주기 규칙으로 30일 후 S3 Glacier Deep Archive로 전환하고, 365일 후 삭제한다',
     '모든 객체를 처음부터 S3 One Zone-IA에 저장한다',
     '모든 객체를 S3 Standard에 두고, 매달 스크립트로 오래된 객체를 삭제한다',
@@ -34,7 +34,7 @@ QB.push(
   q: '규정상 의료 기록은 7년 동안 어떤 사용자도(루트 계정 포함) 삭제하거나 덮어쓸 수 없어야 한다. 어떤 S3 기능을 써야 하는가?',
   opts: [
     'S3 버전 관리와 MFA Delete',
-    '규정 준수(Compliance) 모드의 S3 Object Lock과 7년 보존 기간',
+    '규정 준수 모드의 S3 Object Lock과 7년 보존 기간',
     '거버넌스(Governance) 모드의 S3 Object Lock',
     '버킷 정책으로 s3:DeleteObject를 거부',
   ],
@@ -61,7 +61,7 @@ QB.push(
 {
   id: 'sto-07', cat: 'storage', domain: 'performance', svc: ['FSx for Lustre'],
   q: '머신러닝 팀이 S3에 저장된 수백 TB의 학습 데이터를 GPU 인스턴스 클러스터에서 처리한다. 초당 수백 GB의 처리량과 밀리초 미만 지연 시간을 내는 고성능 파일 시스템이 필요하고, 결과는 다시 S3에 저장해야 한다. 어떤 서비스를 써야 하는가?',
-  opts: ['Amazon EFS 최대 I/O 모드', 'Amazon FSx for Lustre(S3 데이터 리포지토리 연결)', 'Amazon EBS gp3', 'AWS Storage Gateway'],
+  opts: ['Amazon EFS 최대 I/O 모드', 'Amazon FSx for Lustre', 'Amazon EBS gp3', 'AWS Storage Gateway'],
   ans: [1],
   exp: '**FSx for Lustre**는 HPC·ML·미디어 처리용 고성능 병렬 파일 시스템이다. **S3 버킷과 연결**하면 S3 객체를 파일처럼 읽고 결과를 다시 S3로 내보낼 수 있다. EFS는 범용 공유 파일 시스템이라 이 정도 처리량에는 맞지 않는다. EBS는 공유 파일 시스템이 아니다.',
   tip: 'HPC/ML + "S3와 연동" + 초고성능 → FSx for Lustre.',
@@ -109,7 +109,7 @@ QB.push(
   q: '웹 애플리케이션 사용자가 프라이빗 S3 버킷의 보고서 PDF를 다운로드해야 한다. 버킷은 공개하지 않고, 로그인한 사용자에게만 15분 동안 유효한 다운로드 링크를 주고 싶다. 가장 간단한 방법은?',
   opts: [
     '버킷 정책으로 퍼블릭 읽기를 허용한다',
-    '애플리케이션이 해당 객체에 대해 15분 만료로 미리 서명된 URL(presigned URL)을 생성한다',
+    '애플리케이션이 해당 객체에 대해 15분 만료로 미리 서명된 URL을 생성한다',
     '사용자마다 IAM 사용자를 만들어 준다',
     'S3 정적 웹 사이트 호스팅을 켠다',
   ],
@@ -147,7 +147,7 @@ QB.push(
 {
   id: 'sto-15', cat: 'storage', domain: 'cost', svc: ['S3 요청자 지불'],
   q: '연구 기관이 수백 TB의 공개 데이터 세트를 S3로 다른 AWS 계정의 파트너들에게 제공한다. 파트너들이 데이터를 다운로드할 때 생기는 요청 비용과 데이터 전송 비용을 연구 기관이 아니라 파트너가 내게 하려면?',
-  opts: ['S3 Transfer Acceleration을 켠다', '버킷에 요청자 지불(Requester Pays)을 켠다', '데이터를 Glacier로 옮긴다', 'CloudFront 배포를 만든다'],
+  opts: ['S3 Transfer Acceleration을 켠다', '버킷에 요청자 지불을 켠다', '데이터를 Glacier로 옮긴다', 'CloudFront 배포를 만든다'],
   ans: [1],
   exp: '**요청자 지불 버킷**에서는 버킷 소유자가 스토리지 비용만 내고, **요청과 데이터 다운로드 비용은 요청자가** 낸다. 요청자는 AWS로 인증해야 하고, 요청에 `x-amz-request-payer` 헤더를 넣어야 한다(익명 접근 불가).',
   tip: '"다운로드 비용을 데이터 소비자가 부담" → Requester Pays.',
@@ -155,7 +155,7 @@ QB.push(
 {
   id: 'sto-16', cat: 'storage', domain: 'cost', svc: ['EBS gp3'],
   q: '회사가 EBS gp2 볼륨 수백 개를 쓰고 있다. 대부분 3,000 IOPS 이하로 쓰이는데, 그중 일부는 IOPS를 확보하려고 필요 이상으로 큰 용량을 할당했다. 다운타임 없이 성능을 유지하면서 비용을 줄이는 방법은?',
-  opts: ['볼륨을 gp3로 변경(Elastic Volumes)하고 필요한 IOPS와 처리량을 따로 지정한다', '볼륨을 sc1으로 변경한다', '볼륨을 io2로 변경한다', '스냅샷을 만든 뒤 볼륨을 삭제한다'],
+  opts: ['볼륨을 gp3로 변경하고 필요한 IOPS와 처리량을 따로 지정한다', '볼륨을 sc1으로 변경한다', '볼륨을 io2로 변경한다', '스냅샷을 만든 뒤 볼륨을 삭제한다'],
   ans: [0],
   exp: '**gp3**는 gp2보다 GB당 가격이 약 20% 저렴하고, 용량과 관계없이 **기본 3,000 IOPS와 125MB/s**를 제공한다. IOPS와 처리량을 **용량과 따로** 늘릴 수도 있다. gp2는 IOPS가 용량에 비례해서(GB당 3 IOPS) 성능 때문에 용량을 과하게 잡는 경우가 많다. Elastic Volumes로 **온라인 상태에서** 볼륨 유형을 바꿀 수 있다. sc1은 HDD라 성능이 크게 떨어진다.',
   tip: 'gp2 → gp3 전환 = 대표적인 무중단 비용 최적화.',

@@ -4,7 +4,7 @@ QB.push(
 {
   id: 'cmp-23', cat: 'compute', domain: 'performance', svc: ['EC2 최대 절전 모드'],
   q: '애플리케이션이 시작될 때 대용량 데이터를 메모리에 올리느라 준비 시간이 20분 넘게 걸린다. 비용을 줄이려고 밤에는 인스턴스를 멈추고 아침에 다시 시작하는데, 아침마다 준비 시간이 너무 길다. 메모리 상태를 그대로 유지하면서 빠르게 재개하는 방법은?',
-  opts: ['EC2 최대 절전 모드(Hibernate)를 켜고 중지 대신 최대 절전 모드로 전환한다', '인스턴스 스토어에 데이터를 저장한다', '인스턴스를 종료하고 AMI로 다시 시작한다', '더 큰 인스턴스 유형을 쓴다'],
+  opts: ['EC2 최대 절전 모드를 켜고 중지 대신 최대 절전 모드로 전환한다', '인스턴스 스토어에 데이터를 저장한다', '인스턴스를 종료하고 AMI로 다시 시작한다', '더 큰 인스턴스 유형을 쓴다'],
   ans: [0],
   exp: '**최대 절전 모드**는 RAM 내용을 **암호화된 EBS 루트 볼륨**에 저장한 뒤 인스턴스를 중지한다. 다시 시작하면 메모리 상태와 실행 중이던 프로세스가 **그대로 복원**되므로 긴 초기화 과정을 건너뛸 수 있다. 중지된 동안에는 EBS 비용만 낸다. 시작할 때 미리 켜 두어야 하고, RAM 크기와 지원 인스턴스 유형에 제한이 있다.',
   tip: '"메모리 상태 유지 + 빠른 재개" → Hibernate. 루트 EBS 암호화 필수.',
@@ -13,7 +13,7 @@ QB.push(
   id: 'cmp-24', cat: 'compute', domain: 'cost', svc: ['ASG 혼합 인스턴스 정책'],
   q: '상태 비저장 웹 계층이 Auto Scaling 그룹에서 실행된다. 항상 최소 4대는 안정적으로 운영하고, 그 위로 늘어나는 용량은 가능한 한 저렴하게 처리하고 싶다. 스팟 중단 위험도 줄여야 한다. 가장 적합한 구성은?',
   opts: [
-    '혼합 인스턴스 정책으로 온디맨드 기본 용량 4대를 두고, 나머지는 여러 인스턴스 유형의 스팟으로 채우며 할당 전략을 capacity-optimized(가격·용량 최적화)로 설정한다',
+    '혼합 인스턴스 정책으로 온디맨드 기본 용량 4대를 두고, 나머지는 여러 인스턴스 유형의 스팟으로 채우며 할당 전략을 capacity-optimized로 설정한다',
     '모든 인스턴스를 스팟 한 가지 유형으로 운영한다',
     '모든 인스턴스를 온디맨드로 운영한다',
     '스팟 블록을 구매한다',
@@ -25,7 +25,7 @@ QB.push(
 {
   id: 'cmp-25', cat: 'compute', domain: 'secure', svc: ['ECS 작업 역할'],
   q: 'EC2 시작 유형의 ECS 클러스터에서 여러 서비스가 한 호스트에서 실행된다. 주문 서비스 컨테이너는 DynamoDB에만, 이미지 서비스 컨테이너는 S3에만 접근해야 한다. 최소 권한을 지키는 방법은?',
-  opts: ['서비스마다 별도의 ECS 작업 IAM 역할(task role)을 지정한다', 'EC2 인스턴스 프로파일에 DynamoDB와 S3 권한을 모두 준다', '컨테이너 환경 변수에 액세스 키를 넣는다', '보안 그룹으로 서비스별 접근을 제한한다'],
+  opts: ['서비스마다 별도의 ECS 작업 IAM 역할을 지정한다', 'EC2 인스턴스 프로파일에 DynamoDB와 S3 권한을 모두 준다', '컨테이너 환경 변수에 액세스 키를 넣는다', '보안 그룹으로 서비스별 접근을 제한한다'],
   ans: [0],
   exp: '**작업 역할(task role)**은 작업 정의 단위로 IAM 역할을 할당해서, **같은 호스트에 있어도 컨테이너마다 다른 권한**을 갖게 한다. 인스턴스 프로파일에 권한을 몰아주면 모든 컨테이너가 모든 권한을 갖게 된다. 참고로 **작업 실행 역할(execution role)**은 ECS 에이전트가 이미지를 가져오고 로그를 보낼 때 쓰는 역할이다.',
   tip: '컨테이너별 권한 → Task Role. 이미지 pull/로그 → Task Execution Role.',
@@ -33,7 +33,7 @@ QB.push(
 {
   id: 'cmp-26', cat: 'compute', domain: 'resilient', svc: ['온디맨드 용량 예약'],
   q: '블랙프라이데이 하루 동안 특정 AZ에 c7i.4xlarge 인스턴스 100대가 반드시 필요하다. 장기 약정은 하고 싶지 않고, 그날 해당 인스턴스 용량을 확실히 확보하는 것이 중요하다. 어떻게 해야 하는가?',
-  opts: ['해당 AZ에 온디맨드 용량 예약(On-Demand Capacity Reservation)을 해당 기간에만 만든다', '1년 표준 예약 인스턴스를 구매한다', '스팟 인스턴스를 요청한다', 'Compute Savings Plans를 구매한다'],
+  opts: ['해당 AZ에 온디맨드 용량 예약을 해당 기간에만 만든다', '1년 표준 예약 인스턴스를 구매한다', '스팟 인스턴스를 요청한다', 'Compute Savings Plans를 구매한다'],
   ans: [0],
   exp: '**온디맨드 용량 예약**은 **약정 기간 없이** 특정 AZ에 특정 인스턴스 유형의 용량을 **확보**한다. 필요한 기간에만 만들었다가 취소할 수 있다(예약이 유지되는 동안은 사용하지 않아도 과금). Savings Plans나 지역 RI는 **할인**만 주고 용량을 보장하지 않는다. 미래 특정 날짜에 쓸 용량은 미래 날짜 용량 예약으로 미리 잡아 둘 수도 있다.',
   tip: '"용량 보장, 단기, 약정 없음" → On-Demand Capacity Reservation. 할인 ≠ 용량 보장.',
@@ -49,7 +49,7 @@ QB.push(
 {
   id: 'cmp-28', cat: 'compute', domain: 'performance', svc: ['Elastic Fabric Adapter'],
   q: '기상 예측용 HPC 애플리케이션이 MPI로 수백 개의 노드가 긴밀하게 통신한다. 클러스터 배치 그룹을 이미 쓰고 있지만, 노드 간 통신 지연을 더 줄이기 위해 OS 커널을 우회하는 네트워킹이 필요하다. 무엇을 추가해야 하는가?',
-  opts: ['Elastic Fabric Adapter(EFA)', 'Elastic Network Adapter(ENA)만', '보조 ENI 여러 개', 'Global Accelerator'],
+  opts: ['Elastic Fabric Adapter', 'Elastic Network Adapter(ENA)만', '보조 ENI 여러 개', 'Global Accelerator'],
   ans: [0],
   exp: '**EFA**는 HPC와 ML 분산 학습을 위한 네트워크 인터페이스로, **OS 바이패스**로 MPI나 NCCL 같은 애플리케이션이 하드웨어와 직접 통신해서 지연 시간을 크게 줄인다. **ENA**는 일반적인 향상된 네트워킹(높은 대역폭)이다. ENI를 여러 개 붙여도 지연 시간은 줄지 않는다.',
   tip: 'HPC/MPI + 초저지연 → 클러스터 배치 그룹 + EFA.',
@@ -57,7 +57,7 @@ QB.push(
 {
   id: 'cmp-29', cat: 'compute', domain: 'performance', svc: ['ASG 웜 풀'],
   q: 'Auto Scaling 그룹의 인스턴스가 부팅 후 애플리케이션 초기화에 10분이 걸려, 급격한 트래픽 증가에 대응이 늦다. 인스턴스를 상시 실행하는 비용은 피하고 싶다. 가장 적합한 방법은?',
-  opts: ['ASG 웜 풀(Warm Pool)을 구성해 미리 초기화된 인스턴스를 중지(또는 최대 절전) 상태로 대기시킨다', '최소 용량을 최대 용량과 같게 설정한다', '쿨다운 시간을 늘린다', '단계 조정 정책으로 바꾼다'],
+  opts: ['ASG 웜 풀을 구성해 미리 초기화된 인스턴스를 중지 상태로 대기시킨다', '최소 용량을 최대 용량과 같게 설정한다', '쿨다운 시간을 늘린다', '단계 조정 정책으로 바꾼다'],
   ans: [0],
   exp: '**웜 풀**은 초기화를 마친 인스턴스를 **중지·최대 절전·실행** 상태로 대기시켰다가, 확장할 때 바로 서비스에 투입해 확장 지연을 크게 줄인다. 중지 상태의 인스턴스는 EBS 비용만 낸다. 최소 용량을 최대로 고정하면 항상 최대 비용을 내게 된다.',
   tip: '"초기화가 긴 앱의 빠른 스케일 아웃" → Warm Pool.',
@@ -82,7 +82,7 @@ QB.push(
 {
   id: 'sto-27', cat: 'storage', domain: 'performance', svc: ['EBS 빠른 스냅샷 복원'],
   q: 'VDI 환경에서 스냅샷으로 EBS 볼륨 수백 개를 한꺼번에 만든다. 새 볼륨은 블록에 처음 접근할 때 지연이 커서, 사용자 로그인 직후 성능이 나쁘다. 볼륨을 만들자마자 완전한 성능을 내려면?',
-  opts: ['해당 스냅샷에 EBS 빠른 스냅샷 복원(Fast Snapshot Restore)을 켠다', 'gp2 볼륨을 쓴다', '볼륨을 만든 뒤 재부팅한다', '스냅샷을 Glacier로 아카이브한다'],
+  opts: ['해당 스냅샷에 EBS 빠른 스냅샷 복원을 켠다', 'gp2 볼륨을 쓴다', '볼륨을 만든 뒤 재부팅한다', '스냅샷을 Glacier로 아카이브한다'],
   ans: [0],
   exp: '스냅샷에서 만든 볼륨은 블록을 S3에서 **지연 로딩**하기 때문에, 처음 접근할 때 지연이 생긴다(초기화 필요). **빠른 스냅샷 복원(FSR)**을 켜면 지정한 AZ에서 만든 볼륨이 **처음부터 완전히 초기화된 상태**라 바로 최대 성능을 낸다. FSR은 스냅샷과 AZ마다 시간당 요금이 붙는다.',
   tip: '"스냅샷 복원 볼륨의 첫 접근 지연 제거" → Fast Snapshot Restore.',
@@ -98,7 +98,7 @@ QB.push(
 {
   id: 'sto-29', cat: 'storage', domain: 'secure', svc: ['S3 객체 소유권'],
   q: '여러 파트너 계정이 회사 S3 버킷에 파일을 업로드한다. 그런데 업로드한 계정이 객체 소유자가 되어 회사 계정이 그 객체를 읽지 못하는 문제가 생긴다. ACL 없이 회사 계정이 모든 객체를 소유하게 하려면?',
-  opts: ['S3 객체 소유권을 "버킷 소유자 적용(Bucket owner enforced)"으로 설정한다', '파트너에게 업로드할 때마다 bucket-owner-full-control ACL을 붙이게 한다', '버킷을 퍼블릭으로 연다', 'S3 Object Lock을 켠다'],
+  opts: ['S3 객체 소유권을 "버킷 소유자 적용"으로 설정한다', '파트너에게 업로드할 때마다 bucket-owner-full-control ACL을 붙이게 한다', '버킷을 퍼블릭으로 연다', 'S3 Object Lock을 켠다'],
   ans: [0],
   exp: '**버킷 소유자 적용** 설정은 **ACL을 비활성화**하고, 누가 업로드하든 **버킷 소유자가 모든 객체를 소유**하게 한다. 접근 제어는 버킷 정책과 IAM으로만 한다. 새 버킷에서는 이 설정이 기본값이고 AWS가 권장하는 방식이다. ACL에 의존하는 방식은 레거시라 관리가 복잡하다.',
   tip: '교차 계정 업로드 객체 소유권 문제 → Object Ownership: Bucket owner enforced.',
@@ -106,7 +106,7 @@ QB.push(
 {
   id: 'sto-30', cat: 'storage', domain: 'resilient', svc: ['S3 다중 리전 액세스 포인트'],
   q: '글로벌 애플리케이션이 3개 리전의 S3 버킷에 데이터를 복제해 두었다. 애플리케이션이 엔드포인트 하나만 쓰면서, 요청이 가장 가까운 버킷으로 자동 라우팅되고 한 리전에 장애가 나면 다른 리전으로 넘어가게 하려면?',
-  opts: ['S3 다중 리전 액세스 포인트(Multi-Region Access Points)와 복제 규칙, 장애 조치 제어를 쓴다', 'Route 53 가중치 레코드로 버킷 3개를 가리킨다', 'CloudFront 서명된 URL을 쓴다', 'S3 Transfer Acceleration을 쓴다'],
+  opts: ['S3 다중 리전 액세스 포인트와 복제 규칙, 장애 조치 제어를 쓴다', 'Route 53 가중치 레코드로 버킷 3개를 가리킨다', 'CloudFront 서명된 URL을 쓴다', 'S3 Transfer Acceleration을 쓴다'],
   ans: [0],
   exp: '**다중 리전 액세스 포인트**는 **글로벌 엔드포인트 하나**를 제공하고, AWS Global Accelerator 기반으로 요청을 **가장 가까운 버킷**으로 보낸다. 버킷 간 복제와 함께 쓰고, **장애 조치 제어**로 활성·수동 리전을 바꿀 수 있다. S3 버킷 엔드포인트는 Route 53 가중치 레코드로 연결하기 어렵다(버킷 이름과 호스트 이름 문제).',
   tip: '"S3 + 다중 리전 + 단일 엔드포인트 + 장애 조치" → Multi-Region Access Points.',
@@ -122,7 +122,7 @@ QB.push(
 {
   id: 'sto-32', cat: 'storage', domain: 'resilient', svc: ['EBS 다중 연결'],
   q: '클러스터 인식 애플리케이션(예: Oracle RAC 유형)이 같은 AZ에 있는 EC2 인스턴스 여러 대에서 하나의 블록 볼륨에 동시에 읽고 써야 한다. 어떤 구성이 가능한가?',
-  opts: ['Provisioned IOPS SSD(io1/io2) 볼륨에 EBS 다중 연결(Multi-Attach)을 켠다', 'gp3 볼륨을 여러 인스턴스에 연결한다', '서로 다른 AZ의 인스턴스에 io2 볼륨을 연결한다', 'st1 볼륨을 공유한다'],
+  opts: ['Provisioned IOPS SSD 볼륨에 EBS 다중 연결을 켠다', 'gp3 볼륨을 여러 인스턴스에 연결한다', '서로 다른 AZ의 인스턴스에 io2 볼륨을 연결한다', 'st1 볼륨을 공유한다'],
   ans: [0],
   exp: '**EBS Multi-Attach**는 **io1/io2** 볼륨을 **같은 AZ**의 최대 16개 Nitro 인스턴스에 동시에 연결한다. 데이터 일관성을 지키려면 **클러스터 인식 파일 시스템**이 필요하다(일반 XFS나 ext4는 안 된다). gp3, st1은 다중 연결을 지원하지 않는다. 일반적인 파일 공유라면 EFS나 FSx가 더 적합하다.',
   tip: 'Multi-Attach = io1/io2 + 같은 AZ + 클러스터 파일시스템.',
@@ -131,7 +131,7 @@ QB.push(
 {
   id: 'db-23', cat: 'database', domain: 'cost', svc: ['Aurora 복제(클론)'],
   q: 'QA팀이 매일 운영 Aurora 데이터베이스(5TB)와 똑같은 사본에서 테스트하려 한다. 사본은 빨리 만들어져야 하고, 테스트에서 바뀌는 데이터 외에 추가 스토리지 비용은 최소화해야 한다. 가장 적합한 방법은?',
-  opts: ['Aurora 데이터베이스 복제(cloning)를 쓴다', '스냅샷을 만들고 복원한다', 'mysqldump로 내보내고 가져온다', '읽기 전용 복제본을 만든다'],
+  opts: ['Aurora 데이터베이스 복제를 쓴다', '스냅샷을 만들고 복원한다', 'mysqldump로 내보내고 가져온다', '읽기 전용 복제본을 만든다'],
   ans: [0],
   exp: '**Aurora 클론**은 **기록 중 복사(copy-on-write)** 방식이라 처음에는 원본과 스토리지를 공유하고, **바뀐 페이지만** 새로 저장한다. 그래서 수 TB 데이터베이스도 몇 분 안에 복제되고 스토리지 비용도 적다. 스냅샷 복원은 시간이 오래 걸리고 스토리지 전체를 복사한다. 읽기 전용 복제본은 쓰기 테스트를 할 수 없다.',
   tip: '"운영 DB 사본으로 빠르게 테스트" → Aurora Cloning.',
@@ -139,7 +139,7 @@ QB.push(
 {
   id: 'db-24', cat: 'database', domain: 'performance', svc: ['Aurora 사용자 지정 엔드포인트'],
   q: 'Aurora 클러스터에 복제본이 4개 있다. 그중 메모리가 큰 2개는 분석팀의 무거운 쿼리 전용으로 쓰고, 나머지 2개는 일반 애플리케이션 읽기 전용으로 나누고 싶다. 어떻게 해야 하는가?',
-  opts: ['분석용 복제본 2개를 묶은 Aurora 사용자 지정 엔드포인트(custom endpoint)를 만든다', '리더 엔드포인트 하나로 모든 쿼리를 보낸다', '클러스터 엔드포인트를 쓴다', 'Route 53 가중치 레코드로 나눈다'],
+  opts: ['분석용 복제본 2개를 묶은 Aurora 사용자 지정 엔드포인트를 만든다', '리더 엔드포인트 하나로 모든 쿼리를 보낸다', '클러스터 엔드포인트를 쓴다', 'Route 53 가중치 레코드로 나눈다'],
   ans: [0],
   exp: '**사용자 지정 엔드포인트**는 **특정 인스턴스 그룹**에만 연결을 분산한다. 분석용과 애플리케이션용으로 인스턴스를 나눠 워크로드를 격리할 수 있다. **리더 엔드포인트**는 모든 복제본에 고루 분산하므로 무거운 쿼리가 일반 읽기에 영향을 준다.',
   tip: '워크로드별 복제본 그룹 분리 → Aurora Custom Endpoint.',
@@ -147,7 +147,7 @@ QB.push(
 {
   id: 'db-25', cat: 'database', domain: 'performance', svc: ['DynamoDB GSI'],
   q: 'DynamoDB 주문 테이블의 파티션 키는 OrderId다. 이제 CustomerId로 고객의 주문 목록을 날짜순으로 효율적으로 조회해야 하는데, 테이블은 이미 운영 중이다. 어떻게 해야 하는가?',
-  opts: ['파티션 키 CustomerId, 정렬 키 OrderDate인 글로벌 보조 인덱스(GSI)를 추가한다', '로컬 보조 인덱스(LSI)를 추가한다', '테이블 전체를 Scan하고 필터링한다', '파티션 키를 CustomerId로 바꾼다'],
+  opts: ['파티션 키 CustomerId, 정렬 키 OrderDate인 글로벌 보조 인덱스를 추가한다', '로컬 보조 인덱스(LSI)를 추가한다', '테이블 전체를 Scan하고 필터링한다', '파티션 키를 CustomerId로 바꾼다'],
   ans: [0],
   exp: '**GSI**는 테이블과 **다른 파티션 키·정렬 키**를 쓸 수 있고 **테이블을 만든 뒤에도 추가**할 수 있다. 결과적 일관성으로 읽힌다. **LSI**는 파티션 키가 테이블과 **같아야 하고 테이블을 만들 때만** 정의할 수 있다. Scan은 테이블 전체를 읽어서 비효율적이다. 기존 테이블의 기본 키는 바꿀 수 없다.',
   tip: '다른 키로 조회 + 사후 추가 → GSI. 같은 파티션 키 + 다른 정렬 키 + 강력한 일관성 → LSI(생성 시에만).',
@@ -155,7 +155,7 @@ QB.push(
 {
   id: 'db-26', cat: 'database', domain: 'performance', svc: ['DynamoDB 파티션 키 설계'],
   q: 'IoT 테이블의 파티션 키가 "날짜(YYYY-MM-DD)"라서 오늘 날짜 파티션 하나에 쓰기가 몰리고 스로틀링이 생긴다. 전체 테이블 용량에는 여유가 있다. 가장 적절한 해결책은?',
-  opts: ['파티션 키를 DeviceId처럼 카디널리티가 높은 값으로 바꾸거나, 날짜에 무작위 접미사를 붙여 쓰기를 분산(write sharding)한다', '테이블의 쓰기 용량을 10배로 늘린다', 'DAX를 추가한다', 'LSI를 추가한다'],
+  opts: ['파티션 키를 DeviceId처럼 카디널리티가 높은 값으로 바꾸거나, 날짜에 무작위 접미사를 붙여 쓰기를 분산한다', '테이블의 쓰기 용량을 10배로 늘린다', 'DAX를 추가한다', 'LSI를 추가한다'],
   ans: [0],
   exp: '쓰기가 한 파티션 키 값에 몰리는 **핫 파티션** 문제다. **카디널리티가 높은 파티션 키**를 고르거나 **쓰기 샤딩**(접미사 추가)으로 쓰기를 여러 파티션에 고르게 분산해야 한다. 적응형 용량이 어느 정도 도와주지만 근본적인 해결책은 키 설계다. DAX는 읽기 캐시라서 쓰기 문제에는 도움이 안 된다.',
   tip: 'DynamoDB 스로틀링 + 용량 여유 → 핫 파티션 → 파티션 키 분산.',
@@ -163,7 +163,7 @@ QB.push(
 {
   id: 'db-27', cat: 'database', domain: 'resilient', svc: ['RDS Multi-AZ DB 클러스터'],
   q: 'RDS for PostgreSQL 데이터베이스는 장애 조치 시간이 짧아야 하고(약 35초 이내), 대기 인스턴스로도 읽기 트래픽을 처리해 리소스를 활용하고 싶다. 어떤 배포 옵션이 적합한가?',
-  opts: ['Multi-AZ DB 클러스터 배포(라이터 1개 + 읽기 가능한 대기 인스턴스 2개)', 'Multi-AZ DB 인스턴스 배포(대기 인스턴스 1개)', '단일 AZ 인스턴스 + 읽기 전용 복제본', '단일 AZ 인스턴스 + 자동 백업'],
+  opts: ['Multi-AZ DB 클러스터 배포', 'Multi-AZ DB 인스턴스 배포(대기 인스턴스 1개)', '단일 AZ 인스턴스 + 읽기 전용 복제본', '단일 AZ 인스턴스 + 자동 백업'],
   ans: [0],
   exp: '**Multi-AZ DB 클러스터**는 3개 AZ에 라이터 1개와 **읽기 가능한 대기 인스턴스 2개**를 두고 반동기식으로 복제한다. 장애 조치가 보통 **35초 안팎**으로 빠르고, 리더 엔드포인트로 읽기도 처리할 수 있다. **Multi-AZ DB 인스턴스**의 대기 인스턴스는 읽기를 받을 수 없고 장애 조치 시간도 더 길다(보통 60~120초).',
   tip: 'RDS Multi-AZ "클러스터" = 읽기 가능 대기 2개 + 빠른 failover (MySQL/PostgreSQL).',
@@ -171,7 +171,7 @@ QB.push(
 {
   id: 'db-28', cat: 'database', domain: 'performance', svc: ['ElastiCache 캐싱 전략'],
   q: '상품 가격 데이터를 ElastiCache에 캐싱한다. 가격이 바뀌면 캐시에도 **즉시** 반영되어 사용자가 오래된 가격을 보면 안 된다. 어떤 캐싱 전략이 가장 적합한가?',
-  opts: ['라이트 스루(write-through): DB에 쓸 때 캐시도 함께 갱신한다', '지연 로딩(lazy loading)만 쓰고 TTL을 24시간으로 둔다', '캐시를 쓰지 않는다', '캐시를 하루에 한 번 비운다'],
+  opts: ['라이트 스루: DB에 쓸 때 캐시도 함께 갱신한다', '지연 로딩(lazy loading)만 쓰고 TTL을 24시간으로 둔다', '캐시를 쓰지 않는다', '캐시를 하루에 한 번 비운다'],
   ans: [0],
   exp: '**라이트 스루**는 DB에 쓸 때마다 캐시도 함께 갱신하므로 **캐시 데이터가 항상 최신**이다. 대신 쓰기 지연이 조금 늘고, 읽히지 않을 데이터까지 캐싱될 수 있다(TTL로 보완). **지연 로딩**은 캐시에 없을 때만 DB에서 읽어 오기 때문에 TTL이 만료될 때까지 **오래된 데이터**가 남을 수 있다. 실무에서는 두 전략과 TTL을 함께 쓰는 경우가 많다.',
   tip: '최신성 중요 → Write-through. 필요한 데이터만 캐싱·장애 내성 → Lazy loading (+TTL).',
@@ -179,7 +179,7 @@ QB.push(
 {
   id: 'db-29', cat: 'database', domain: 'performance', svc: ['Amazon Keyspaces'],
   q: '회사가 온프레미스 Apache Cassandra 클러스터를 운영하는 부담을 없애려 한다. 기존 CQL 코드와 드라이버를 그대로 쓰면서 서버리스로 확장되는 서비스로 옮기고 싶다. 무엇을 선택해야 하는가?',
-  opts: ['Amazon Keyspaces (for Apache Cassandra)', 'Amazon DocumentDB', 'Amazon Neptune', 'Amazon RDS for PostgreSQL'],
+  opts: ['Amazon Keyspaces', 'Amazon DocumentDB', 'Amazon Neptune', 'Amazon RDS for PostgreSQL'],
   ans: [0],
   exp: '**Amazon Keyspaces**는 **Cassandra 호환(CQL)** 서버리스 와이드 컬럼 데이터베이스라서, 기존 애플리케이션 코드와 드라이버를 그대로 쓸 수 있다. 용량은 온디맨드나 프로비저닝 모드로 관리한다. DocumentDB는 MongoDB 호환, Neptune은 그래프 데이터베이스다.',
   tip: 'Cassandra → Keyspaces. MongoDB → DocumentDB. Redis 호환 내구성 DB → MemoryDB.',
@@ -204,7 +204,7 @@ QB.push(
 {
   id: 'net-23', cat: 'networking', domain: 'secure', svc: ['Gateway Load Balancer'],
   q: '보안팀이 VPC로 들어오고 나가는 모든 트래픽을 서드파티 방화벽 어플라이언스(EC2 기반) 플릿으로 투명하게 검사하려 한다. 어플라이언스는 수요에 따라 늘어나야 하고 고가용성이 필요하다. 가장 적합한 서비스는?',
-  opts: ['Gateway Load Balancer(GWLB)와 GWLB 엔드포인트', 'Application Load Balancer', 'Network Load Balancer만', 'NAT 게이트웨이'],
+  opts: ['Gateway Load Balancer와 GWLB 엔드포인트', 'Application Load Balancer', 'Network Load Balancer만', 'NAT 게이트웨이'],
   ans: [0],
   exp: '**GWLB**는 L3에서 동작하면서 **GENEVE 캡슐화**로 원본 패킷을 그대로 어플라이언스에 전달한다. **방화벽, IDS/IPS 같은 가상 어플라이언스**를 투명하게 삽입하고, 상태 확인과 확장을 처리한다. **GWLB 엔드포인트**를 라우팅 테이블의 다음 홉으로 지정해 트래픽을 보낸다.',
   tip: '"서드파티 가상 어플라이언스/방화벽 투명 삽입" → GWLB.',
@@ -212,7 +212,7 @@ QB.push(
 {
   id: 'net-24', cat: 'networking', domain: 'secure', svc: ['송신 전용 인터넷 게이트웨이'],
   q: 'IPv6를 쓰는 프라이빗 서브넷의 인스턴스가 인터넷으로 나가는 IPv6 연결은 해야 하지만, 인터넷에서 먼저 시작하는 IPv6 연결은 막아야 한다. 무엇을 써야 하는가?',
-  opts: ['송신 전용 인터넷 게이트웨이(Egress-only Internet Gateway)', 'NAT 게이트웨이', '인터넷 게이트웨이', 'VPC 피어링'],
+  opts: ['송신 전용 인터넷 게이트웨이', 'NAT 게이트웨이', '인터넷 게이트웨이', 'VPC 피어링'],
   ans: [0],
   exp: 'IPv6 주소는 모두 전역에서 고유해서 NAT 없이 바로 통신한다. 그래서 IPv6에서 **아웃바운드만 허용**하려면 **송신 전용 인터넷 게이트웨이**를 쓴다(상태 저장 방식이라 응답 트래픽은 허용). NAT 게이트웨이는 IPv4용이다(NAT64는 IPv6 전용 클라이언트가 IPv4 서비스에 접근하는 경우에 쓴다).',
   tip: 'IPv6 아웃바운드 전용 → Egress-only IGW. IPv4 → NAT GW.',
@@ -220,7 +220,7 @@ QB.push(
 {
   id: 'net-25', cat: 'networking', domain: 'performance', svc: ['Route 53 별칭 레코드'],
   q: '회사가 도메인의 루트(zone apex, 예: example.com)를 ALB로 연결하려 한다. 그런데 CNAME 레코드는 루트 도메인에 만들 수 없다. 어떻게 해야 하는가?',
-  opts: ['ALB를 대상으로 하는 Route 53 별칭(Alias) A 레코드를 만든다', 'ALB의 IP 주소를 A 레코드에 고정으로 넣는다', 'www 서브도메인만 쓴다', 'MX 레코드를 쓴다'],
+  opts: ['ALB를 대상으로 하는 Route 53 별칭 A 레코드를 만든다', 'ALB의 IP 주소를 A 레코드에 고정으로 넣는다', 'www 서브도메인만 쓴다', 'MX 레코드를 쓴다'],
   ans: [0],
   exp: '**별칭 레코드**는 Route 53 고유 기능이다. **루트 도메인**에서도 ALB, CloudFront, S3 웹 사이트, API Gateway 같은 AWS 리소스를 가리킬 수 있고, AWS 리소스로 가는 **별칭 쿼리는 무료**다. ALB의 IP는 바뀌기 때문에 고정 A 레코드로 쓰면 안 된다.',
   tip: 'Zone apex + AWS 리소스 → Alias 레코드.',
@@ -228,7 +228,7 @@ QB.push(
 {
   id: 'net-26', cat: 'networking', domain: 'resilient', svc: ['CloudFront 원본 그룹'],
   q: 'CloudFront 배포의 원본이 서울 리전 S3 버킷이다. 원본이 5xx 오류를 내거나 응답하지 않으면 도쿄 리전의 복제 버킷에서 자동으로 콘텐츠를 가져오게 하려면?',
-  opts: ['기본·보조 원본으로 구성된 CloudFront 원본 그룹(origin group)과 장애 조치 기준(상태 코드)을 설정한다', 'Route 53 장애 조치 레코드를 S3 버킷에 적용한다', '캐시 TTL을 늘린다', 'Lambda@Edge로 요청을 복제한다'],
+  opts: ['기본·보조 원본으로 구성된 CloudFront 원본 그룹과 장애 조치 기준을 설정한다', 'Route 53 장애 조치 레코드를 S3 버킷에 적용한다', '캐시 TTL을 늘린다', 'Lambda@Edge로 요청을 복제한다'],
   ans: [0],
   exp: '**원본 그룹**은 기본 원본이 지정한 상태 코드(예: 500, 502, 503, 504, 403, 404)를 돌려주거나 연결에 실패하면 **보조 원본으로 자동 재시도**한다. S3 교차 리전 복제와 함께 쓰면 정적 콘텐츠의 고가용성을 확보할 수 있다.',
   tip: 'CloudFront 원본 장애 조치 → Origin Group.',
@@ -236,7 +236,7 @@ QB.push(
 {
   id: 'net-27', cat: 'networking', domain: 'performance', svc: ['Transit Gateway ECMP', 'VPN'],
   q: '온프레미스와 AWS 사이에 Site-to-Site VPN을 쓰고 있는데, VPN 터널 하나의 대역폭 한계(약 1.25Gbps) 때문에 데이터 전송이 느리다. Direct Connect 없이 VPN 총 대역폭을 늘리려면?',
-  opts: ['VPN을 Transit Gateway에 연결하고 여러 VPN 연결에 ECMP(동일 비용 다중 경로)를 켠다', '가상 프라이빗 게이트웨이(VGW)에 VPN 터널을 더 추가한다', 'VPN 대신 VPC 피어링을 쓴다', 'NAT 게이트웨이를 추가한다'],
+  opts: ['VPN을 Transit Gateway에 연결하고 여러 VPN 연결에 ECMP를 켠다', '가상 프라이빗 게이트웨이(VGW)에 VPN 터널을 더 추가한다', 'VPN 대신 VPC 피어링을 쓴다', 'NAT 게이트웨이를 추가한다'],
   ans: [0],
   exp: '**Transit Gateway**는 여러 VPN 연결(터널)에 걸친 **ECMP**를 지원해서 트래픽을 분산하고 **총 대역폭을 늘린다**(BGP 필요). **VGW는 ECMP를 지원하지 않아서** 터널을 늘려도 대역폭이 합쳐지지 않는다. 대역폭이 더 필요하면 대형 대역폭 터널 옵션이나 Direct Connect를 검토한다.',
   tip: 'VPN 대역폭 확장 → TGW + ECMP. VGW는 ECMP 미지원.',
@@ -254,7 +254,7 @@ QB.push(
   q: 'CloudFront 배포의 캐시 적중률이 20%에 불과해서 원본 부하가 크다. 확인해 보니 모든 쿼리 문자열, 쿠키, 헤더가 캐시 키에 들어가 있었다. 적중률을 높이는 방법은? (2개 선택)',
   opts: [
     '캐시 정책에서 콘텐츠에 실제로 영향을 주는 쿼리 문자열·헤더·쿠키만 캐시 키에 넣는다',
-    '정적 콘텐츠의 TTL(Cache-Control max-age)을 늘린다',
+    '정적 콘텐츠의 TTL을 늘린다',
     '원본 인스턴스 수를 늘린다',
     '모든 요청에 무작위 쿼리 문자열을 붙인다',
     'CloudFront 가격 등급을 낮춘다',
@@ -291,7 +291,7 @@ QB.push(
 {
   id: 'sec-25', cat: 'security', domain: 'secure', svc: ['IMDSv2'],
   q: '웹 애플리케이션의 SSRF(서버 측 요청 위조) 취약점을 이용해 공격자가 EC2 인스턴스 메타데이터에서 IAM 역할 자격 증명을 탈취할 위험이 있다. 인스턴스 수준에서 이 위험을 줄이는 방법은?',
-  opts: ['인스턴스 메타데이터 서비스 버전 2(IMDSv2)를 필수로 설정한다', 'IAM 역할을 제거하고 액세스 키를 코드에 넣는다', '보안 그룹에서 169.254.169.254를 차단한다', '인스턴스를 퍼블릭 서브넷으로 옮긴다'],
+  opts: ['인스턴스 메타데이터 서비스 버전 2를 필수로 설정한다', 'IAM 역할을 제거하고 액세스 키를 코드에 넣는다', '보안 그룹에서 169.254.169.254를 차단한다', '인스턴스를 퍼블릭 서브넷으로 옮긴다'],
   ans: [0],
   exp: '**IMDSv2**는 먼저 PUT 요청으로 **세션 토큰**을 받은 뒤에만 메타데이터에 접근할 수 있게 한다. 그래서 단순 GET 요청만 보낼 수 있는 SSRF 공격을 막는다. 홉 제한(hop limit)으로 컨테이너에서의 접근도 제어할 수 있다. 보안 그룹은 링크 로컬 메타데이터 주소에 적용되지 않는다.',
   tip: 'SSRF/메타데이터 보호 → IMDSv2 필수화 (계정 기본값으로도 설정 가능).',
@@ -316,7 +316,7 @@ QB.push(
   id: 'sec-28', cat: 'security', domain: 'secure', svc: ['KMS 키 정책', '교차 계정'],
   q: '계정 A의 고객 관리형 KMS 키로 암호화된 S3 객체를 계정 B의 애플리케이션이 복호화해야 한다. 필요한 설정은? (2개 선택)',
   opts: [
-    '계정 A의 KMS 키 정책에서 계정 B(또는 B의 역할)에 kms:Decrypt를 허용한다',
+    '계정 A의 KMS 키 정책에서 계정 B에 kms:Decrypt를 허용한다',
     '계정 B의 IAM 역할 정책에서 계정 A의 해당 KMS 키 ARN에 대한 kms:Decrypt를 허용한다',
     '계정 B에 같은 이름의 KMS 키를 만든다',
     'KMS 키를 계정 B로 내보낸다',
@@ -337,7 +337,7 @@ QB.push(
 {
   id: 'sec-30', cat: 'security', domain: 'secure', svc: ['Lambda 리소스 기반 정책'],
   q: '계정 B의 S3 버킷 이벤트가 계정 A의 Lambda 함수를 호출해야 한다. 계정 A의 Lambda 쪽에서 반드시 해야 하는 설정은?',
-  opts: ['Lambda 함수의 리소스 기반 정책에 s3.amazonaws.com 주체와 계정 B 버킷을 조건(SourceArn/SourceAccount)으로 하는 lambda:InvokeFunction 권한을 추가한다', 'Lambda 실행 역할에 S3 권한을 추가한다', 'Lambda를 VPC에 연결한다', 'Lambda 예약 동시성을 설정한다'],
+  opts: ['Lambda 함수의 리소스 기반 정책에 s3.amazonaws.com 주체와 계정 B 버킷을 조건으로 하는 lambda:InvokeFunction 권한을 추가한다', 'Lambda 실행 역할에 S3 권한을 추가한다', 'Lambda를 VPC에 연결한다', 'Lambda 예약 동시성을 설정한다'],
   ans: [0],
   exp: '다른 서비스나 계정이 Lambda를 **호출**하게 하려면 함수의 **리소스 기반 정책**(`lambda:AddPermission`)에서 허용해야 한다. `SourceArn`과 `SourceAccount` 조건으로 혼동된 대리인 문제를 막는다. **실행 역할**은 Lambda가 **다른 서비스를 호출할 때** 쓰는 권한이라 방향이 반대다.',
   tip: '누가 Lambda를 호출? → 리소스 기반 정책. Lambda가 무엇을 호출? → 실행 역할.',
@@ -354,7 +354,7 @@ QB.push(
 {
   id: 'int-20', cat: 'integration', domain: 'performance', svc: ['SQS 확장 클라이언트'],
   q: '애플리케이션이 SQS로 처리할 문서 데이터를 보내는데, 메시지 하나가 수십 MB라서 SQS 메시지 크기 한도를 훨씬 넘는다. 메시징 구조를 유지하면서 처리하려면?',
-  opts: ['페이로드는 S3에 저장하고 SQS 메시지에는 S3 객체 참조만 넣는다(SQS 확장 클라이언트 라이브러리 사용)', 'SQS 대기열을 FIFO로 바꾼다', '메시지를 여러 대기열에 나눠 보낸다', 'SNS로 바꾼다'],
+  opts: ['페이로드는 S3에 저장하고 SQS 메시지에는 S3 객체 참조만 넣는다', 'SQS 대기열을 FIFO로 바꾼다', '메시지를 여러 대기열에 나눠 보낸다', 'SNS로 바꾼다'],
   ans: [0],
   exp: 'SQS는 메시지 크기에 한도가 있어서, 큰 페이로드는 **S3에 저장하고 메시지에는 포인터만** 담는 **클레임 체크 패턴**을 쓴다. **SQS 확장 클라이언트 라이브러리**(Java, Python 등)가 이 과정을 자동으로 처리한다. SNS도 크기 한도가 비슷해서 해결책이 되지 않는다.',
   tip: '큰 메시지 → S3 + 포인터 (Extended Client Library).',
@@ -362,7 +362,7 @@ QB.push(
 {
   id: 'int-21', cat: 'integration', domain: 'cost', svc: ['EventBridge Pipes'],
   q: 'SQS 대기열의 메시지를 읽어 필터링하고, 다른 API로 데이터를 보강한 뒤 Step Functions 워크플로를 시작해야 한다. 지금은 이 연결만을 위한 Lambda "접착 코드"를 직접 유지 관리하고 있다. 코드 없이 단순화하는 방법은?',
-  opts: ['EventBridge Pipes로 소스(SQS) → 필터 → 보강 → 대상(Step Functions)을 연결한다', 'SNS 토픽을 추가한다', 'Kinesis Data Streams로 바꾼다', 'CloudWatch 알람을 쓴다'],
+  opts: ['EventBridge Pipes로 소스 → 필터 → 보강 → 대상을 연결한다', 'SNS 토픽을 추가한다', 'Kinesis Data Streams로 바꾼다', 'CloudWatch 알람을 쓴다'],
   ans: [0],
   exp: '**EventBridge Pipes**는 SQS, Kinesis, DynamoDB Streams, MSK 같은 소스와 대상을 **일대일로 연결**하고, 중간에 **필터링, 보강(Lambda, API Gateway, Step Functions), 입력 변환**을 선언적으로 구성한다. 통합만을 위한 커스텀 코드를 줄일 수 있다.',
   tip: '"소스→대상 point-to-point 통합 + 필터/보강, 접착 코드 제거" → EventBridge Pipes.',
@@ -372,7 +372,7 @@ QB.push(
   q: '클라이언트가 API Gateway를 호출할 때 트래픽이 몰리면 HTTP 429(Too Many Requests) 오류가 자주 난다. 백엔드 Lambda에는 여유가 있다. 적절한 조치는? (2개 선택)',
   opts: [
     '클라이언트에 지수 백오프와 지터를 적용한 재시도 로직을 구현한다',
-    'API Gateway 스테이지·메서드 스로틀링 한도(필요하면 계정 한도 증가 요청)와 사용량 계획을 조정한다',
+    'API Gateway 스테이지·메서드 스로틀링 한도와 사용량 계획을 조정한다',
     'Lambda 제한 시간을 늘린다',
     'API Gateway를 퍼블릭에서 프라이빗으로 바꾼다',
     'CloudFront 캐시를 비활성화한다',
@@ -384,7 +384,7 @@ QB.push(
 {
   id: 'int-23', cat: 'integration', domain: 'resilient', svc: ['Lambda 대상(Destinations)'],
   q: 'S3 이벤트로 **비동기** 호출되는 Lambda 함수가 재시도를 모두 실패하면, 실패한 이벤트와 오류 정보를 SQS로 보내 나중에 분석하고 싶다. 가장 적합한 기능은?',
-  opts: ['Lambda 비동기 호출의 실패 시 대상(on-failure destination)을 SQS로 지정한다', 'SQS 가시성 제한 시간을 늘린다', 'Lambda 예약 동시성을 늘린다', 'S3 버전 관리를 켠다'],
+  opts: ['Lambda 비동기 호출의 실패 시 대상을 SQS로 지정한다', 'SQS 가시성 제한 시간을 늘린다', 'Lambda 예약 동시성을 늘린다', 'S3 버전 관리를 켠다'],
   ans: [0],
   exp: 'Lambda **비동기 호출**은 기본으로 2번 재시도한다. **Destinations**를 설정하면 성공하거나 실패했을 때 **이벤트, 응답, 오류 정보**를 SQS, SNS, EventBridge, Lambda, S3로 보낼 수 있다. 함수 수준의 **DLQ**도 쓸 수 있지만, Destinations가 더 많은 정보(오류 내용, 스택 트레이스)를 담아 권장된다.',
   tip: 'Lambda 비동기 실패 처리 → Destinations(on-failure) 또는 DLQ.',
@@ -401,7 +401,7 @@ QB.push(
 {
   id: 'ana-13', cat: 'analytics', domain: 'performance', svc: ['Athena 페더레이션 쿼리'],
   q: '분석가가 S3 데이터 레이크, Aurora MySQL, DynamoDB에 흩어진 데이터를 **데이터를 옮기지 않고** SQL 쿼리 하나로 조인해서 분석하려 한다. 가장 적합한 방법은?',
-  opts: ['Athena 페더레이션 쿼리(데이터 원본 커넥터)를 쓴다', '모든 데이터를 매일 Redshift로 복사한다', 'Glue 크롤러만 실행한다', 'QuickSight에서 각각 시각화한다'],
+  opts: ['Athena 페더레이션 쿼리를 쓴다', '모든 데이터를 매일 Redshift로 복사한다', 'Glue 크롤러만 실행한다', 'QuickSight에서 각각 시각화한다'],
   ans: [0],
   exp: '**Athena 페더레이션 쿼리**는 Lambda 기반 **데이터 원본 커넥터**로 RDS, Aurora, DynamoDB, Redshift, CloudWatch Logs, 온프레미스 DB 등에 쿼리를 보내고, S3 데이터와 **한 쿼리 안에서 조인**할 수 있게 한다. ETL로 데이터를 옮길 필요가 없다.',
   tip: '"여러 소스 데이터를 이동 없이 SQL 조인" → Athena Federated Query.',
@@ -417,7 +417,7 @@ QB.push(
 {
   id: 'ana-15', cat: 'analytics', domain: 'cost', svc: ['Redshift 데이터 공유'],
   q: '중앙 데이터팀의 Redshift에 있는 판매 데이터를 마케팅팀과 재무팀의 Redshift(다른 계정)에서도 쿼리해야 한다. 데이터를 복사하거나 ETL을 만들지 않고, 항상 최신 데이터를 보게 하려면?',
-  opts: ['Redshift 데이터 공유(data sharing)를 쓴다', '매일 UNLOAD로 S3에 내보내고 COPY로 적재한다', 'DMS로 복제한다', '스냅샷을 공유해 복원한다'],
+  opts: ['Redshift 데이터 공유를 쓴다', '매일 UNLOAD로 S3에 내보내고 COPY로 적재한다', 'DMS로 복제한다', '스냅샷을 공유해 복원한다'],
   ans: [0],
   exp: '**Redshift 데이터 공유**는 생산자 클러스터나 서버리스 작업 그룹의 **실시간 데이터**를 다른 클러스터, 계정, 리전의 소비자에게 **복사 없이** 읽기 전용으로 공유한다. 소비자는 자기 컴퓨팅 자원으로 쿼리하므로 워크로드도 격리된다.',
   tip: 'Redshift 간 실시간 데이터 공유, 복사 X → Data Sharing.',
@@ -434,7 +434,7 @@ QB.push(
 {
   id: 'mgt-21', cat: 'management', domain: 'resilient', svc: ['Elastic Disaster Recovery'],
   q: '온프레미스 서버 50대의 DR 사이트를 AWS에 만들려 한다. RPO는 초 단위, RTO는 분 단위여야 하고, 평소에는 최소한의 비용만 내야 한다. 가장 적합한 서비스는?',
-  opts: ['AWS Elastic Disaster Recovery(DRS)', 'AWS Backup으로 매일 백업', 'Snowball로 주기적 데이터 이동', 'DR 리전에 동일한 규모의 서버를 상시 실행'],
+  opts: ['AWS Elastic Disaster Recovery', 'AWS Backup으로 매일 백업', 'Snowball로 주기적 데이터 이동', 'DR 리전에 동일한 규모의 서버를 상시 실행'],
   ans: [0],
   exp: '**Elastic Disaster Recovery**는 원본 서버를 **블록 수준으로 계속 복제**해서(RPO 초 단위) 저비용 스테이징 영역에 보관하다가, 재해가 나면 **몇 분 안에** 복구 인스턴스를 띄운다. 평소에는 경량 복제 서버와 스토리지 비용만 낸다. 매일 백업하면 RPO가 하루가 된다.',
   tip: '서버 DR + 초 단위 RPO + 저비용 → Elastic Disaster Recovery.',
@@ -443,7 +443,7 @@ QB.push(
   id: 'mgt-22', cat: 'management', domain: 'secure', svc: ['CloudTrail 조직 트레일'],
   q: '보안팀이 조직의 모든 계정과 모든 리전의 API 활동을 중앙 로그 아카이브 계정의 S3 버킷에 모으고, 로그 파일이 변조되지 않았음을 증명할 수 있어야 한다. 어떤 구성이 필요한가? (2개 선택)',
   opts: [
-    'Organizations 관리 계정(또는 위임 관리자)에서 모든 리전에 적용되는 조직 트레일을 만든다',
+    'Organizations 관리 계정에서 모든 리전에 적용되는 조직 트레일을 만든다',
     'CloudTrail 로그 파일 무결성 검증을 켠다',
     '각 계정에서 단일 리전 트레일을 따로 만든다',
     'VPC 흐름 로그를 켠다',
@@ -456,7 +456,7 @@ QB.push(
 {
   id: 'mgt-23', cat: 'management', domain: 'secure', svc: ['Config 애그리게이터'],
   q: '규정 준수팀이 조직의 모든 계정과 리전에 걸친 AWS Config 규칙 준수 현황과 리소스 인벤토리를 한 화면에서 보고 싶다. 어떻게 해야 하는가?',
-  opts: ['위임된 관리자 계정에 AWS Config 애그리게이터(aggregator)를 만든다', '각 계정 콘솔에 따로 로그인해 확인한다', 'CloudTrail 이벤트를 분석한다', 'Trusted Advisor를 쓴다'],
+  opts: ['위임된 관리자 계정에 AWS Config 애그리게이터를 만든다', '각 계정 콘솔에 따로 로그인해 확인한다', 'CloudTrail 이벤트를 분석한다', 'Trusted Advisor를 쓴다'],
   ans: [0],
   exp: '**Config 애그리게이터**는 여러 계정과 리전의 Config 데이터(구성, 규정 준수 상태)를 **하나의 집계 뷰**로 모은다. Organizations와 연동하면 모든 계정을 자동으로 포함하고, 고급 쿼리(SQL)로 리소스를 검색할 수 있다.',
   tip: '다중 계정·리전 Config 통합 뷰 → Config Aggregator.',
@@ -464,7 +464,7 @@ QB.push(
 {
   id: 'mgt-24', cat: 'management', domain: 'resilient', svc: ['CloudWatch Synthetics'],
   q: '사용자가 불편을 호소하기 전에, 웹 사이트의 로그인 → 상품 검색 → 장바구니 흐름이 정상인지 5분마다 외부에서 자동으로 확인하고 싶다. 어떤 기능을 써야 하는가?',
-  opts: ['CloudWatch Synthetics 카나리(canary)', 'CloudWatch Logs Insights', 'AWS Config 규칙', 'VPC 흐름 로그'],
+  opts: ['CloudWatch Synthetics 카나리', 'CloudWatch Logs Insights', 'AWS Config 규칙', 'VPC 흐름 로그'],
   ans: [0],
   exp: '**Synthetics 카나리**는 스크립트(Node.js나 Python, Puppeteer나 Selenium 기반)로 **사용자 흐름을 일정 주기마다 시뮬레이션**하고, 가용성, 지연 시간, 스크린샷, 오류를 기록한다. 실패하면 알람을 보낼 수 있다. 실제 사용자 데이터를 바탕으로 모니터링하려면 CloudWatch RUM을 쓴다.',
   tip: '합성 모니터링(주기적 사용자 시나리오 점검) → Synthetics Canary. 실사용자 → RUM.',
@@ -496,7 +496,7 @@ QB.push(
 {
   id: 'mgt-28', cat: 'management', domain: 'performance', svc: ['Application Discovery Service', 'Migration Hub'],
   q: '마이그레이션을 계획하는 단계에서, 회사는 온프레미스 서버 1,000대의 사양, 사용률, 서버 간 네트워크 의존성을 수집해 어떤 서버들을 함께 옮겨야 하는지 파악하려 한다. 어떤 서비스를 써야 하는가?',
-  opts: ['AWS Application Discovery Service(에이전트 기반 수집) + Migration Hub', 'AWS Application Migration Service', 'AWS DMS', 'AWS DataSync'],
+  opts: ['AWS Application Discovery Service + Migration Hub', 'AWS Application Migration Service', 'AWS DMS', 'AWS DataSync'],
   ans: [0],
   exp: '**Application Discovery Service**는 에이전트나 에이전트리스(VMware) 방식으로 서버 구성, 성능, **네트워크 연결(의존성)** 데이터를 수집한다. 수집한 결과는 **Migration Hub**에서 애플리케이션 그룹으로 묶고 추적할 수 있다. MGN은 실제로 서버를 **복제하고 이전**하는 도구다.',
   tip: '마이그레이션 "계획/발견/의존성" → Application Discovery Service. "실행" → MGN/DMS.',

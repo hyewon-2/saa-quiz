@@ -18,7 +18,7 @@ QB.push(
   q: '회사가 AWS Organizations로 계정 50개를 관리한다. 어떤 계정의 관리자도(루트 사용자 포함) 승인된 두 리전 외에서는 리소스를 만들 수 없게 하고, CloudTrail을 끌 수 없게 해야 한다. 가장 적합한 방법은?',
   opts: [
     '각 계정의 IAM 사용자에게 거부 정책을 붙인다',
-    '조직 루트나 OU에 서비스 제어 정책(SCP)을 붙여 해당 작업을 거부한다',
+    '조직 루트나 OU에 서비스 제어 정책을 붙여 해당 작업을 거부한다',
     'AWS Config 규칙으로 탐지한 뒤 수동으로 삭제한다',
     'IAM 권한 경계(Permissions Boundary)를 모든 역할에 설정한다',
   ],
@@ -29,7 +29,7 @@ QB.push(
 {
   id: 'sec-03', cat: 'security', domain: 'secure', svc: ['KMS'],
   q: '규정 준수 요건상 회사가 S3 데이터 암호화 키를 직접 관리해야 한다. 키 정책으로 누가 키를 쓸 수 있는지 통제하고, 매년 자동으로 교체하며, 키 사용 내역을 CloudTrail로 감사할 수 있어야 한다. 어떤 암호화 방식을 써야 하는가?',
-  opts: ['SSE-S3 (S3 관리형 키)', 'SSE-KMS (고객 관리형 KMS 키)', 'SSE-C (고객 제공 키)', '클라이언트 측 암호화 + 키를 EC2에 저장'],
+  opts: ['SSE-S3 (S3 관리형 키)', 'SSE-KMS', 'SSE-C (고객 제공 키)', '클라이언트 측 암호화 + 키를 EC2에 저장'],
   ans: [1],
   exp: '**고객 관리형 KMS 키**를 쓰는 SSE-KMS는 **키 정책**으로 접근을 통제하고, **자동 교체**를 켤 수 있고, 모든 키 사용이 **CloudTrail**에 기록된다. SSE-S3는 키를 AWS가 관리하므로 통제와 감사가 제한된다. SSE-C는 요청할 때마다 키를 직접 전달하고 보관해야 해서 부담이 크다.',
   tip: '감사·키 정책·교체 → SSE-KMS(CMK). 전용 HSM·FIPS 140-3 Level 3 단일 테넌트 → CloudHSM. 대량 요청 시 KMS 비용·제한 → S3 버킷 키.',
@@ -45,7 +45,7 @@ QB.push(
 {
   id: 'sec-05', cat: 'security', domain: 'secure', svc: ['WAF'],
   q: 'ALB 뒤에서 실행되는 웹 애플리케이션이 SQL 인젝션과 크로스 사이트 스크립팅(XSS) 공격을 받고 있다. 또한 IP 하나가 5분에 수천 건씩 요청을 보내는 것을 막고 싶다. 어떤 서비스를 써야 하는가?',
-  opts: ['보안 그룹', 'AWS WAF (관리형 규칙 + 속도 기반 규칙)', 'AWS Shield Standard', 'Amazon GuardDuty'],
+  opts: ['보안 그룹', 'AWS WAF', 'AWS Shield Standard', 'Amazon GuardDuty'],
   ans: [1],
   exp: '**AWS WAF**는 L7 웹 방화벽이다. **SQLi와 XSS 관리형 규칙**, **속도 기반 규칙**(IP별 요청 수 제한), 지역·IP 집합 차단을 지원하고 ALB, CloudFront, API Gateway, AppSync 등에 연결된다. 보안 그룹은 L3/L4 수준이다. Shield Standard는 L3/L4 DDoS를 막는다. GuardDuty는 위협을 탐지만 하고 차단하지 않는다.',
   tip: 'SQLi/XSS/HTTP 플러드/rate limit → WAF.',
@@ -103,7 +103,7 @@ QB.push(
 {
   id: 'sec-11', cat: 'security', domain: 'cost', svc: ['SSM Parameter Store'],
   q: '여러 애플리케이션이 쓰는 설정값(기능 플래그, 엔드포인트 URL, 일부 암호화가 필요한 API 키)을 `/prod/app1/...` 같은 계층 구조로 저장하고 싶다. 자동 교체는 필요 없고 비용을 최소화해야 한다. 가장 적합한 서비스는?',
-  opts: ['AWS Secrets Manager', 'AWS Systems Manager Parameter Store (표준 파라미터, SecureString)', 'DynamoDB 테이블', 'S3 버킷의 JSON 파일'],
+  opts: ['AWS Secrets Manager', 'AWS Systems Manager Parameter Store', 'DynamoDB 테이블', 'S3 버킷의 JSON 파일'],
   ans: [1],
   exp: '**Parameter Store** 표준 파라미터는 **무료**이고, **계층 경로**와 KMS로 암호화하는 **SecureString**을 지원하며, IAM으로 경로별 접근을 제어할 수 있다. Secrets Manager는 비밀 하나당 월 요금이 있어서 교체가 필요 없다면 과한 선택이다.',
   tip: '교체 필요 X + 저렴 + 설정값 → Parameter Store.',
@@ -113,7 +113,7 @@ QB.push(
   q: '보안 정책상 S3 버킷에 대한 모든 요청은 HTTPS(TLS)로만 허용해야 한다. 가장 간단한 방법은?',
   opts: [
     '버킷에 기본 암호화 SSE-KMS를 켠다',
-    '버킷 정책에 aws:SecureTransport 조건이 false인 요청을 거부(Deny)하는 문을 추가한다',
+    '버킷 정책에 aws:SecureTransport 조건이 false인 요청을 거부하는 문을 추가한다',
     'S3 Object Lock을 켠다',
     'CloudFront로만 접근하게 한다',
   ],
@@ -124,7 +124,7 @@ QB.push(
 {
   id: 'sec-13', cat: 'security', domain: 'secure', svc: ['ACM'],
   q: 'ALB에서 HTTPS를 제공하려 한다. 인증서를 무료로 발급받고 만료 전에 자동으로 갱신되게 하려면 어떻게 해야 하는가?',
-  opts: ['외부 CA 인증서를 EC2마다 설치한다', 'AWS Certificate Manager(ACM)에서 퍼블릭 인증서를 발급받아 ALB 리스너에 연결한다', 'IAM에 자체 서명 인증서를 업로드한다', 'KMS로 인증서를 생성한다'],
+  opts: ['외부 CA 인증서를 EC2마다 설치한다', 'AWS Certificate Manager에서 퍼블릭 인증서를 발급받아 ALB 리스너에 연결한다', 'IAM에 자체 서명 인증서를 업로드한다', 'KMS로 인증서를 생성한다'],
   ans: [1],
   exp: '**ACM** 퍼블릭 인증서는 **무료**이고, DNS 검증을 쓰면 **자동으로 갱신**된다. ALB, CloudFront, API Gateway에 바로 연결할 수 있다. CloudFront에서 쓰려면 인증서를 반드시 **us-east-1** 리전에서 발급해야 한다.',
   tip: 'CloudFront용 ACM 인증서 = us-east-1. ACM 인증서는 리전 리소스라 ALB와 같은 리전에서 발급해야 한다.',

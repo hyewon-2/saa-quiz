@@ -34,7 +34,7 @@ QB.push(
 {
   id: 'b07-04', cat: 'storage', domain: 'secure', svc: ['EBS 기본 암호화'],
   q: '보안 정책상 리전에서 새로 만드는 모든 EBS 볼륨과 스냅샷은 반드시 암호화되어야 한다. 개발자가 암호화 옵션을 빠뜨리는 실수를 원천적으로 막으려면?',
-  opts: ['해당 리전에서 EBS 기본 암호화(EBS encryption by default)를 켠다', '개발자 교육을 강화한다', '매일 비암호화 볼륨을 찾아 삭제한다', 'gp3 볼륨만 쓰게 한다'],
+  opts: ['해당 리전에서 EBS 기본 암호화를 켠다', '개발자 교육을 강화한다', '매일 비암호화 볼륨을 찾아 삭제한다', 'gp3 볼륨만 쓰게 한다'],
   ans: [0],
   exp: '**EBS 기본 암호화**는 계정과 리전 단위 설정이다. 켜 두면 이후 만드는 모든 볼륨과 스냅샷 사본이 **자동으로 암호화**된다(기본 키 또는 지정한 KMS 키). 기존 볼륨에는 적용되지 않는다. 조직 전체로 강제하려면 SCP와 Config 규칙을 함께 쓴다.',
   tip: '"모든 새 EBS 암호화 강제" → EBS encryption by default (리전 설정).',
@@ -56,7 +56,7 @@ QB.push(
 {
   id: 'b07-06', cat: 'security', domain: 'secure', svc: ['API Gateway 리소스 정책'],
   q: '사내용 API Gateway REST API(리전 엔드포인트)를 회사 사무실의 공인 IP 대역(198.51.100.0/24)에서만 호출할 수 있게 하려 한다. 가장 간단한 방법은?',
-  opts: ['API Gateway 리소스 정책에 aws:SourceIp 조건으로 해당 대역만 허용(나머지 Deny)한다', 'Lambda 함수 코드에서 IP를 검사한다', 'API 키를 사무실에만 배포한다', 'CloudFront 서명된 URL을 쓴다'],
+  opts: ['API Gateway 리소스 정책에 aws:SourceIp 조건으로 해당 대역만 허용한다', 'Lambda 함수 코드에서 IP를 검사한다', 'API 키를 사무실에만 배포한다', 'CloudFront 서명된 URL을 쓴다'],
   ans: [0],
   exp: '**API Gateway 리소스 정책**으로 소스 IP, VPC, 계정 단위의 접근을 제어할 수 있다. 정책에서 거부된 요청은 백엔드를 호출하지 않으므로 비용과 부하도 줄어든다. API 키는 유출되면 끝이고 인증 수단이 아니다. WAF IP 집합 규칙도 대안이다.',
   tip: 'API Gateway IP 제한 → 리소스 정책(aws:SourceIp) 또는 WAF.',
@@ -64,7 +64,7 @@ QB.push(
 {
   id: 'b07-07', cat: 'security', domain: 'secure', svc: ['Config', 'SSM Automation'],
   q: '보안팀은 누군가 S3 버킷을 퍼블릭 읽기로 바꾸면 **몇 분 안에 자동으로** 원래대로 되돌리고 알림을 받고 싶다. 운영 부담이 가장 적은 방법은?',
-  opts: ['AWS Config 관리형 규칙(s3-bucket-public-read-prohibited)과 자동 수정(SSM Automation)을 설정하고, 규정 미준수 이벤트를 SNS로 알린다', '매주 수동으로 버킷 정책을 점검한다', 'CloudTrail 로그를 매일 Athena로 분석한다', 'S3 인벤토리 보고서를 확인한다'],
+  opts: ['AWS Config 관리형 규칙과 자동 수정을 설정하고, 규정 미준수 이벤트를 SNS로 알린다', '매주 수동으로 버킷 정책을 점검한다', 'CloudTrail 로그를 매일 Athena로 분석한다', 'S3 인벤토리 보고서를 확인한다'],
   ans: [0],
   exp: '**Config 규칙**은 구성이 바뀔 때 규정 준수 여부를 평가하고, **자동 수정**(SSM Automation 문서, 예: 퍼블릭 액세스 차단 활성화)으로 바로 고친다. 미준수 이벤트를 EventBridge나 SNS로 보내 알림도 받을 수 있다. 근본적으로는 계정 수준의 퍼블릭 액세스 차단과 SCP로 **예방**하는 것이 더 좋다.',
   tip: '탐지 + 자동 수정 → Config Rule + Remediation. 예방 → Block Public Access + SCP.',
@@ -80,7 +80,7 @@ QB.push(
 {
   id: 'b07-09', cat: 'security', domain: 'secure', svc: ['Cognito 자격 증명 풀'],
   q: '모바일 게임이 로그인하지 않은 게스트 사용자에게도 S3의 공개 게임 리소스 일부(특정 접두사)를 직접 내려받을 수 있게 하고 싶다. 앱에 AWS 자격 증명을 넣지 않으려면?',
-  opts: ['Cognito 자격 증명 풀에서 인증되지 않은(게스트) 자격 증명을 켜고, 게스트 역할에는 해당 접두사의 s3:GetObject만 허용한다', '앱에 IAM 사용자 액세스 키를 넣는다', '버킷 전체를 퍼블릭으로 연다', 'Cognito 사용자 풀만 쓴다'],
+  opts: ['Cognito 자격 증명 풀에서 인증되지 않은 자격 증명을 켜고, 게스트 역할에는 해당 접두사의 s3:GetObject만 허용한다', '앱에 IAM 사용자 액세스 키를 넣는다', '버킷 전체를 퍼블릭으로 연다', 'Cognito 사용자 풀만 쓴다'],
   ans: [0],
   exp: 'Cognito **자격 증명 풀**은 **인증되지 않은 ID**에도 제한된 IAM 역할로 **임시 자격 증명**을 발급할 수 있다. 게스트 역할에는 최소 권한(특정 접두사 읽기)만 준다. 사용자 풀은 로그인을 담당하고, AWS 자격 증명을 발급하지는 않는다.',
   tip: '게스트에게 제한된 AWS 접근 → Identity Pool unauthenticated role.',
@@ -88,7 +88,7 @@ QB.push(
 {
   id: 'b07-10', cat: 'security', domain: 'secure', svc: ['KMS 키 삭제'],
   q: '관리자가 실수로 운영 데이터 암호화에 쓰는 KMS 고객 관리형 키의 삭제를 예약했다. 키가 삭제되면 데이터를 복호화할 수 없게 된다. 어떻게 대응해야 하며, 앞으로 이런 실수를 어떻게 막을 수 있는가?',
-  opts: ['대기 기간(7–30일) 안에 키 삭제를 취소하고, IAM/SCP로 kms:ScheduleKeyDeletion을 제한하며 CloudWatch 알람으로 삭제 예약을 감지한다', '키는 즉시 삭제되므로 복구할 방법이 없다', '같은 이름으로 새 키를 만들면 기존 데이터를 복호화할 수 있다', 'AWS Support에 키 복원을 요청한다'],
+  opts: ['대기 기간 안에 키 삭제를 취소하고, IAM/SCP로 kms:ScheduleKeyDeletion을 제한하며 CloudWatch 알람으로 삭제 예약을 감지한다', '키는 즉시 삭제되므로 복구할 방법이 없다', '같은 이름으로 새 키를 만들면 기존 데이터를 복호화할 수 있다', 'AWS Support에 키 복원을 요청한다'],
   ans: [0],
   exp: 'KMS 키 삭제는 **7–30일 대기 기간**을 거친다. 그동안은 **삭제를 취소**할 수 있다(그동안 키는 사용할 수 없는 상태). 새 키를 만들어도 같은 키 자료가 아니므로 기존 데이터를 복호화할 수 없다. 키 삭제 대신 **비활성화**를 먼저 쓰고, 삭제 권한을 제한하는 것이 모범 사례다.',
   tip: 'KMS 삭제 = 7~30일 대기(취소 가능). 일단 비활성화 권장.',
@@ -105,8 +105,8 @@ QB.push(
   id: 'b07-12', cat: 'storage', domain: 'secure', svc: ['EFS 암호화'],
   q: 'EFS 파일 시스템의 데이터를 저장 시와 전송 중 모두 암호화해야 한다. 아직 파일 시스템은 만들지 않았다. 올바른 방법은? (2개 선택)',
   opts: [
-    '파일 시스템을 만들 때 저장 시 암호화(KMS)를 켠다',
-    'EFS 마운트 헬퍼(amazon-efs-utils)로 TLS 옵션을 사용해 마운트한다',
+    '파일 시스템을 만들 때 저장 시 암호화를 켠다',
+    'EFS 마운트 헬퍼로 TLS 옵션을 사용해 마운트한다',
     '파일 시스템을 만든 뒤 언제든 저장 시 암호화를 켤 수 있으므로 나중에 결정한다',
     'S3 기본 암호화를 켠다',
     '보안 그룹에서 2049 포트를 막는다',
@@ -118,7 +118,7 @@ QB.push(
 {
   id: 'b07-13', cat: 'networking', domain: 'secure', svc: ['Shield Advanced', 'Global Accelerator'],
   q: 'NLB 뒤의 EC2에서 운영하는 온라인 게임 서버(UDP)가 자주 대규모 DDoS 공격을 받는다. 24시간 DDoS 대응 지원과 공격 중 확장 비용 보호가 필요하다. 가장 적합한 조합은?',
-  opts: ['Global Accelerator를 앞에 두고 Shield Advanced로 가속기(또는 EIP/NLB)를 보호한다', 'WAF만 NLB에 연결한다', '보안 그룹으로 공격 IP를 하나씩 차단한다', 'CloudFront를 UDP 게임 서버 앞에 둔다'],
+  opts: ['Global Accelerator를 앞에 두고 Shield Advanced로 가속기를 보호한다', 'WAF만 NLB에 연결한다', '보안 그룹으로 공격 IP를 하나씩 차단한다', 'CloudFront를 UDP 게임 서버 앞에 둔다'],
   ans: [0],
   exp: '**Shield Advanced**는 Global Accelerator, EIP, NLB, CloudFront, Route 53을 보호 대상으로 지정할 수 있고, SRT 지원과 비용 보호를 제공한다. **Global Accelerator**는 엣지에서 트래픽을 흡수하고 UDP를 지원한다. **WAF는 NLB에 연결할 수 없다**(ALB, CloudFront, API Gateway 등만 가능). CloudFront는 UDP를 지원하지 않는다.',
   tip: 'WAF 연결 가능: CloudFront, ALB, API Gateway, AppSync, Cognito 등 (NLB X).',
@@ -126,7 +126,7 @@ QB.push(
 {
   id: 'b07-14', cat: 'networking', domain: 'secure', svc: ['Route 53 Resolver DNS Firewall'],
   q: 'VPC 안의 워크로드가 악성 도메인이나 승인되지 않은 도메인을 DNS로 조회해 데이터를 빼돌리는 것(DNS 유출)을 막고 싶다. 허용된 도메인 목록만 조회할 수 있게 하는 관리형 기능은?',
-  opts: ['Route 53 Resolver DNS Firewall (도메인 목록 + 규칙 그룹)', 'VPC 흐름 로그', 'NACL', 'AWS Shield'],
+  opts: ['Route 53 Resolver DNS Firewall', 'VPC 흐름 로그', 'NACL', 'AWS Shield'],
   ans: [0],
   exp: '**DNS Firewall**은 VPC의 Route 53 Resolver를 거치는 DNS 쿼리를 **도메인 목록 기반으로 허용, 차단, 알림** 처리한다. AWS 관리형 위협 도메인 목록도 쓸 수 있고, Firewall Manager로 여러 계정에 배포할 수 있다. NACL은 도메인 단위로 제어하지 못한다.',
   tip: 'DNS 쿼리 필터링 → Route 53 Resolver DNS Firewall. 트래픽 도메인 필터 → Network Firewall.',
@@ -134,7 +134,7 @@ QB.push(
 {
   id: 'b07-15', cat: 'security', domain: 'secure', svc: ['GuardDuty', 'EventBridge'],
   q: 'GuardDuty가 EC2 인스턴스의 암호화폐 채굴 활동을 감지하면, 사람의 개입 없이 즉시 그 인스턴스를 네트워크에서 격리하고 보안팀에 알리고 싶다. 가장 적합한 방법은?',
-  opts: ['GuardDuty 결과를 EventBridge 규칙으로 받아 Lambda(또는 SSM Automation)가 인스턴스 보안 그룹을 격리용 SG로 바꾸고 SNS로 알린다', 'GuardDuty 콘솔을 매일 확인한다', '인스턴스를 즉시 종료하는 cron 작업을 만든다', 'Trusted Advisor 알림을 켠다'],
+  opts: ['GuardDuty 결과를 EventBridge 규칙으로 받아 Lambda가 인스턴스 보안 그룹을 격리용 SG로 바꾸고 SNS로 알린다', 'GuardDuty 콘솔을 매일 확인한다', '인스턴스를 즉시 종료하는 cron 작업을 만든다', 'Trusted Advisor 알림을 켠다'],
   ans: [0],
   exp: 'GuardDuty 결과는 **EventBridge**로 전달되므로 규칙으로 **자동 대응**(Lambda, Step Functions, SSM Automation)을 실행할 수 있다. 바로 종료하지 않고 **격리 보안 그룹**으로 바꾸면 포렌식 증거(메모리, 디스크)를 보존할 수 있다.',
   tip: '보안 탐지 자동 대응 = 탐지 서비스 → EventBridge → Lambda/Automation.',
@@ -164,7 +164,7 @@ QB.push(
 {
   id: 'b07-18', cat: 'security', domain: 'secure', svc: ['ABAC'],
   q: '프로젝트가 빠르게 늘어나는 회사에서, 개발자는 자기 프로젝트 태그(Project=X)가 붙은 EC2와 RDS 리소스만 관리할 수 있어야 한다. 프로젝트가 생길 때마다 정책을 고치지 않으려면 어떤 방식이 가장 적합한가?',
-  opts: ['속성 기반 접근 제어(ABAC): aws:PrincipalTag/Project와 aws:ResourceTag/Project가 일치할 때만 허용하는 정책', '프로젝트마다 IAM 그룹과 정책을 새로 만든다', '모든 개발자에게 PowerUserAccess를 준다', '프로젝트마다 AWS 계정을 만든다'],
+  opts: ['속성 기반 접근 제어: aws:PrincipalTag/Project와 aws:ResourceTag/Project가 일치할 때만 허용하는 정책', '프로젝트마다 IAM 그룹과 정책을 새로 만든다', '모든 개발자에게 PowerUserAccess를 준다', '프로젝트마다 AWS 계정을 만든다'],
   ans: [0],
   exp: '**ABAC**은 **주체 태그와 리소스 태그를 비교**해서 권한을 준다. 새 프로젝트가 생겨도 태그만 붙이면 되므로 정책을 고칠 필요가 없다. 리소스를 만들 때 태그를 강제하려면 `aws:RequestTag` 조건을 쓴다. 역할 기반(RBAC) 방식은 프로젝트가 늘어날 때마다 정책도 늘어난다.',
   tip: '"확장 가능한 권한 + 태그" → ABAC.',
@@ -172,7 +172,7 @@ QB.push(
 {
   id: 'b07-19', cat: 'storage', domain: 'secure', svc: ['S3 Batch Operations', '암호화'],
   q: '오래전에 만든 S3 버킷에 암호화되지 않은 객체 5억 개가 있다. 이 객체들을 모두 SSE-KMS로 암호화해야 한다. 가장 효율적인 방법은?',
-  opts: ['S3 인벤토리로 비암호화 객체 목록을 만들고, S3 Batch Operations의 복사(Copy) 작업으로 같은 위치에 SSE-KMS로 덮어쓴다', '기본 암호화를 켜면 기존 객체도 자동으로 암호화된다', '모든 객체를 내려받았다가 다시 업로드한다', '버킷을 삭제하고 다시 만든다'],
+  opts: ['S3 인벤토리로 비암호화 객체 목록을 만들고, S3 Batch Operations의 복사 작업으로 같은 위치에 SSE-KMS로 덮어쓴다', '기본 암호화를 켜면 기존 객체도 자동으로 암호화된다', '모든 객체를 내려받았다가 다시 업로드한다', '버킷을 삭제하고 다시 만든다'],
   ans: [0],
   exp: '버킷 **기본 암호화는 새로 업로드하는 객체에만** 적용된다. 기존 객체는 **복사(CopyObject)로 다시 써야** 암호화된다. **S3 인벤토리**(암호화 상태 필드)로 대상을 고르고, **Batch Operations**로 수억 개를 재시도와 보고서까지 포함해 처리한다.',
   tip: '기존 객체 일괄 암호화 = Inventory + Batch Operations Copy.',
@@ -188,7 +188,7 @@ QB.push(
 {
   id: 'b07-21', cat: 'storage', domain: 'secure', svc: ['S3 미리 서명된 URL 업로드'],
   q: '웹 애플리케이션 사용자가 최대 5GB 크기의 동영상을 올린다. 업로드 트래픽이 애플리케이션 서버를 거치지 않고 비공개 S3 버킷으로 바로 가게 하되, 인증된 사용자만 올릴 수 있어야 한다. 가장 적합한 방법은?',
-  opts: ['백엔드가 인증된 사용자에게 PutObject용 미리 서명된 URL(또는 POST 정책)을 발급하고, 브라우저가 S3에 직접 업로드한다', '버킷을 퍼블릭 쓰기로 연다', '모든 파일을 EC2로 받은 뒤 S3에 업로드한다', '사용자마다 IAM 사용자를 만든다'],
+  opts: ['백엔드가 인증된 사용자에게 PutObject용 미리 서명된 URL을 발급하고, 브라우저가 S3에 직접 업로드한다', '버킷을 퍼블릭 쓰기로 연다', '모든 파일을 EC2로 받은 뒤 S3에 업로드한다', '사용자마다 IAM 사용자를 만든다'],
   ans: [0],
   exp: '**미리 서명된 URL**은 GET뿐 아니라 **PUT 업로드**에도 쓸 수 있다. 백엔드는 권한 확인과 URL 발급만 하고, 대용량 데이터는 클라이언트가 **S3로 직접** 보내므로 서버 부하와 비용이 줄어든다. 큰 파일은 멀티파트 업로드와 파트별 URL을 조합한다.',
   tip: '"서버를 거치지 않는 안전한 업로드" → Presigned URL(PUT)/POST Policy.',
@@ -196,7 +196,7 @@ QB.push(
 {
   id: 'b07-22', cat: 'management', domain: 'secure', svc: ['CloudTrail 로그 보호'],
   q: '감사 요건상 CloudTrail 로그는 침해된 관리자도 지우거나 수정할 수 없어야 하고, 7년 동안 보관해야 한다. 가장 적합한 구성은?',
-  opts: ['조직 트레일로 별도의 로그 아카이브 계정 S3 버킷에 저장하고, Object Lock(규정 준수 모드)과 수명 주기 규칙을 적용한다', '각 계정의 S3 버킷에 저장하고 버전 관리만 켠다', 'CloudWatch Logs에만 저장한다', '로그를 EC2 디스크에 저장한다'],
+  opts: ['조직 트레일로 별도의 로그 아카이브 계정 S3 버킷에 저장하고, Object Lock과 수명 주기 규칙을 적용한다', '각 계정의 S3 버킷에 저장하고 버전 관리만 켠다', 'CloudWatch Logs에만 저장한다', '로그를 EC2 디스크에 저장한다'],
   ans: [0],
   exp: '로그를 **별도의 로그 아카이브 계정**으로 보내면 워크로드 계정의 관리자가 접근할 수 없다. **Object Lock 규정 준수 모드**를 쓰면 보존 기간 동안 루트도 지울 수 없다. 수명 주기 규칙으로 Glacier에 보관하면 비용이 줄어든다. 로그 파일 무결성 검증도 함께 켠다.',
   tip: '변조 불가 감사 로그 = 별도 계정 + Object Lock + 무결성 검증.',
@@ -212,7 +212,7 @@ QB.push(
 {
   id: 'b07-24', cat: 'compute', domain: 'secure', svc: ['EKS Pod Identity'],
   q: 'EKS 클러스터에서 실행되는 여러 파드가 각각 다른 AWS 권한(어떤 파드는 S3, 어떤 파드는 DynamoDB)을 가져야 한다. 노드 인스턴스 역할에 모든 권한을 몰아주지 않으려면?',
-  opts: ['EKS Pod Identity(또는 IRSA)로 Kubernetes 서비스 계정마다 IAM 역할을 연결한다', '노드 IAM 역할에 모든 권한을 준다', '파드 환경 변수에 액세스 키를 넣는다', '파드마다 별도 노드를 쓴다'],
+  opts: ['EKS Pod Identity로 Kubernetes 서비스 계정마다 IAM 역할을 연결한다', '노드 IAM 역할에 모든 권한을 준다', '파드 환경 변수에 액세스 키를 넣는다', '파드마다 별도 노드를 쓴다'],
   ans: [0],
   exp: '**EKS Pod Identity**나 **IRSA**(IAM Roles for Service Accounts)는 **서비스 계정 단위**로 IAM 역할을 연결해서 파드가 자기 역할의 임시 자격 증명만 받게 한다. ECS의 작업 역할과 같은 개념이다. 노드 역할에 권한을 몰아주면 모든 파드가 모든 권한을 갖게 된다.',
   tip: 'EKS 파드별 권한 → Pod Identity/IRSA. ECS → Task Role.',
@@ -228,7 +228,7 @@ QB.push(
 {
   id: 'b07-26', cat: 'networking', domain: 'secure', svc: ['S3 인터페이스 엔드포인트', 'Direct Connect'],
   q: '온프레미스 서버가 Direct Connect 프라이빗 VIF를 통해 S3에 **인터넷을 거치지 않고 프라이빗 IP로** 접근해야 한다. 어떤 구성이 필요한가?',
-  opts: ['VPC에 S3 인터페이스 엔드포인트(PrivateLink)를 만들고, 온프레미스에서 엔드포인트 전용 DNS 이름으로 접근한다', 'S3 게이트웨이 엔드포인트를 만든다', 'NAT 게이트웨이를 만든다', 'S3 Transfer Acceleration을 켠다'],
+  opts: ['VPC에 S3 인터페이스 엔드포인트를 만들고, 온프레미스에서 엔드포인트 전용 DNS 이름으로 접근한다', 'S3 게이트웨이 엔드포인트를 만든다', 'NAT 게이트웨이를 만든다', 'S3 Transfer Acceleration을 켠다'],
   ans: [0],
   exp: '**게이트웨이 엔드포인트**는 VPC 라우팅 테이블에만 연결되므로 **온프레미스에서 VPN이나 DX로 들어오는 트래픽은 쓸 수 없다.** **인터페이스 엔드포인트**는 VPC 안에 프라이빗 IP를 가진 ENI를 만들어서, DX나 VPN으로 연결된 온프레미스에서도 접근할 수 있다(Route 53 Resolver 인바운드 엔드포인트와 함께 쓸 수 있다).',
   tip: '온프렘 → S3 프라이빗 = Interface Endpoint (Gateway Endpoint는 VPC 내부 전용).',
@@ -282,7 +282,7 @@ QB.push(
 {
   id: 'b07-32', cat: 'security', domain: 'secure', svc: ['태그 정책', 'SCP'],
   q: '조직의 모든 EC2 인스턴스는 생성할 때 CostCenter 태그를 반드시 가져야 한다. 태그 없이 인스턴스를 시작하려는 요청은 거부해야 한다. 가장 적합한 방법은?',
-  opts: ['SCP에서 aws:RequestTag/CostCenter가 없으면(Null 조건) ec2:RunInstances를 Deny한다', '매일 태그가 없는 인스턴스를 찾아 종료한다', 'Cost Explorer에서 태그를 확인한다', '모든 인스턴스에 기본 태그를 붙이는 Lambda를 만든다'],
+  opts: ['SCP에서 aws:RequestTag/CostCenter가 없으면 ec2:RunInstances를 Deny한다', '매일 태그가 없는 인스턴스를 찾아 종료한다', 'Cost Explorer에서 태그를 확인한다', '모든 인스턴스에 기본 태그를 붙이는 Lambda를 만든다'],
   ans: [0],
   exp: '**`aws:RequestTag` + Null 조건**을 쓰는 Deny 정책(SCP 또는 IAM)은 리소스를 **생성하는 시점에** 태그가 없으면 요청 자체를 거부한다(**예방적 통제**). Organizations의 **태그 정책**은 태그 키와 값 형식을 표준화하고 규정 준수를 보고한다. 사후에 종료하는 방식은 탐지적 통제다.',
   tip: '생성 시 태그 강제 = aws:RequestTag 조건 Deny. 태그 형식 표준화 = Tag Policy.',
@@ -290,7 +290,7 @@ QB.push(
 {
   id: 'b07-33', cat: 'security', domain: 'secure', svc: ['Secrets Manager 교체 전략'],
   q: 'Aurora 데이터베이스 자격 증명을 Secrets Manager로 자동 교체하고 있다. 교체 순간에 일부 애플리케이션 연결이 인증 오류를 겪는다. 교체 중에도 항상 유효한 자격 증명이 있게 하려면 어떤 교체 전략을 써야 하는가?',
-  opts: ['교대 사용자(alternating users) 교체 전략', '단일 사용자(single user) 교체 전략', '교체를 비활성화한다', '교체 주기를 1일로 줄인다'],
+  opts: ['교대 사용자 교체 전략', '단일 사용자(single user) 교체 전략', '교체를 비활성화한다', '교체 주기를 1일로 줄인다'],
   ans: [0],
   exp: '**교대 사용자 전략**은 두 DB 사용자를 번갈아 가며 교체한다. 새 자격 증명이 활성화되는 동안에도 이전 사용자가 계속 유효하므로 **교체 중 인증 오류**가 생기지 않는다. 단일 사용자 전략은 암호가 바뀌는 순간에 기존 연결이나 캐시된 자격 증명이 실패할 수 있다. 애플리케이션은 인증 오류가 나면 비밀을 다시 가져오도록 구현한다.',
   tip: '무중단 자격 증명 교체 → alternating users.',
@@ -298,7 +298,7 @@ QB.push(
 {
   id: 'b07-34', cat: 'integration', domain: 'secure', svc: ['Lambda 환경 변수', 'Parameter Store'],
   q: 'Lambda 함수가 외부 API 키를 환경 변수에 평문으로 저장해서 콘솔에서 누구나 볼 수 있다. 키를 안전하게 저장하고, 호출할 때마다 API를 부르지 않도록 성능도 챙기려면?',
-  opts: ['키를 Secrets Manager나 Parameter Store(SecureString)에 저장하고, AWS Parameters and Secrets Lambda Extension으로 캐싱해 읽는다', '키를 코드에 하드코딩한다', '키를 S3 퍼블릭 객체로 저장한다', '키를 Lambda 함수 이름에 넣는다'],
+  opts: ['키를 Secrets Manager나 Parameter Store에 저장하고, AWS Parameters and Secrets Lambda Extension으로 캐싱해 읽는다', '키를 코드에 하드코딩한다', '키를 S3 퍼블릭 객체로 저장한다', '키를 Lambda 함수 이름에 넣는다'],
   ans: [0],
   exp: '비밀은 **Secrets Manager**나 **Parameter Store SecureString**에 저장하고 IAM으로 접근을 제한한다. **Parameters and Secrets Lambda Extension**은 값을 로컬에 캐싱해서 호출 지연과 API 비용을 줄인다. 환경 변수도 KMS로 저장 시 암호화되지만, 콘솔 접근 권한이 있으면 볼 수 있으므로 민감한 비밀에는 적합하지 않다.',
   tip: 'Lambda 비밀 = Secrets Manager/Parameter Store + Extension 캐싱.',
@@ -314,7 +314,7 @@ QB.push(
 {
   id: 'b07-36', cat: 'networking', domain: 'secure', svc: ['WAF 지역 차단'],
   q: '전자상거래 사이트(ALB)가 서비스하지 않는 특정 국가들에서 악성 트래픽이 많이 들어온다. 해당 국가에서 오는 요청을 ALB 앞단에서 차단하려면?',
-  opts: ['ALB에 연결된 AWS WAF 웹 ACL에 지역 일치(Geo match) 차단 규칙을 추가한다', 'NACL에 국가별 IP 대역을 일일이 추가한다', 'Route 53 지리 위치 라우팅으로 차단한다', '보안 그룹에 Deny 규칙을 추가한다'],
+  opts: ['ALB에 연결된 AWS WAF 웹 ACL에 지역 일치 차단 규칙을 추가한다', 'NACL에 국가별 IP 대역을 일일이 추가한다', 'Route 53 지리 위치 라우팅으로 차단한다', '보안 그룹에 Deny 규칙을 추가한다'],
   ans: [0],
   exp: '**WAF 지역 일치 규칙**은 요청 IP의 국가를 기준으로 차단하거나 허용한다. NACL은 규칙 수가 제한되어 있고 국가별 IP 대역을 관리하기 어렵다. 보안 그룹은 Deny 규칙이 없다. Route 53 지리 위치 라우팅은 접근 차단 기능이 아니다. CloudFront를 쓴다면 지리적 제한도 쓸 수 있다.',
   tip: 'ALB 국가 차단 → WAF Geo match. CloudFront → Geo restriction도 가능.',
@@ -322,7 +322,7 @@ QB.push(
 {
   id: 'b07-37', cat: 'security', domain: 'secure', svc: ['IAM Identity Center 권한 세트'],
   q: '개발자는 개발 계정에서는 넓은 권한, 운영 계정에서는 읽기 전용 권한을 가져야 한다. 회사는 IAM Identity Center를 쓴다. 가장 적합한 구성은?',
-  opts: ['개발자 그룹에 계정별로 다른 권한 세트(개발 계정: PowerUser, 운영 계정: ReadOnly)를 할당한다', '계정마다 IAM 사용자를 만든다', '개발자에게 운영 계정의 루트 자격 증명을 준다', '모든 계정에 같은 AdministratorAccess를 준다'],
+  opts: ['개발자 그룹에 계정별로 다른 권한 세트를 할당한다', '계정마다 IAM 사용자를 만든다', '개발자에게 운영 계정의 루트 자격 증명을 준다', '모든 계정에 같은 AdministratorAccess를 준다'],
   ans: [0],
   exp: 'Identity Center에서는 **사용자 또는 그룹 × 계정 × 권한 세트** 조합으로 접근을 할당한다. 같은 그룹이라도 계정마다 다른 권한 세트를 줄 수 있고, 권한 세트는 각 계정에 IAM 역할로 자동으로 만들어진다.',
   tip: 'Identity Center 할당 = (그룹, 계정, 권한 세트).',
@@ -344,7 +344,7 @@ QB.push(
 {
   id: 'b07-39', cat: 'security', domain: 'secure', svc: ['Macie', 'EventBridge'],
   q: '데이터팀이 S3 데이터 레이크에 실수로 고객 신용카드 번호가 포함된 파일을 올리는 일이 생긴다. 이런 파일을 자동으로 찾아내 보안팀에 알리고 해당 객체에 태그를 붙이고 싶다. 가장 적합한 방법은?',
-  opts: ['Macie 자동 민감 데이터 검색(또는 작업)을 실행하고, 결과를 EventBridge로 받아 Lambda가 알림과 태깅을 수행한다', 'GuardDuty로 S3를 스캔한다', 'Inspector로 S3를 스캔한다', 'CloudTrail 데이터 이벤트만 켠다'],
+  opts: ['Macie 자동 민감 데이터 검색을 실행하고, 결과를 EventBridge로 받아 Lambda가 알림과 태깅을 수행한다', 'GuardDuty로 S3를 스캔한다', 'Inspector로 S3를 스캔한다', 'CloudTrail 데이터 이벤트만 켠다'],
   ans: [0],
   exp: '**Macie**는 S3 객체에서 신용카드 번호 같은 **민감 데이터**를 탐지하고, 결과를 **EventBridge**로 보낸다. EventBridge 규칙으로 Lambda를 실행하면 알림, 태깅, 격리 버킷으로 이동하는 작업을 자동화할 수 있다. GuardDuty는 위협 탐지, Inspector는 취약점 스캔 서비스다.',
   tip: 'S3 민감 데이터 → Macie (+EventBridge 자동화).',

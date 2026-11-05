@@ -13,7 +13,7 @@ QB.push(
   q: 'Athena로 수 TB의 CSV 로그를 쿼리하는데, 쿼리가 느리고 비용이 많이 나온다. 대부분의 쿼리는 특정 날짜 범위와 일부 컬럼만 조회한다. 성능을 높이고 비용을 줄이는 방법은? (2개 선택)',
   opts: [
     '데이터를 Apache Parquet 같은 컬럼 기반 형식으로 변환하고 압축한다',
-    '날짜(year/month/day) 기준으로 S3 데이터를 파티셔닝한다',
+    '날짜 기준으로 S3 데이터를 파티셔닝한다',
     'S3 스토리지 클래스를 Standard-IA로 바꾼다',
     '모든 파일을 하나의 큰 CSV로 합친다',
     'S3 Transfer Acceleration을 켠다',
@@ -25,7 +25,7 @@ QB.push(
 {
   id: 'ana-03', cat: 'analytics', domain: 'performance', svc: ['Glue'],
   q: 'S3에 여러 형식(JSON, CSV)의 데이터가 계속 쌓이고 있다. 스키마를 자동으로 찾아 카탈로그로 만들고, 서버리스 ETL로 정제해서 Athena와 Redshift Spectrum에서 쿼리하고 싶다. 어떤 서비스를 써야 하는가?',
-  opts: ['AWS Glue (크롤러, 데이터 카탈로그, ETL 작업)', 'AWS DataSync', 'Amazon Kinesis Data Streams', 'AWS DMS'],
+  opts: ['AWS Glue', 'AWS DataSync', 'Amazon Kinesis Data Streams', 'AWS DMS'],
   ans: [0],
   exp: '**Glue 크롤러**는 데이터 소스를 스캔해서 스키마를 추론하고 **Glue 데이터 카탈로그**에 테이블을 만든다. 이 카탈로그는 Athena, Redshift Spectrum, EMR이 함께 쓰는 메타스토어다. **Glue ETL**은 서버리스 Spark 작업으로 데이터를 변환한다. DataSync는 데이터 전송 서비스, DMS는 DB 마이그레이션 서비스다.',
   tip: '서버리스 ETL + 메타데이터 카탈로그 → Glue. 데이터 레이크 권한(행/열 수준) 관리 → Lake Formation.',
@@ -62,7 +62,7 @@ QB.push(
 {
   id: 'ana-07', cat: 'analytics', domain: 'performance', svc: ['OpenSearch Service'],
   q: '수백 대 서버의 애플리케이션 로그를 거의 실시간으로 수집해, 운영팀이 키워드로 전문 검색(full-text search)을 하고 오류 추이를 대시보드로 보려 한다. 가장 적합한 서비스는?',
-  opts: ['Amazon Athena', 'Amazon OpenSearch Service (OpenSearch Dashboards)', 'Amazon Redshift', 'Amazon QuickSight'],
+  opts: ['Amazon Athena', 'Amazon OpenSearch Service', 'Amazon Redshift', 'Amazon QuickSight'],
   ans: [1],
   exp: '**OpenSearch Service**는 로그·텍스트 데이터에 대한 **전문 검색과 실시간 분석**에 최적화되어 있고, OpenSearch Dashboards로 시각화할 수 있다. Firehose나 CloudWatch Logs 구독으로 데이터를 쉽게 넣을 수 있다. Athena는 S3 대상 애드혹 SQL이라 실시간 검색에 맞지 않고, Redshift는 정형 데이터 웨어하우스다.',
   tip: '"전문 검색", "로그 분석", "검색 엔진" → OpenSearch.',
@@ -78,7 +78,7 @@ QB.push(
 {
   id: 'ana-09', cat: 'analytics', domain: 'resilient', svc: ['Amazon MSK'],
   q: '회사가 온프레미스에서 Apache Kafka 클러스터를 운영하며, 수십 개의 생산자·소비자 애플리케이션이 Kafka API를 쓴다. 코드를 바꾸지 않고 AWS로 옮기면서 브로커 관리, 패치, 장애 복구 부담을 없애고 싶다. 가장 적합한 서비스는?',
-  opts: ['Amazon Kinesis Data Streams', 'Amazon MSK (Managed Streaming for Apache Kafka)', 'Amazon SQS', 'EC2에 Kafka를 직접 설치한다'],
+  opts: ['Amazon Kinesis Data Streams', 'Amazon MSK', 'Amazon SQS', 'EC2에 Kafka를 직접 설치한다'],
   ans: [1],
   exp: '**Amazon MSK**는 완전 관리형 Apache Kafka로, **Kafka API와 호환**되므로 기존 애플리케이션을 그대로 쓸 수 있다. 다중 AZ 배포, 패치, 장애가 난 브로커 교체를 AWS가 처리한다(서버리스 옵션도 있다). Kinesis는 API가 달라서 코드를 바꿔야 한다.',
   tip: '"Kafka 호환/기존 Kafka 마이그레이션" → MSK. 새 스트리밍 + AWS 네이티브 → Kinesis.',

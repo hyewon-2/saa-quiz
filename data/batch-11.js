@@ -4,7 +4,7 @@ QB.push(
 {
   id: 'b11-01', cat: 'networking', domain: 'secure', svc: ['CloudFront 필드 수준 암호화'],
   q: '결제 폼에서 전송되는 신용카드 번호는 CloudFront와 웹 서버를 거치더라도 **결제 처리 마이크로서비스만** 복호화할 수 있어야 한다. 다른 계층에서는 평문을 볼 수 없어야 한다. 어떤 기능을 써야 하는가?',
-  opts: ['CloudFront 필드 수준 암호화(Field-level encryption)로 특정 POST 필드를 공개 키로 암호화한다', 'HTTPS만 사용한다', 'S3 SSE-KMS', 'WAF SQL 인젝션 규칙'],
+  opts: ['CloudFront 필드 수준 암호화로 특정 POST 필드를 공개 키로 암호화한다', 'HTTPS만 사용한다', 'S3 SSE-KMS', 'WAF SQL 인젝션 규칙'],
   ans: [0],
   exp: '**필드 수준 암호화**는 엣지에서 지정한 양식 필드를 **공개 키로 암호화**하므로, 개인 키를 가진 애플리케이션만 복호화할 수 있다. HTTPS는 전송 구간만 보호하고, 웹 서버에서 TLS가 종료되면 평문을 볼 수 있다.',
   tip: '특정 필드만 특정 서비스가 복호화 → CloudFront Field-level Encryption.',
@@ -12,7 +12,7 @@ QB.push(
 {
   id: 'b11-02', cat: 'storage', domain: 'secure', svc: ['S3 법적 보존'],
   q: '소송이 진행 중이라 특정 S3 객체들을 기간을 정하지 않고 **소송이 끝날 때까지** 삭제하지 못하게 해야 한다. 소송이 끝나면 권한 있는 사용자가 보호를 해제할 수 있어야 한다. 어떤 기능이 적합한가?',
-  opts: ['S3 Object Lock 법적 보존(Legal Hold)', 'Object Lock 규정 준수 모드 + 10년 보존 기간', 'MFA Delete만', '수명 주기 만료 규칙'],
+  opts: ['S3 Object Lock 법적 보존', 'Object Lock 규정 준수 모드 + 10년 보존 기간', 'MFA Delete만', '수명 주기 만료 규칙'],
   ans: [0],
   exp: '**법적 보존**은 보존 기간 없이 객체 버전을 보호하고, `s3:PutObjectLegalHold` 권한이 있는 사용자가 **해제할 때까지** 유지된다. 보존 기간(규정 준수/거버넌스 모드)과는 별개로 설정할 수 있다. 규정 준수 모드는 기간이 끝날 때까지 누구도 해제할 수 없다.',
   tip: '기간 미정·해제 가능 보존 → Legal Hold. 기간 고정·해제 불가 → Compliance 모드.',
@@ -20,7 +20,7 @@ QB.push(
 {
   id: 'b11-03', cat: 'security', domain: 'secure', svc: ['KMS 키 자료 가져오기'],
   q: '규정상 회사가 자체 HSM에서 생성한 키 자료를 KMS에서 쓰고, 필요하면 AWS에서 키 자료를 **즉시 삭제**할 수 있어야 한다. 키 자료의 원본도 회사가 보관해야 한다. 어떤 방식이 적합한가?',
-  opts: ['외부 키 자료를 가져온(Imported key material, BYOK) KMS 키를 쓴다', 'AWS가 생성한 일반 KMS 키를 쓴다', 'SSE-S3를 쓴다', 'Secrets Manager에 키를 저장한다'],
+  opts: ['외부 키 자료를 가져온 KMS 키를 쓴다', 'AWS가 생성한 일반 KMS 키를 쓴다', 'SSE-S3를 쓴다', 'Secrets Manager에 키를 저장한다'],
   ans: [0],
   exp: '**가져온 키 자료**를 쓰면 키 자료를 회사가 직접 만들고 원본을 보관하며, KMS에서 **키 자료를 즉시 삭제**하거나 만료일을 설정할 수 있다(일반 키 삭제는 7~30일 대기). 대신 자동 교체가 되지 않아 수동으로 교체해야 하고, 키 자료의 내구성은 고객 책임이다.',
   tip: '키 자료 출처 통제 + 즉시 삭제 → Imported key material.',
@@ -44,7 +44,7 @@ QB.push(
 {
   id: 'b11-06', cat: 'storage', domain: 'secure', svc: ['클라이언트 측 암호화'],
   q: '규정상 데이터는 **AWS로 전송되기 전에** 회사 측에서 암호화되어야 하고, S3에는 암호문만 저장되어야 한다. 키는 KMS로 관리하고 싶다. 가장 적합한 방법은?',
-  opts: ['AWS Encryption SDK(또는 S3 암호화 클라이언트)와 KMS 키로 클라이언트 측 암호화를 한 뒤 업로드한다', 'SSE-S3를 켠다', 'SSE-KMS 버킷 기본 암호화만 켠다', 'HTTPS로만 업로드한다'],
+  opts: ['AWS Encryption SDK와 KMS 키로 클라이언트 측 암호화를 한 뒤 업로드한다', 'SSE-S3를 켠다', 'SSE-KMS 버킷 기본 암호화만 켠다', 'HTTPS로만 업로드한다'],
   ans: [0],
   exp: '**클라이언트 측 암호화**는 데이터를 **업로드하기 전에** 암호화하므로 AWS에는 암호문만 전달되고 저장된다. Encryption SDK가 KMS 데이터 키로 봉투 암호화를 처리한다. SSE 방식은 S3가 **받은 뒤에** 서버에서 암호화한다.',
   tip: '"전송 전 암호화/암호문만 저장" → Client-side encryption.',
@@ -54,7 +54,7 @@ QB.push(
   q: 'CloudFront 뒤의 ALB(퍼블릭)가 CloudFront를 우회해 직접 접근되면서 WAF 규칙을 피해 가는 공격이 생겼다. ALB가 CloudFront를 통한 요청만 받게 하려면? (2개 선택)',
   opts: [
     'ALB 보안 그룹 인바운드에 CloudFront 원본 측 AWS 관리형 접두사 목록만 허용한다',
-    'CloudFront 원본에 비밀 사용자 지정 헤더를 추가하고, ALB 리스너 규칙(또는 WAF)에서 그 헤더가 있는 요청만 전달한다',
+    'CloudFront 원본에 비밀 사용자 지정 헤더를 추가하고, ALB 리스너 규칙에서 그 헤더가 있는 요청만 전달한다',
     'ALB를 NLB로 바꾼다',
     'Route 53 TTL을 늘린다',
     'ALB 교차 영역 로드 밸런싱을 끈다',
@@ -66,7 +66,7 @@ QB.push(
 {
   id: 'b11-08', cat: 'security', domain: 'secure', svc: ['ACM Private CA'],
   q: '사내 마이크로서비스들이 서로 TLS로 통신하고 상호 인증(mTLS)을 해야 한다. 내부 도메인용 사설 인증서를 대량으로 발급하고 자동으로 갱신할 관리형 사설 CA가 필요하다. 어떤 서비스가 적합한가?',
-  opts: ['AWS Private Certificate Authority(AWS Private CA)', 'ACM 퍼블릭 인증서', 'AWS CloudHSM만', 'IAM 서버 인증서'],
+  opts: ['AWS Private Certificate Authority', 'ACM 퍼블릭 인증서', 'AWS CloudHSM만', 'IAM 서버 인증서'],
   ans: [0],
   exp: '**AWS Private CA**는 관리형 **사설 인증 기관**으로, 내부 도메인과 서비스용 인증서를 발급하고 ACM과 통합해 자동으로 갱신한다. mTLS용 클라이언트 인증서도 발급할 수 있다. ACM 퍼블릭 인증서는 공개적으로 검증 가능한 도메인용이다.',
   tip: '내부 TLS/mTLS 사설 인증서 → AWS Private CA.',
@@ -75,8 +75,8 @@ QB.push(
   id: 'b11-09', cat: 'database', domain: 'secure', svc: ['ElastiCache 암호화', 'AUTH'],
   q: 'ElastiCache for Redis OSS에 저장된 세션 토큰이 민감하다. 같은 VPC의 다른 애플리케이션이 캐시에 접속하지 못하게 하고, 네트워크 구간 데이터도 암호화해야 한다. 어떻게 해야 하는가? (2개 선택)',
   opts: [
-    '전송 중 암호화(TLS)와 저장 시 암호화를 켠다',
-    'Redis AUTH 토큰이나 RBAC(사용자·액세스 제어 목록)로 인증을 요구하고, 보안 그룹으로 접근을 제한한다',
+    '전송 중 암호화와 저장 시 암호화를 켠다',
+    'Redis AUTH 토큰이나 RBAC로 인증을 요구하고, 보안 그룹으로 접근을 제한한다',
     'Memcached로 바꾼다',
     '노드 유형을 키운다',
     'TTL을 짧게 한다',
@@ -112,7 +112,7 @@ QB.push(
 {
   id: 'b11-13', cat: 'networking', domain: 'secure', svc: ['VPC 흐름 로그', 'Athena'],
   q: '보안팀이 특정 의심 IP가 지난 30일 동안 VPC 안의 어떤 인스턴스와 어떤 포트로 통신했는지 SQL로 조사해야 한다. 흐름 로그는 이미 S3에 Parquet 형식으로 저장되고 있다. 가장 빠른 방법은?',
-  opts: ['Athena로 흐름 로그 테이블을 만들어(파티션 사용) SQL로 조회한다', 'CloudTrail 콘솔에서 이벤트를 검색한다', 'Config 고급 쿼리를 쓴다', '모든 인스턴스에 SSH로 접속해 로그를 확인한다'],
+  opts: ['Athena로 흐름 로그 테이블을 만들어 SQL로 조회한다', 'CloudTrail 콘솔에서 이벤트를 검색한다', 'Config 고급 쿼리를 쓴다', '모든 인스턴스에 SSH로 접속해 로그를 확인한다'],
   ans: [0],
   exp: 'S3에 있는 **VPC 흐름 로그**는 **Athena**로 바로 SQL 분석할 수 있다(Parquet와 시간 파티션을 쓰면 빠르고 저렴하다). CloudTrail은 API 호출 기록이라 네트워크 연결 정보가 없다. Detective의 VPC 흐름 시각화도 대안이다.',
   tip: '네트워크 트래픽 조사 = VPC Flow Logs + Athena.',
@@ -120,7 +120,7 @@ QB.push(
 {
   id: 'b11-14', cat: 'management', domain: 'secure', svc: ['Config 적합성 팩'],
   q: '회사가 조직 전체 계정에 PCI DSS 관련 Config 규칙 수십 개와 자동 수정 작업을 한 번에 배포하고, 규정 준수 점수를 한 곳에서 보고 싶다. 가장 적합한 방법은?',
-  opts: ['AWS Config 적합성 팩(conformance pack)을 Organizations에 배포하고 애그리게이터로 현황을 본다', '계정마다 규칙을 하나씩 수동으로 만든다', 'CloudTrail Insights를 켠다', 'Trusted Advisor를 켠다'],
+  opts: ['AWS Config 적합성 팩을 Organizations에 배포하고 애그리게이터로 현황을 본다', '계정마다 규칙을 하나씩 수동으로 만든다', 'CloudTrail Insights를 켠다', 'Trusted Advisor를 켠다'],
   ans: [0],
   exp: '**적합성 팩**은 여러 Config 규칙과 수정 작업을 **하나의 패키지(YAML 템플릿)**로 묶어 계정이나 조직 전체에 배포한다. PCI, CIS 등 샘플 템플릿도 제공된다. 애그리게이터로 조직 전체의 준수 현황을 볼 수 있다.',
   tip: '규칙 묶음 일괄 배포 → Config Conformance Pack.',
@@ -128,7 +128,7 @@ QB.push(
 {
   id: 'b11-15', cat: 'security', domain: 'secure', svc: ['데이터 상주', 'SCP'],
   q: '유럽 고객 데이터는 규정상 EU 리전 밖에 저장되거나 처리되면 안 된다. 조직의 EU 전용 OU에 있는 계정들이 EU가 아닌 리전에서는 리소스를 만들지 못하게 하려면?',
-  opts: ['EU OU에 aws:RequestedRegion이 EU 리전이 아니면 작업을 거부하는 SCP를 붙인다(IAM, CloudFront 같은 글로벌 서비스는 예외 처리)', '개발자에게 EU 리전만 쓰라고 공지한다', 'Route 53 지리 위치 라우팅을 쓴다', 'CloudFront 지리적 제한을 쓴다'],
+  opts: ['EU OU에 aws:RequestedRegion이 EU 리전이 아니면 작업을 거부하는 SCP를 붙인다', '개발자에게 EU 리전만 쓰라고 공지한다', 'Route 53 지리 위치 라우팅을 쓴다', 'CloudFront 지리적 제한을 쓴다'],
   ans: [0],
   exp: '**SCP + aws:RequestedRegion** 조건으로 허용된 리전 밖의 API 호출을 **예방적으로** 차단한다. 글로벌 서비스(IAM, Organizations, CloudFront, Route 53 등)는 us-east-1 같은 엔드포인트를 쓰므로 `NotAction`으로 예외 처리해야 한다. Control Tower의 리전 거부 컨트롤로도 구성할 수 있다.',
   tip: '데이터 상주/리전 제한 → SCP aws:RequestedRegion (글로벌 서비스 예외).',
@@ -144,7 +144,7 @@ QB.push(
 {
   id: 'b11-17', cat: 'security', domain: 'secure', svc: ['미사용 자격 증명 탐지'],
   q: '보안 감사에서 90일 넘게 쓰지 않은 IAM 사용자, 액세스 키, 역할을 찾아 정리하라는 요구가 나왔다. 조직의 여러 계정에서 지속적으로 찾아내려면 어떤 기능이 가장 적합한가?',
-  opts: ['IAM Access Analyzer의 미사용 액세스(unused access) 분석기', 'AWS Budgets', 'VPC 흐름 로그', 'Amazon Macie'],
+  opts: ['IAM Access Analyzer의 미사용 액세스 분석기', 'AWS Budgets', 'VPC 흐름 로그', 'Amazon Macie'],
   ans: [0],
   exp: '**Access Analyzer 미사용 액세스 분석기**는 조직이나 계정의 **사용하지 않는 역할, 액세스 키, 암호, 서비스·작업 수준 권한**을 지속적으로 찾아 결과로 보여 준다. 단일 계정이라면 **IAM 자격 증명 보고서**(credential report)로 키의 마지막 사용일을 확인할 수도 있다.',
   tip: '미사용 자격 증명/권한 → Access Analyzer unused access (또는 Credential Report).',
@@ -153,7 +153,7 @@ QB.push(
   id: 'b11-18', cat: 'security', domain: 'secure', svc: ['루트 사용자 보호'],
   q: '새로 만든 AWS 계정의 루트 사용자를 보호하기 위한 모범 사례로 옳은 것은? (2개 선택)',
   opts: [
-    '루트 사용자에 MFA를 켜고, 루트 액세스 키는 만들지 않는다(있다면 삭제)',
+    '루트 사용자에 MFA를 켜고, 루트 액세스 키는 만들지 않는다',
     '일상 업무에는 IAM Identity Center나 IAM 역할을 쓰고, 루트는 루트만 할 수 있는 작업에만 쓴다',
     '루트 자격 증명을 팀원 모두와 공유해 장애 시 대응한다',
     '루트 액세스 키를 애플리케이션 설정 파일에 저장한다',
@@ -190,7 +190,7 @@ QB.push(
 {
   id: 'b11-22', cat: 'security', domain: 'secure', svc: ['Cognito 위협 보호'],
   q: 'Cognito 사용자 풀로 로그인하는 앱에서 유출된 자격 증명으로 로그인을 시도하는 계정 탈취 공격이 늘고 있다. 위험도가 높은 로그인에는 추가 MFA를 요구하거나 차단하고 싶다. 어떻게 해야 하는가?',
-  opts: ['사용자 풀의 위협 보호(고급 보안 기능: 유출된 자격 증명 탐지, 적응형 인증)를 켠다', '앱 클라이언트 비밀을 바꾼다', '사용자 풀을 하나 더 만든다', 'Cognito 자격 증명 풀을 끈다'],
+  opts: ['사용자 풀의 위협 보호를 켠다', '앱 클라이언트 비밀을 바꾼다', '사용자 풀을 하나 더 만든다', 'Cognito 자격 증명 풀을 끈다'],
   ans: [0],
   exp: 'Cognito 사용자 풀의 **위협 보호** 기능은 **유출된 자격 증명**을 탐지하고, 로그인마다 **위험 점수**를 매겨 **적응형 인증**(위험도에 따라 MFA 요구나 차단)을 적용한다. 이벤트 로그도 남아 분석할 수 있다.',
   tip: 'Cognito 계정 탈취 방지 → Threat protection(적응형 인증).',
@@ -198,7 +198,7 @@ QB.push(
 {
   id: 'b11-23', cat: 'compute', domain: 'secure', svc: ['Lambda 함수 URL 인증'],
   q: '내부 자동화용 Lambda 함수 URL을 만들었다. 이 URL은 회사의 다른 AWS 서비스와 IAM 주체만 호출할 수 있어야 하고, 익명 호출은 막아야 한다. 어떻게 설정해야 하는가?',
-  opts: ['함수 URL의 인증 유형(AuthType)을 AWS_IAM으로 설정하고, 호출자에게 lambda:InvokeFunctionUrl 권한을 준다', 'AuthType을 NONE으로 두고 URL을 비밀로 관리한다', '함수 URL에 API 키를 설정한다', 'Lambda를 퍼블릭 서브넷에 둔다'],
+  opts: ['함수 URL의 인증 유형을 AWS_IAM으로 설정하고, 호출자에게 lambda:InvokeFunctionUrl 권한을 준다', 'AuthType을 NONE으로 두고 URL을 비밀로 관리한다', '함수 URL에 API 키를 설정한다', 'Lambda를 퍼블릭 서브넷에 둔다'],
   ans: [0],
   exp: 'Lambda **함수 URL**의 인증 유형이 **AWS_IAM**이면 SigV4로 서명된 요청만 허용되고, 리소스 정책과 IAM 정책으로 호출자를 통제한다. **NONE**이면 누구나 호출할 수 있으므로 URL을 비밀로 관리하는 것은 보안이 아니다. 더 세밀한 제어가 필요하면 API Gateway를 쓴다.',
   tip: 'Lambda Function URL: AWS_IAM(인증) / NONE(공개).',
@@ -222,7 +222,7 @@ QB.push(
 {
   id: 'b11-26', cat: 'networking', domain: 'secure', svc: ['3계층 네트워크 설계'],
   q: '퍼블릭 웹 애플리케이션(ALB → 앱 서버 → RDS)을 보안 모범 사례에 맞게 배치하려 한다. 각 계층의 서브넷 배치로 가장 적절한 것은?',
-  opts: ['ALB와 NAT 게이트웨이만 퍼블릭 서브넷, 앱 서버와 RDS는 프라이빗 서브넷(DB는 인터넷 경로가 없는 별도 서브넷)', '모든 계층을 퍼블릭 서브넷에 둔다', 'ALB를 프라이빗 서브넷, 앱 서버를 퍼블릭 서브넷에 둔다', 'RDS만 퍼블릭 서브넷에 둔다'],
+  opts: ['ALB와 NAT 게이트웨이만 퍼블릭 서브넷, 앱 서버와 RDS는 프라이빗 서브넷', '모든 계층을 퍼블릭 서브넷에 둔다', 'ALB를 프라이빗 서브넷, 앱 서버를 퍼블릭 서브넷에 둔다', 'RDS만 퍼블릭 서브넷에 둔다'],
   ans: [0],
   exp: '인터넷에서 직접 접근해야 하는 **ALB와 NAT 게이트웨이만 퍼블릭 서브넷**에 두고, **앱과 DB는 프라이빗 서브넷**에 둔다. DB 서브넷은 NAT 경로도 없이 격리하는 것이 좋다. 계층마다 보안 그룹으로 이전 계층에서 오는 트래픽만 허용한다.',
   tip: '퍼블릭 = ALB·NAT만. 앱·DB = 프라이빗.',
@@ -230,7 +230,7 @@ QB.push(
 {
   id: 'b11-27', cat: 'security', domain: 'secure', svc: ['SNS 토픽 정책'],
   q: 'S3 버킷의 객체 생성 이벤트를 SNS 토픽으로 보내도록 설정하려는데 "Unable to validate the following destination configurations" 오류가 난다. 무엇이 빠졌는가?',
-  opts: ['SNS 토픽 액세스 정책에서 s3.amazonaws.com 주체가 해당 버킷(aws:SourceArn)으로부터 sns:Publish를 할 수 있게 허용해야 한다', 'S3 버킷을 퍼블릭으로 만들어야 한다', 'SNS 토픽을 FIFO로 바꿔야 한다', 'IAM 사용자에게 SNS 권한을 줘야 한다'],
+  opts: ['SNS 토픽 액세스 정책에서 s3.amazonaws.com 주체가 해당 버킷으로부터 sns:Publish를 할 수 있게 허용해야 한다', 'S3 버킷을 퍼블릭으로 만들어야 한다', 'SNS 토픽을 FIFO로 바꿔야 한다', 'IAM 사용자에게 SNS 권한을 줘야 한다'],
   ans: [0],
   exp: 'S3가 SNS, SQS, Lambda로 이벤트를 보내려면 **대상의 리소스 기반 정책**이 S3 서비스 주체의 게시를 허용해야 한다. `aws:SourceArn`과 `aws:SourceAccount` 조건으로 특정 버킷만 허용한다. 토픽이 KMS로 암호화되어 있다면 키 정책에서도 S3를 허용해야 한다.',
   tip: '서비스 → 서비스 이벤트 전달 실패 = 대상 리소스 정책 확인.',
@@ -238,7 +238,7 @@ QB.push(
 {
   id: 'b11-28', cat: 'storage', domain: 'secure', svc: ['S3 Object Lock 거버넌스 모드'],
   q: '백업 파일은 30일 동안 일반 사용자가 지우거나 덮어쓰지 못해야 하지만, 보안 관리자는 테스트 데이터 정리처럼 예외적인 경우 특별 권한으로 삭제할 수 있어야 한다. 어떤 설정이 적합한가?',
-  opts: ['Object Lock 거버넌스(Governance) 모드 + 30일 보존, 관리자에게 s3:BypassGovernanceRetention 권한 부여', 'Object Lock 규정 준수 모드 + 30일 보존', 'MFA Delete만 켠다', '버킷 정책으로 모든 삭제를 거부한다'],
+  opts: ['Object Lock 거버넌스 모드 + 30일 보존, 관리자에게 s3:BypassGovernanceRetention 권한 부여', 'Object Lock 규정 준수 모드 + 30일 보존', 'MFA Delete만 켠다', '버킷 정책으로 모든 삭제를 거부한다'],
   ans: [0],
   exp: '**거버넌스 모드**는 대부분의 사용자에게서 객체를 보호하지만, **s3:BypassGovernanceRetention** 권한이 있는 사용자는 헤더를 지정해 보존을 우회할 수 있다. **규정 준수 모드**는 아무도 우회할 수 없다. 규정 준수 모드를 적용하기 전에 거버넌스 모드로 설정을 테스트하는 데도 쓴다.',
   tip: '예외 삭제 필요 → Governance / 절대 불가 → Compliance.',
@@ -254,7 +254,7 @@ QB.push(
 {
   id: 'b11-30', cat: 'integration', domain: 'secure', svc: ['API Gateway mTLS'],
   q: 'B2B 파트너만 API를 호출할 수 있게 하려 한다. 파트너는 회사가 발급한 클라이언트 인증서를 가지고 있고, TLS 단계에서 인증서를 검증해야 한다. API Gateway에서 어떻게 구현하는가?',
-  opts: ['사용자 지정 도메인에 상호 TLS(mTLS)를 켜고, 신뢰할 CA 인증서 번들(truststore)을 S3에 올려 지정한다', 'API 키만 발급한다', 'CORS를 설정한다', 'CloudFront 지리적 제한을 쓴다'],
+  opts: ['사용자 지정 도메인에 상호 TLS를 켜고, 신뢰할 CA 인증서 번들을 S3에 올려 지정한다', 'API 키만 발급한다', 'CORS를 설정한다', 'CloudFront 지리적 제한을 쓴다'],
   ans: [0],
   exp: 'API Gateway는 **사용자 지정 도메인에서 mTLS**를 지원한다. S3에 올린 **truststore**(신뢰할 CA 인증서)로 클라이언트 인증서를 검증하고, 검증에 실패한 연결은 TLS 단계에서 거부한다. 필요하면 Lambda 권한 부여자에서 인증서 정보를 추가로 검사할 수 있다.',
   tip: '클라이언트 인증서 기반 API 접근 → API Gateway mTLS.',
@@ -262,7 +262,7 @@ QB.push(
 {
   id: 'b11-31', cat: 'security', domain: 'secure', svc: ['교차 계정 역할 체인'],
   q: '보안팀은 중앙 보안 계정에서 조직의 모든 멤버 계정에 읽기 전용으로 접근해 감사해야 한다. 계정이 계속 추가된다. 가장 확장성 있는 방법은?',
-  opts: ['CloudFormation StackSets(서비스 관리형, 자동 배포)로 모든 멤버 계정에 보안 계정을 신뢰하는 감사 역할을 배포하고, 보안팀은 그 역할을 맡는다', '계정마다 IAM 사용자를 만든다', '모든 계정의 루트 자격 증명을 보안팀에 공유한다', '멤버 계정마다 수동으로 역할을 만든다'],
+  opts: ['CloudFormation StackSets로 모든 멤버 계정에 보안 계정을 신뢰하는 감사 역할을 배포하고, 보안팀은 그 역할을 맡는다', '계정마다 IAM 사용자를 만든다', '모든 계정의 루트 자격 증명을 보안팀에 공유한다', '멤버 계정마다 수동으로 역할을 만든다'],
   ans: [0],
   exp: '**StackSets의 자동 배포**를 쓰면 새 계정이 OU에 들어올 때마다 **감사 역할**이 자동으로 만들어진다. 보안 계정의 주체는 `sts:AssumeRole`로 각 계정의 역할을 맡아 읽기 전용으로 감사한다. Identity Center 권한 세트로도 구현할 수 있다.',
   tip: '다수 계정에 동일 역할 배포 → StackSets 자동 배포.',
@@ -292,7 +292,7 @@ QB.push(
 {
   id: 'b11-34', cat: 'security', domain: 'secure', svc: ['SCP 서비스 차단'],
   q: '규정상 조직의 어떤 계정도 승인되지 않은 특정 서비스(예: 미승인 AI 서비스)를 쓰면 안 된다. 계정 관리자가 IAM으로 권한을 줘도 쓰지 못하게 하려면?',
-  opts: ['해당 서비스의 작업을 Deny하는 SCP(또는 승인된 서비스만 허용하는 허용 목록 SCP)를 조직 루트나 OU에 붙인다', '각 계정의 IAM 사용자 정책을 점검한다', 'AWS Budgets로 사용량을 감시한다', 'CloudTrail에서 사용 기록을 매일 확인한다'],
+  opts: ['해당 서비스의 작업을 Deny하는 SCP를 조직 루트나 OU에 붙인다', '각 계정의 IAM 사용자 정책을 점검한다', 'AWS Budgets로 사용량을 감시한다', 'CloudTrail에서 사용 기록을 매일 확인한다'],
   ans: [0],
   exp: '**SCP**는 계정 안의 IAM 권한과 관계없이 **허용되는 작업의 상한**을 정한다. 특정 서비스를 **Deny**하거나 승인된 서비스만 허용하는 **허용 목록** 전략으로 사용을 원천 차단한다. 예산 감시나 로그 확인은 사후 탐지일 뿐이다.',
   tip: '조직 차원 서비스 사용 금지 → SCP.',
@@ -308,7 +308,7 @@ QB.push(
 {
   id: 'b11-36', cat: 'security', domain: 'secure', svc: ['KMS 다중 리전 vs 단일 리전'],
   q: 'DynamoDB 글로벌 테이블을 서울과 도쿄에서 쓰고, 애플리케이션이 일부 속성을 클라이언트 측에서 KMS로 암호화한다. 한 리전에 장애가 나도 다른 리전에서 리전 간 KMS 호출 없이 복호화해야 한다. 어떤 키 구성이 적합한가?',
-  opts: ['KMS 다중 리전 키(기본 키 + 다른 리전의 복제본 키)를 쓴다', '서울 리전의 단일 KMS 키만 쓴다', '리전마다 서로 다른 독립 키를 쓴다', 'SSE-S3를 쓴다'],
+  opts: ['KMS 다중 리전 키를 쓴다', '서울 리전의 단일 KMS 키만 쓴다', '리전마다 서로 다른 독립 키를 쓴다', 'SSE-S3를 쓴다'],
   ans: [0],
   exp: '**다중 리전 키**는 리전마다 **같은 키 ID와 키 자료**를 가진 복제본을 두므로, 한 리전에서 암호화한 데이터를 다른 리전의 로컬 키로 바로 복호화할 수 있다. 리전마다 독립 키를 쓰면 다른 리전 키로 암호화한 데이터를 복호화할 수 없다.',
   tip: '리전 간 동일 암호문 복호화 → Multi-Region Key.',
@@ -324,7 +324,7 @@ QB.push(
 {
   id: 'b11-38', cat: 'security', domain: 'secure', svc: ['Security Hub 자동 대응'],
   q: '보안팀이 여러 계정의 Security Hub 결과 중 "S3 버킷 퍼블릭 쓰기 허용"처럼 심각도 높은 결과가 나오면 자동으로 수정하고, 담당자에게 티켓을 만들고 싶다. 가장 적합한 방법은?',
-  opts: ['Security Hub 결과를 EventBridge 규칙으로 필터링해 SSM Automation(수정)과 티켓 시스템 연동 Lambda를 실행한다', 'Security Hub 콘솔을 매일 수동으로 확인한다', 'Trusted Advisor 알림을 켠다', 'CloudTrail Insights만 켠다'],
+  opts: ['Security Hub 결과를 EventBridge 규칙으로 필터링해 SSM Automation과 티켓 시스템 연동 Lambda를 실행한다', 'Security Hub 콘솔을 매일 수동으로 확인한다', 'Trusted Advisor 알림을 켠다', 'CloudTrail Insights만 켠다'],
   ans: [0],
   exp: 'Security Hub 결과는 **EventBridge**로 전달되므로, 심각도나 유형으로 필터링해 **자동 수정**(SSM Automation, Lambda)과 **알림·티켓 생성**을 연결할 수 있다. Security Hub의 자동화 규칙으로 결과의 심각도나 상태를 자동으로 바꾸는 것도 가능하다.',
   tip: '보안 결과 자동 대응 = Security Hub → EventBridge → Automation.',
@@ -346,7 +346,7 @@ QB.push(
 {
   id: 'b11-40', cat: 'database', domain: 'secure', svc: ['RDS 감사 로그'],
   q: '규정상 RDS for MySQL 데이터베이스에서 누가 어떤 SQL로 어떤 테이블에 접근했는지 감사 로그를 남기고 1년 보관해야 한다. 가장 적합한 방법은?',
-  opts: ['옵션 그룹으로 MariaDB 감사 플러그인을 켜고, 감사 로그를 CloudWatch Logs로 게시해 보존 기간을 설정한다(필요하면 S3로 내보냄)', 'CloudTrail 관리 이벤트만 확인한다', 'VPC 흐름 로그를 켠다', 'RDS 자동 백업 보존 기간을 늘린다'],
+  opts: ['옵션 그룹으로 MariaDB 감사 플러그인을 켜고, 감사 로그를 CloudWatch Logs로 게시해 보존 기간을 설정한다', 'CloudTrail 관리 이벤트만 확인한다', 'VPC 흐름 로그를 켠다', 'RDS 자동 백업 보존 기간을 늘린다'],
   ans: [0],
   exp: '**CloudTrail은 RDS API 호출**(인스턴스 생성, 수정 등)만 기록하고, **SQL 쿼리 수준 활동**은 기록하지 않는다. DB 엔진의 **감사 로그**(MySQL은 MariaDB Audit Plugin, PostgreSQL은 pgAudit)를 켜고 **CloudWatch Logs로 게시**해 보관한다. Aurora라면 데이터베이스 활동 스트림(Database Activity Streams)도 쓸 수 있다.',
   tip: 'DB 쿼리 감사 = 엔진 감사 로그 → CloudWatch Logs (Aurora: Activity Streams).',

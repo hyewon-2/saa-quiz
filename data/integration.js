@@ -4,7 +4,7 @@ QB.push(
   id: 'int-01', cat: 'integration', domain: 'resilient', svc: ['SQS', 'EC2 Auto Scaling'],
   q: '주문 웹 사이트가 주문을 받으면 바로 처리 서버를 호출하는데, 세일 기간에 처리 서버가 감당하지 못해 주문이 유실된다. 주문 유실 없이 트래픽 급증을 흡수하고, 처리 계층이 부하에 따라 확장되게 하려면?',
   opts: [
-    '웹 계층과 처리 계층 사이에 SQS 표준 대기열을 두고, 대기열의 메시지 수(ApproximateNumberOfMessagesVisible 등)에 따라 처리 계층 Auto Scaling 그룹을 확장한다',
+    '웹 계층과 처리 계층 사이에 SQS 표준 대기열을 두고, 대기열의 메시지 수에 따라 처리 계층 Auto Scaling 그룹을 확장한다',
     '처리 서버 인스턴스 크기를 늘린다',
     'SNS 토픽으로 주문을 처리 서버에 푸시한다',
     'ALB의 연결 드레이닝 시간을 늘린다',
@@ -26,7 +26,7 @@ QB.push(
   q: '주문이 생성되면 결제, 재고, 배송 알림 세 시스템이 각각 독립적으로 같은 이벤트를 처리해야 한다. 한 시스템에 장애가 나도 다른 시스템은 영향을 받지 않아야 하고, 장애가 났던 시스템도 복구된 뒤 놓친 메시지를 처리해야 한다. 가장 적합한 설계는?',
   opts: [
     '하나의 SQS 대기열을 세 시스템이 함께 폴링한다',
-    'SNS 토픽 하나에 시스템별 SQS 대기열 3개를 구독시킨다(팬아웃)',
+    'SNS 토픽 하나에 시스템별 SQS 대기열 3개를 구독시킨다',
     '주문 서비스가 세 시스템의 API를 순서대로 호출한다',
     'SNS 토픽에 세 시스템의 HTTP 엔드포인트를 직접 구독시킨다',
   ],
@@ -45,7 +45,7 @@ QB.push(
 {
   id: 'int-05', cat: 'integration', domain: 'cost', svc: ['Data Firehose'],
   q: '웹 서버의 클릭스트림 데이터를 거의 실시간(1분 이내)으로 S3에 Parquet 형식으로 저장하고 싶다. 서버나 샤드를 관리하거나 코드를 작성하는 것은 최소화해야 한다. 가장 적합한 서비스는?',
-  opts: ['Kinesis Data Streams + EC2 소비자 애플리케이션', 'Amazon Data Firehose (구 Kinesis Data Firehose), 레코드 형식 변환 사용', 'SQS + Lambda로 S3에 저장', 'AWS Glue 배치 작업을 매시간 실행'],
+  opts: ['Kinesis Data Streams + EC2 소비자 애플리케이션', 'Amazon Data Firehose, 레코드 형식 변환 사용', 'SQS + Lambda로 S3에 저장', 'AWS Glue 배치 작업을 매시간 실행'],
   ans: [1],
   exp: '**Data Firehose**는 완전 관리형 **적재(delivery)** 서비스다. S3, Redshift, OpenSearch, Splunk 등으로 데이터를 **버퍼링해 전송**하고, Parquet·ORC로 **형식을 변환**하거나 Lambda로 데이터를 가공할 수 있다. 용량 관리가 필요 없다. 다만 버퍼링 때문에 "실시간"이 아니라 "거의 실시간"이다.',
   tip: '"거의 실시간 적재", "S3/Redshift/OpenSearch로 전송", "관리 최소" → Firehose. "실시간·사용자 지정 처리" → Data Streams.',
@@ -61,7 +61,7 @@ QB.push(
 {
   id: 'int-07', cat: 'integration', domain: 'resilient', svc: ['SQS DLQ'],
   q: 'SQS 대기열의 일부 메시지에 형식 오류가 있어서 소비자가 계속 처리에 실패한다. 이 메시지들이 반복해서 다시 처리되면서 리소스를 낭비하고 정상 메시지 처리까지 늦어지고 있다. 어떻게 해결해야 하는가?',
-  opts: ['메시지 보존 기간을 1분으로 줄인다', '배달 못한 편지 대기열(DLQ)을 구성하고 maxReceiveCount를 설정한다', '대기열을 FIFO로 바꾼다', '가시성 제한 시간을 0으로 설정한다'],
+  opts: ['메시지 보존 기간을 1분으로 줄인다', '배달 못한 편지 대기열을 구성하고 maxReceiveCount를 설정한다', '대기열을 FIFO로 바꾼다', '가시성 제한 시간을 0으로 설정한다'],
   ans: [1],
   exp: '**DLQ**와 리드라이브 정책(`maxReceiveCount`)을 설정하면, 지정한 횟수만큼 처리에 실패한 메시지를 별도의 대기열로 옮긴다. 정상 처리를 막지 않고 실패한 메시지를 따로 분석할 수 있고, 원인을 고친 뒤 원래 대기열로 다시 보낼 수도 있다. 보존 기간을 줄이면 정상 메시지까지 유실될 수 있다.',
   tip: '"계속 실패하는 메시지(poison message)" → DLQ.',
@@ -69,7 +69,7 @@ QB.push(
 {
   id: 'int-08', cat: 'integration', domain: 'resilient', svc: ['SQS 가시성 제한 시간'],
   q: 'SQS 소비자가 메시지 하나를 처리하는 데 보통 2분이 걸린다. 그런데 같은 메시지가 서로 다른 소비자 인스턴스에서 두 번씩 처리되는 일이 자주 생긴다. 대기열의 가시성 제한 시간은 기본값 30초다. 가장 알맞은 조치는?',
-  opts: ['가시성 제한 시간을 처리 시간보다 길게(예: 3분) 늘린다', '메시지 보존 기간을 늘린다', '긴 폴링(long polling)을 켠다', '지연 대기열(delay queue)을 설정한다'],
+  opts: ['가시성 제한 시간을 처리 시간보다 길게 늘린다', '메시지 보존 기간을 늘린다', '긴 폴링(long polling)을 켠다', '지연 대기열(delay queue)을 설정한다'],
   ans: [0],
   exp: '소비자가 메시지를 받으면 **가시성 제한 시간** 동안 다른 소비자에게 보이지 않는다. 처리하는 데 이 시간보다 오래 걸리면 메시지가 다시 보이게 되고 다른 소비자가 **중복 처리**한다. 처리 시간보다 길게 설정하거나, 처리 중에 `ChangeMessageVisibility`로 연장해야 한다. 긴 폴링은 빈 응답을 줄여 비용을 아끼는 기능이다.',
   tip: '"중복 처리" + "처리 시간 > 가시성 제한 시간" → 가시성 제한 시간 증가. "빈 응답/API 비용" → Long Polling.',
@@ -77,7 +77,7 @@ QB.push(
 {
   id: 'int-09', cat: 'integration', domain: 'performance', svc: ['API Gateway', 'Lambda'],
   q: '모바일 앱용 REST API를 서버리스로 만들려 한다. 클라이언트별 요청 할당량과 스로틀링, 응답 캐싱, API 키 관리가 필요하다. 가장 적합한 구성은?',
-  opts: ['ALB + EC2', 'Amazon API Gateway(REST API, 사용량 계획) + AWS Lambda', 'CloudFront + S3', 'NLB + ECS'],
+  opts: ['ALB + EC2', 'Amazon API Gateway + AWS Lambda', 'CloudFront + S3', 'NLB + ECS'],
   ans: [1],
   exp: '**API Gateway REST API**는 **사용량 계획과 API 키**로 클라이언트별 할당량과 스로틀링을 관리하고, **응답 캐싱**, 요청 검증, 인증(Cognito, Lambda 권한 부여자, IAM)을 지원한다. Lambda와 함께 쓰면 서버를 관리할 필요가 없다. ALB에는 API 키나 사용량 계획 기능이 없다.',
   tip: '서버리스 API + 스로틀링/캐싱/API 키 → API Gateway(REST). 저렴·단순 → HTTP API. 실시간 양방향 → WebSocket API.',
@@ -93,7 +93,7 @@ QB.push(
 {
   id: 'int-11', cat: 'integration', domain: 'cost', svc: ['SQS 긴 폴링'],
   q: 'SQS 대기열은 대부분 비어 있는데, 소비자 애플리케이션이 계속 ReceiveMessage를 호출해서 빈 응답이 많이 생기고 API 요청 비용이 늘고 있다. 메시지 처리 지연을 늘리지 않고 비용을 줄이는 방법은?',
-  opts: ['ReceiveMessageWaitTimeSeconds를 1~20초로 설정해 긴 폴링(long polling)을 켠다', '가시성 제한 시간을 늘린다', '지연 대기열을 설정한다', '대기열을 FIFO로 바꾼다'],
+  opts: ['ReceiveMessageWaitTimeSeconds를 1~20초로 설정해 긴 폴링을 켠다', '가시성 제한 시간을 늘린다', '지연 대기열을 설정한다', '대기열을 FIFO로 바꾼다'],
   ans: [0],
   exp: '**긴 폴링**은 메시지가 없을 때 최대 20초까지 기다렸다가, 그 사이에 메시지가 들어오면 바로 반환한다. **빈 응답과 API 호출 수가 크게 줄어** 비용이 줄고, 메시지가 도착하면 즉시 받으므로 처리 지연도 늘지 않는다. 짧은 폴링(기본값 0초)은 일부 서버만 샘플링해서 빈 응답이 자주 생긴다.',
   tip: '"빈 응답/폴링 비용 감소" → Long Polling(WaitTimeSeconds > 0, 최대 20).',

@@ -44,7 +44,7 @@ QB.push(
 {
   id: 'ana-24', cat: 'analytics', domain: 'secure', svc: ['Amazon Bedrock'],
   q: '회사가 생성형 AI 챗봇을 만들려 한다. 여러 파운데이션 모델을 API로 쓰고, 사내 문서를 근거로 답하게 하고(RAG), 회사 데이터가 모델 학습에 쓰이지 않아야 한다. GPU 인프라는 관리하고 싶지 않다. 가장 적합한 서비스는?',
-  opts: ['Amazon Bedrock (Knowledge Bases 포함)', 'EC2 GPU 인스턴스에 모델을 직접 호스팅', 'Amazon Comprehend', 'Amazon Lex만'],
+  opts: ['Amazon Bedrock', 'EC2 GPU 인스턴스에 모델을 직접 호스팅', 'Amazon Comprehend', 'Amazon Lex만'],
   ans: [0],
   exp: '**Bedrock**은 여러 회사의 **파운데이션 모델을 서버리스 API**로 제공한다. **Knowledge Bases**로 S3 문서 기반 RAG를 구성하고, Guardrails로 응답을 통제할 수 있다. 고객 데이터는 기반 모델 학습에 쓰이지 않으며, PrivateLink로 비공개 접근도 가능하다. GPU를 직접 호스팅하면 운영 부담이 크다.',
   tip: '생성형 AI + 관리형 FM API + RAG → Bedrock.',
@@ -69,7 +69,7 @@ QB.push(
 {
   id: 'sto-41', cat: 'storage', domain: 'performance', svc: ['Storage Gateway 볼륨 게이트웨이'],
   q: '온프레미스 애플리케이션이 iSCSI 블록 스토리지를 쓴다. 전체 데이터는 AWS에 저장해 로컬 스토리지 구매를 줄이고, **자주 쓰는 데이터만** 로컬에 캐싱해 짧은 지연으로 접근하고 싶다. 어떤 구성이 적합한가?',
-  opts: ['볼륨 게이트웨이 캐시 볼륨(cached volumes)', '볼륨 게이트웨이 저장 볼륨(stored volumes)', 'S3 File Gateway', '테이프 게이트웨이'],
+  opts: ['볼륨 게이트웨이 캐시 볼륨', '볼륨 게이트웨이 저장 볼륨(stored volumes)', 'S3 File Gateway', '테이프 게이트웨이'],
   ans: [0],
   exp: '**캐시 볼륨**은 기본 데이터를 **S3에 저장**하고 자주 접근하는 데이터만 로컬에 캐싱한다. 그래서 온프레미스 스토리지가 적게 든다. **저장 볼륨**은 **전체 데이터를 로컬에** 두고 비동기로 AWS에 스냅샷 백업한다(전체 데이터에 낮은 지연이 필요할 때). 블록(iSCSI)이므로 File Gateway는 맞지 않는다.',
   tip: 'Volume Gateway: Cached = 주 데이터 S3, 캐시 로컬 / Stored = 주 데이터 로컬, 백업 S3.',
@@ -118,7 +118,7 @@ QB.push(
 {
   id: 'mgt-33', cat: 'management', domain: 'secure', svc: ['Service Catalog'],
   q: '중앙 IT팀이 승인된 구성(암호화된 RDS, 태그가 붙은 EC2 등)의 CloudFormation 템플릿만 개발팀이 셀프 서비스로 배포하게 하려 한다. 개발팀에게는 기반 리소스를 직접 만드는 넓은 IAM 권한을 주지 않으려 한다. 가장 적합한 서비스는?',
-  opts: ['AWS Service Catalog (제품·포트폴리오, 시작 제약 조건)', 'AWS Organizations SCP만', 'AWS CodePipeline', 'AWS Config'],
+  opts: ['AWS Service Catalog', 'AWS Organizations SCP만', 'AWS CodePipeline', 'AWS Config'],
   ans: [0],
   exp: '**Service Catalog**는 승인된 IaC 템플릿을 **제품**으로 등록하고, **포트폴리오**로 사용자 그룹에 공유한다. **시작 제약 조건**(launch constraint)으로 지정한 IAM 역할을 써서 배포하므로, 최종 사용자는 기반 서비스 권한 없이 제품만 배포할 수 있다.',
   tip: '"승인된 템플릿만 셀프 서비스 배포 + 최소 권한" → Service Catalog.',
@@ -142,7 +142,7 @@ QB.push(
 {
   id: 'cmp-42', cat: 'compute', domain: 'secure', svc: ['ECR 이미지 스캔'],
   q: '컨테이너 이미지를 ECR에 푸시할 때마다 OS 패키지와 프로그래밍 언어 패키지의 알려진 취약점(CVE)을 자동으로 스캔하고, 심각한 취약점이 발견되면 알림을 받고 싶다. 어떻게 해야 하는가?',
-  opts: ['ECR 향상된 스캔(Amazon Inspector 연동)을 켜고 결과를 EventBridge로 받아 알림을 보낸다', 'GuardDuty를 켠다', 'CloudTrail 데이터 이벤트를 켠다', 'Macie로 ECR을 스캔한다'],
+  opts: ['ECR 향상된 스캔을 켜고 결과를 EventBridge로 받아 알림을 보낸다', 'GuardDuty를 켠다', 'CloudTrail 데이터 이벤트를 켠다', 'Macie로 ECR을 스캔한다'],
   ans: [0],
   exp: 'ECR **향상된 스캔**은 **Amazon Inspector**와 통합되어 푸시할 때와 새 CVE가 공개될 때마다 **지속적으로** OS와 언어 패키지 취약점을 스캔한다. 결과 이벤트는 EventBridge로 받아 SNS나 Slack으로 알릴 수 있다. 기본 스캔은 OS 패키지만 검사한다.',
   tip: '컨테이너 이미지 취약점 → ECR 스캔(Inspector).',
@@ -165,7 +165,7 @@ QB.push(
   id: 'cmp-44', cat: 'compute', domain: 'cost', svc: ['정적 웹 사이트', 'S3', 'CloudFront'],
   q: '마케팅팀의 캠페인 사이트는 HTML, CSS, JavaScript, 이미지로만 구성된 정적 사이트다. 전 세계에서 빠르게 접속되어야 하고, HTTPS와 사용자 지정 도메인이 필요하며, 서버 관리와 비용은 최소화해야 한다. 가장 적합한 구성은?',
   opts: [
-    'S3 버킷(비공개) + CloudFront(OAC, ACM 인증서) + Route 53 별칭 레코드',
+    'S3 버킷 + CloudFront + Route 53 별칭 레코드',
     'EC2 웹 서버 2대 + ALB',
     'ECS Fargate에서 Nginx 컨테이너 실행',
     'Lightsail 인스턴스 1대',
@@ -178,7 +178,7 @@ QB.push(
   id: 'int-31', cat: 'integration', domain: 'performance', svc: ['서버리스 아키텍처'],
   q: '스타트업이 트래픽 예측이 어려운 모바일 백엔드 API를 만들려 한다. 사용자 인증, REST API, 비즈니스 로직, NoSQL 저장이 필요하고, 서버를 전혀 관리하지 않으며 사용량만큼 비용을 내고 싶다. 가장 적합한 조합은?',
   opts: [
-    'Cognito 사용자 풀 + API Gateway + Lambda + DynamoDB(온디맨드)',
+    'Cognito 사용자 풀 + API Gateway + Lambda + DynamoDB',
     'EC2 Auto Scaling + RDS + ALB',
     'ECS on EC2 + ElastiCache + Aurora 프로비저닝',
     'EMR + Redshift',
@@ -191,7 +191,7 @@ QB.push(
   id: 'int-32', cat: 'integration', domain: 'resilient', svc: ['이벤트 기반 아키텍처'],
   q: '주문 서비스가 주문이 완료되면 결제, 재고, 배송, 분석 서비스를 동기 HTTP로 차례로 호출한다. 서비스 하나만 느려져도 전체 주문이 실패한다. 서비스 간 결합도를 낮추고 장애 전파를 막으려면 어떻게 다시 설계해야 하는가?',
   opts: [
-    '주문 서비스는 "OrderPlaced" 이벤트를 EventBridge(또는 SNS)에 발행하고, 각 서비스가 자기 SQS 대기열이나 규칙으로 비동기 처리한다',
+    '주문 서비스는 "OrderPlaced" 이벤트를 EventBridge에 발행하고, 각 서비스가 자기 SQS 대기열이나 규칙으로 비동기 처리한다',
     '모든 서비스를 하나의 EC2 인스턴스로 합친다',
     'HTTP 타임아웃을 늘린다',
     '모든 호출에 재시도를 무한히 건다',
@@ -204,7 +204,7 @@ QB.push(
   id: 'ana-27', cat: 'analytics', domain: 'cost', svc: ['데이터 레이크 아키텍처'],
   q: '회사가 여러 시스템의 로그, CSV, JSON 데이터를 한곳에 모아 SQL 분석, BI 대시보드, 머신러닝에 쓰고 싶다. 스토리지와 컴퓨팅을 분리해 각각 확장하고, 비용을 최소화해야 한다. 가장 적합한 아키텍처는?',
   opts: [
-    'S3 데이터 레이크 + Glue 데이터 카탈로그/ETL + Athena(애드혹 SQL) + QuickSight(BI) + Lake Formation(권한)',
+    'S3 데이터 레이크 + Glue 데이터 카탈로그/ETL + Athena + QuickSight + Lake Formation',
     '모든 데이터를 RDS 한 곳에 적재',
     'EC2에 Hadoop 클러스터를 상시 운영',
     'EBS 볼륨에 파일을 모아 둔다',
@@ -216,7 +216,7 @@ QB.push(
 {
   id: 'sto-42', cat: 'storage', domain: 'performance', svc: ['S3 접두사 성능'],
   q: '애플리케이션이 S3 버킷의 한 접두사(prefix)에 초당 1만 건이 넘는 GET 요청을 보내다가 가끔 503 Slow Down 오류를 받는다. 성능을 높이는 방법은?',
-  opts: ['객체를 여러 접두사로 분산해 병렬로 요청한다(접두사당 초당 GET 5,500건 한도)', '버킷을 하나 더 만들어 같은 접두사를 쓴다', '객체 크기를 줄인다', 'S3 Standard-IA로 바꾼다'],
+  opts: ['객체를 여러 접두사로 분산해 병렬로 요청한다', '버킷을 하나 더 만들어 같은 접두사를 쓴다', '객체 크기를 줄인다', 'S3 Standard-IA로 바꾼다'],
   ans: [0],
   exp: 'S3는 **접두사마다** 초당 **3,500건의 PUT/COPY/POST/DELETE**와 **5,500건의 GET/HEAD** 요청을 처리한다. 객체를 **여러 접두사로 분산**하면 처리량이 접두사 수만큼 늘어난다. 읽기가 반복된다면 CloudFront 캐싱도 효과적이고, 초저지연이 필요하면 S3 Express One Zone도 고려할 수 있다.',
   tip: 'S3 처리량 한도는 접두사 단위 → 접두사 분산. 503 Slow Down = 요청률 초과.',
@@ -224,7 +224,7 @@ QB.push(
 {
   id: 'sto-43', cat: 'storage', domain: 'performance', svc: ['S3 바이트 범위 가져오기'],
   q: '분석 애플리케이션이 S3에 있는 수십 GB 크기 파일에서 일부 구간만 필요하거나, 큰 파일 하나를 최대한 빨리 내려받아야 한다. 다운로드 성능을 높이는 S3 기능은?',
-  opts: ['바이트 범위 가져오기(Range GET)로 여러 구간을 병렬로 요청한다', 'S3 Object Lock', 'S3 Inventory', '요청자 지불'],
+  opts: ['바이트 범위 가져오기로 여러 구간을 병렬로 요청한다', 'S3 Object Lock', 'S3 Inventory', '요청자 지불'],
   ans: [0],
   exp: '**바이트 범위 가져오기**(`Range` 헤더)를 쓰면 객체의 **특정 구간만** 요청하거나, 여러 구간을 **병렬로** 내려받아 처리량을 높일 수 있다. 실패하면 해당 구간만 다시 받으면 된다. 업로드 쪽에서 이에 대응하는 기능은 멀티파트 업로드다.',
   tip: '대용량 다운로드 가속/부분 읽기 → Byte-Range Fetch. 업로드 → Multipart.',
@@ -262,8 +262,8 @@ QB.push(
   id: 'sec-32', cat: 'security', domain: 'secure', svc: ['암호화 설계'],
   q: '규정상 다음을 모두 만족해야 한다: ① 데이터는 저장 시 암호화, ② 전송 중 암호화, ③ 키 사용 기록 감사. S3와 RDS를 쓰는 애플리케이션에 가장 적합한 조합은? (2개 선택)',
   opts: [
-    'S3는 SSE-KMS(고객 관리형 키), RDS는 KMS 키로 스토리지 암호화를 켠다 — 키 사용은 CloudTrail에 기록',
-    'S3 버킷 정책으로 aws:SecureTransport를 강제하고, RDS 연결은 SSL/TLS를 강제(rds.force_ssl 등)한다',
+    'S3는 SSE-KMS, RDS는 KMS 키로 스토리지 암호화를 켠다',
+    'S3 버킷 정책으로 aws:SecureTransport를 강제하고, RDS 연결은 SSL/TLS를 강제한다',
     'S3 버전 관리를 켠다',
     'RDS 읽기 전용 복제본을 만든다',
     '보안 그룹을 0.0.0.0/0에 연다',
@@ -291,7 +291,7 @@ QB.push(
 {
   id: 'mgt-37', cat: 'management', domain: 'resilient', svc: ['AWS Fault Injection Service'],
   q: '팀이 실제로 AZ 장애나 EC2 인스턴스 종료, 네트워크 지연이 생겼을 때 시스템이 설계대로 복구되는지 운영과 비슷한 환경에서 통제된 방식으로 검증하고 싶다(카오스 엔지니어링). 어떤 서비스가 적합한가?',
-  opts: ['AWS Fault Injection Service(FIS)', 'AWS Config', 'Amazon Inspector', 'AWS Trusted Advisor'],
+  opts: ['AWS Fault Injection Service', 'AWS Config', 'Amazon Inspector', 'AWS Trusted Advisor'],
   ans: [0],
   exp: '**FIS**는 EC2 종료, CPU 부하, 네트워크 지연·차단, AZ 전원 중단 시뮬레이션 같은 **장애 주입 실험**을 관리형으로 실행한다. **중지 조건**(CloudWatch 알람)으로 실험을 안전하게 통제한다. 복원력 설계를 실제로 검증하는 데 쓴다.',
   tip: '카오스 엔지니어링/장애 주입 → AWS FIS. 복원력 평가 → Resilience Hub.',
@@ -315,7 +315,7 @@ QB.push(
 {
   id: 'cmp-45', cat: 'compute', domain: 'performance', svc: ['컴퓨팅 선택'],
   q: '각 요구 사항에 가장 알맞은 컴퓨팅 서비스를 짝지은 것은?\n① 5초 안에 끝나는 이벤트 기반 이미지 처리\n② 30분 이상 걸리는 컨테이너 배치 작업, 서버 관리 X\n③ GPU와 특정 커널 설정이 필요한 ML 학습 서버',
-  opts: ['① Lambda ② ECS on Fargate(또는 AWS Batch on Fargate) ③ EC2', '① EC2 ② Lambda ③ Fargate', '① Fargate ② Lambda ③ Lambda', '① Batch ② EC2 ③ Lambda'],
+  opts: ['① Lambda ② ECS on Fargate ③ EC2', '① EC2 ② Lambda ③ Fargate', '① Fargate ② Lambda ③ Lambda', '① Batch ② EC2 ③ Lambda'],
   ans: [0],
   exp: '**짧은 이벤트 기반 처리**에는 **Lambda**(최대 15분), **15분을 넘는 컨테이너 작업에 서버 관리가 필요 없다면** **Fargate**, **GPU나 커널, OS 수준 제어**가 필요하면 **EC2**가 맞다. Lambda는 15분 제한 때문에 ②에 쓸 수 없고, GPU도 지원하지 않는다.',
   tip: 'Lambda ≤15분/GPU 없음 · Fargate = 서버리스 컨테이너(GPU 없음) · EC2 = 완전 제어.',

@@ -27,7 +27,7 @@ QB.push(
 {
   id: 'mgt-04', cat: 'management', domain: 'resilient', svc: ['CloudFormation StackSets'],
   q: '보안팀이 조직 내 모든 계정과 3개 리전에 똑같은 IAM 역할, CloudTrail, Config 설정을 배포해야 한다. 새로 만드는 계정에도 자동으로 적용되어야 한다. 가장 효율적인 방법은?',
-  opts: ['계정마다 콘솔에서 수동으로 설정한다', 'Organizations와 연동한 CloudFormation StackSets(서비스 관리형 권한, 자동 배포 사용)', '각 계정에서 CloudFormation 스택을 따로 실행한다', 'Lambda로 모든 계정에 API를 호출한다'],
+  opts: ['계정마다 콘솔에서 수동으로 설정한다', 'Organizations와 연동한 CloudFormation StackSets', '각 계정에서 CloudFormation 스택을 따로 실행한다', 'Lambda로 모든 계정에 API를 호출한다'],
   ans: [1],
   exp: '**StackSets**는 템플릿 하나를 **여러 계정과 여러 리전에** 한 번에 배포한다. Organizations와 서비스 관리형 권한으로 연동하고 **자동 배포**를 켜면, OU에 새로 추가된 계정에도 스택이 자동으로 배포된다.',
   tip: '다중 계정·다중 리전 IaC 배포 → StackSets.',
@@ -64,7 +64,7 @@ QB.push(
 {
   id: 'mgt-08', cat: 'management', domain: 'resilient', svc: ['DR 전략'],
   q: '핵심 업무 시스템의 재해 복구 요건은 RTO 수십 분, RPO 몇 분이다. 비용을 최소화하기 위해 DR 리전에서는 데이터베이스만 계속 복제하고, 애플리케이션 서버는 재해가 나면 그때 프로비저닝하려 한다. 이 DR 전략의 이름은?',
-  opts: ['백업 및 복원(Backup & Restore)', '파일럿 라이트(Pilot Light)', '웜 스탠바이(Warm Standby)', '다중 사이트 액티브-액티브(Multi-site)'],
+  opts: ['백업 및 복원(Backup & Restore)', '파일럿 라이트', '웜 스탠바이(Warm Standby)', '다중 사이트 액티브-액티브(Multi-site)'],
   ans: [1],
   exp: '**파일럿 라이트**는 DB 복제처럼 **핵심 요소만 항상 켜 두고**, 나머지(앱 서버 등)는 재해가 났을 때 AMI나 IaC로 빠르게 띄우는 전략이다. 웜 스탠바이는 **축소된 규모의 전체 환경**이 항상 실행 중이다. 백업 및 복원은 가장 저렴하지만 RTO와 RPO가 몇 시간 단위다. 다중 사이트는 가장 비싸고 RTO가 거의 0이다.',
   tip: 'RTO/RPO와 비용: 백업·복원(시간, 최저가) → 파일럿 라이트(수십 분) → 웜 스탠바이(분) → 멀티 사이트(실시간, 최고가). 자동화된 DR → AWS Elastic Disaster Recovery.',
@@ -80,7 +80,7 @@ QB.push(
 {
   id: 'mgt-10', cat: 'management', domain: 'resilient', svc: ['CloudWatch 알람', 'EC2 자동 복구'],
   q: '단일 EC2 인스턴스에서 실행되는 레거시 애플리케이션은 수평 확장이 불가능하다. 인스턴스가 기반 하드웨어 문제로 시스템 상태 확인에 실패하면 같은 인스턴스 ID, 프라이빗 IP, 탄력적 IP를 유지한 채 자동으로 복구되어야 한다. 어떻게 해야 하는가?',
-  opts: ['Auto Scaling 그룹의 최소·최대 용량을 1로 설정한다', 'StatusCheckFailed_System 지표에 CloudWatch 알람을 만들고 EC2 복구(recover) 작업을 설정한다', '매시간 AMI를 만든다', '인스턴스를 재부팅하는 Lambda를 매일 실행한다'],
+  opts: ['Auto Scaling 그룹의 최소·최대 용량을 1로 설정한다', 'StatusCheckFailed_System 지표에 CloudWatch 알람을 만들고 EC2 복구 작업을 설정한다', '매시간 AMI를 만든다', '인스턴스를 재부팅하는 Lambda를 매일 실행한다'],
   ans: [1],
   exp: '**EC2 복구 작업**(또는 지원되는 인스턴스의 기본 자동 복구)은 인스턴스를 다른 하드웨어로 옮기면서 **인스턴스 ID, 프라이빗 IP, 탄력적 IP, 메타데이터를 그대로 유지**한다. ASG(1/1/1)도 자가 복구는 되지만 **새 인스턴스**를 띄우므로 ID와 IP가 바뀐다.',
   tip: '"같은 인스턴스 ID/IP 유지" + 하드웨어 장애 → CloudWatch 알람 recover 작업.',
@@ -96,7 +96,7 @@ QB.push(
 {
   id: 'mgt-12', cat: 'management', domain: 'cost', svc: ['Organizations 통합 결제'],
   q: '회사에 독립적으로 결제하는 AWS 계정이 10개 있다. 결제를 하나로 합치고, 계정 전체 사용량을 합쳐 S3·데이터 전송 볼륨 할인을 받고, 한 계정의 사용하지 않는 예약 인스턴스·Savings Plans 할인을 다른 계정에서도 쓰고 싶다. 어떻게 해야 하는가?',
-  opts: ['각 계정에서 따로 예약 인스턴스를 산다', 'AWS Organizations를 만들고 모든 계정을 초대해 통합 결제(consolidated billing)를 쓴다', '모든 워크로드를 계정 하나로 합친다', 'Cost Explorer에서 계정을 연결한다'],
+  opts: ['각 계정에서 따로 예약 인스턴스를 산다', 'AWS Organizations를 만들고 모든 계정을 초대해 통합 결제를 쓴다', '모든 워크로드를 계정 하나로 합친다', 'Cost Explorer에서 계정을 연결한다'],
   ans: [1],
   exp: '**Organizations 통합 결제**는 관리 계정에서 청구서 하나로 결제하고, 모든 계정의 사용량을 **합산해 볼륨 할인 구간**을 적용하며, 예약 인스턴스와 Savings Plans 할인을 **계정 간에 공유**한다(공유는 끌 수도 있다). 워크로드를 계정 하나로 합치면 보안 경계가 사라진다.',
   tip: '"여러 계정 결제 통합 + 할인 공유" → Organizations Consolidated Billing.',
@@ -104,7 +104,7 @@ QB.push(
 {
   id: 'mgt-13', cat: 'management', domain: 'cost', svc: ['Instance Scheduler', 'EventBridge Scheduler'],
   q: '개발·테스트용 EC2 인스턴스와 RDS 인스턴스는 평일 오전 9시부터 오후 7시까지만 쓰이는데, 지금은 24시간 실행되고 있다. 운영 부담을 최소화하면서 비용을 줄이는 방법은?',
-  opts: ['예약 인스턴스를 구매한다', 'AWS Instance Scheduler(또는 EventBridge Scheduler)로 업무 시간 외에는 인스턴스를 자동으로 중지하고 업무 시간에 시작한다', '인스턴스를 스팟으로 바꾼다', '인스턴스 크기를 줄인다'],
+  opts: ['예약 인스턴스를 구매한다', 'AWS Instance Scheduler로 업무 시간 외에는 인스턴스를 자동으로 중지하고 업무 시간에 시작한다', '인스턴스를 스팟으로 바꾼다', '인스턴스 크기를 줄인다'],
   ans: [1],
   exp: '하루 10시간, 주 5일만 쓰면 사용 시간은 주 168시간 중 50시간이다. 업무 시간 외에 **자동으로 중지**하면 컴퓨팅 비용을 약 70% 줄일 수 있다. Instance Scheduler on AWS나 EventBridge Scheduler로 EC2와 RDS의 시작·중지를 예약한다. 예약 인스턴스는 상시 실행하는 워크로드에 맞고, 이 경우에는 오히려 낭비다.',
   tip: '"업무 시간에만 사용" → 예약 시작/중지. RI·Savings Plans는 24/7 워크로드용.',

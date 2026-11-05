@@ -19,7 +19,7 @@ QB.push(
 {
   id: 'db-03', cat: 'database', domain: 'performance', svc: ['ElastiCache'],
   q: '쇼핑몰의 상품 상세 페이지가 같은 RDS 쿼리를 초당 수천 번 실행한다. 상품 정보는 자주 바뀌지 않는다. 데이터베이스 부하를 줄이고 응답 시간을 마이크로초~밀리초 수준으로 낮추려면?',
-  opts: ['RDS 인스턴스를 수직 확장한다', 'Amazon ElastiCache(Redis OSS/Valkey)를 지연 로딩(lazy loading) 캐시로 쓴다', 'RDS 스토리지를 io2로 바꾼다', 'DynamoDB로 마이그레이션한다'],
+  opts: ['RDS 인스턴스를 수직 확장한다', 'Amazon ElastiCache를 지연 로딩 캐시로 쓴다', 'RDS 스토리지를 io2로 바꾼다', 'DynamoDB로 마이그레이션한다'],
   ans: [1],
   exp: '**ElastiCache**는 인메모리 캐시라서 **자주 읽고 잘 바뀌지 않는** 데이터를 캐싱하면 DB 부하가 크게 줄고 응답이 매우 빨라진다. 지연 로딩은 캐시에 없을 때만 DB에서 읽어 와 캐시에 넣는 전략이고, TTL을 같이 쓰면 오래된 데이터 문제도 줄일 수 있다. 수직 확장이나 스토리지 변경은 비용 대비 효과가 낮다.',
   tip: 'RDS 앞단 캐시 → ElastiCache. DynamoDB 앞단 캐시 → DAX. 세션 저장소도 ElastiCache.',
@@ -35,7 +35,7 @@ QB.push(
 {
   id: 'db-05', cat: 'database', domain: 'performance', svc: ['DynamoDB DAX'],
   q: '게임 리더보드가 DynamoDB 테이블에서 같은 항목을 초당 수십만 번 읽는다. 현재 읽기 지연 시간은 한 자릿수 밀리초인데, 애플리케이션 코드를 최소한으로 바꾸면서 마이크로초 단위로 낮추고 싶다. 무엇을 써야 하는가?',
-  opts: ['DynamoDB Accelerator(DAX)', 'ElastiCache for Memcached', 'DynamoDB Streams', 'DynamoDB 글로벌 테이블'],
+  opts: ['DynamoDB Accelerator', 'ElastiCache for Memcached', 'DynamoDB Streams', 'DynamoDB 글로벌 테이블'],
   ans: [0],
   exp: '**DAX**는 DynamoDB 전용 인메모리 캐시로, 읽기 지연 시간을 **마이크로초** 단위로 줄여 준다. DynamoDB API와 호환되므로 SDK 클라이언트만 DAX 클라이언트로 바꾸면 된다. ElastiCache도 가능하지만 캐시 로직을 직접 구현해야 한다. Streams는 변경 데이터 캡처 기능이고, 글로벌 테이블은 다중 리전 복제 기능이다.',
   tip: 'DynamoDB + 마이크로초 + 코드 변경 최소 → DAX.',
@@ -69,7 +69,7 @@ QB.push(
   q: '온프레미스 Oracle 데이터베이스를 Amazon Aurora PostgreSQL로 마이그레이션한다. 마이그레이션하는 동안 애플리케이션 다운타임을 최소화해야 한다. 어떤 조합이 맞는가?',
   opts: [
     'AWS DMS만 써서 전체 로드를 한 번 실행한다',
-    'AWS SCT로 스키마와 코드를 변환하고, AWS DMS로 전체 로드와 지속적 복제(CDC)를 실행한다',
+    'AWS SCT로 스키마와 코드를 변환하고, AWS DMS로 전체 로드와 지속적 복제를 실행한다',
     'Oracle 덤프 파일을 S3에 올린 뒤 Aurora로 가져온다',
     'AWS DataSync로 데이터 파일을 복사한다',
   ],
@@ -109,7 +109,7 @@ QB.push(
 {
   id: 'db-13', cat: 'database', domain: 'performance', svc: ['DocumentDB'],
   q: '온프레미스 MongoDB에 JSON 문서 형태의 상품 카탈로그를 저장하고 있다. MongoDB 드라이버와 쿼리를 거의 그대로 쓰면서, 백업·패치·복제를 관리하지 않는 AWS 관리형 서비스로 옮기고 싶다. 가장 적합한 선택은?',
-  opts: ['Amazon DynamoDB', 'Amazon DocumentDB (MongoDB 호환)', 'Amazon RDS for MySQL', 'Amazon Neptune'],
+  opts: ['Amazon DynamoDB', 'Amazon DocumentDB', 'Amazon RDS for MySQL', 'Amazon Neptune'],
   ans: [1],
   exp: '**DocumentDB**는 **MongoDB API와 호환**되는 완전 관리형 문서 데이터베이스다. 기존 드라이버와 도구를 거의 그대로 쓸 수 있다. DynamoDB도 문서를 저장할 수 있지만 API가 달라서 코드를 다시 짜야 한다. Neptune은 그래프 데이터베이스다.',
   tip: 'MongoDB → DocumentDB. 그래프(소셜 관계, 추천) → Neptune. Cassandra → Keyspaces. 시계열 → Timestream.',
@@ -117,7 +117,7 @@ QB.push(
 {
   id: 'db-14', cat: 'database', domain: 'cost', svc: ['DynamoDB TTL'],
   q: 'DynamoDB 테이블에 사용자 세션 데이터를 저장한다. 세션은 24시간이 지나면 필요 없지만 테이블에 계속 남아 스토리지 비용이 늘고 있다. 쓰기 용량을 소모하지 않고 만료된 항목을 자동으로 삭제하는 가장 효율적인 방법은?',
-  opts: ['매시간 Lambda로 테이블을 스캔해 오래된 항목을 삭제한다', '만료 시각(epoch 초)을 담은 속성을 두고 DynamoDB TTL을 켠다', '매일 테이블을 새로 만든다', 'DynamoDB Streams로 삭제한다'],
+  opts: ['매시간 Lambda로 테이블을 스캔해 오래된 항목을 삭제한다', '만료 시각을 담은 속성을 두고 DynamoDB TTL을 켠다', '매일 테이블을 새로 만든다', 'DynamoDB Streams로 삭제한다'],
   ans: [1],
   exp: '**DynamoDB TTL**은 지정한 속성의 타임스탬프가 지나면 항목을 **자동으로 삭제**하고, 이 삭제에는 **쓰기 용량을 소모하지 않는다(무료)**. 보통 만료 후 며칠 안에 삭제된다. 삭제 이벤트는 Streams로 받아 아카이브할 수도 있다. 스캔과 삭제를 직접 하면 읽기·쓰기 용량을 모두 소모한다.',
   tip: '"만료 데이터 자동 삭제", "추가 비용 없이" → DynamoDB TTL.',

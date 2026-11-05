@@ -4,7 +4,7 @@ QB.push(
 {
   id: 'cmp-30', cat: 'compute', domain: 'cost', svc: ['예약 인스턴스'],
   q: '회사가 앞으로 3년 동안 24시간 실행할 EC2 워크로드에 예약 인스턴스(RI)를 사려 한다. 다만 2년째쯤 더 새로운 인스턴스 패밀리로 바꿀 가능성이 있다. 할인을 받으면서 패밀리 변경 유연성도 확보하려면?',
-  opts: ['3년 전환형 예약 인스턴스(Convertible RI)', '3년 표준 예약 인스턴스(Standard RI)', '스팟 인스턴스', '온디맨드 인스턴스'],
+  opts: ['3년 전환형 예약 인스턴스', '3년 표준 예약 인스턴스(Standard RI)', '스팟 인스턴스', '온디맨드 인스턴스'],
   ans: [0],
   exp: '**전환형 RI**는 약정 기간 동안 **인스턴스 패밀리, OS, 테넌시**를 같거나 더 높은 가치의 RI로 **교환**할 수 있다. 할인율은 표준 RI보다 조금 낮다(최대 약 66% 대 72%). **표준 RI**는 같은 패밀리 안에서 크기만 조정할 수 있고(리전 RI), 패밀리는 바꿀 수 없다. 요즘에는 비슷한 유연성을 주는 **Savings Plans**도 좋은 대안이다.',
   tip: 'RI 중 패밀리 변경 가능 → Convertible. 최대 할인·고정 → Standard.',
@@ -20,7 +20,7 @@ QB.push(
 {
   id: 'cmp-32', cat: 'compute', domain: 'cost', svc: ['Lambda 메모리 튜닝'],
   q: 'CPU 집약적인 Lambda 함수가 128MB 메모리로 실행되며 한 번에 평균 8초가 걸린다. 비용과 실행 시간을 함께 최적화하려면 어떻게 하는 것이 좋은가?',
-  opts: ['메모리를 늘려 가며(예: AWS Lambda Power Tuning으로) 실행 시간과 비용이 가장 좋은 지점을 찾는다', '메모리는 항상 최소로 두는 것이 가장 저렴하다', '제한 시간을 15분으로 늘린다', '프로비저닝된 동시성을 설정한다'],
+  opts: ['메모리를 늘려 가며 실행 시간과 비용이 가장 좋은 지점을 찾는다', '메모리는 항상 최소로 두는 것이 가장 저렴하다', '제한 시간을 15분으로 늘린다', '프로비저닝된 동시성을 설정한다'],
   ans: [0],
   exp: 'Lambda는 **메모리에 비례해 CPU가 할당**되고, 요금은 **메모리(GB) × 실행 시간**으로 매겨진다. CPU 집약적인 함수는 메모리를 늘리면 실행 시간이 크게 줄어서, **총비용이 같거나 오히려 낮아지는** 경우가 많다. **Lambda Power Tuning**(Step Functions 기반 오픈 소스 도구)이나 Compute Optimizer로 최적의 지점을 찾는다. arm64(Graviton)로 바꾸면 비용을 더 줄일 수 있다.',
   tip: 'Lambda: 메모리↑ = CPU↑. 무조건 최소 메모리가 최저 비용은 아니다.',
@@ -29,8 +29,8 @@ QB.push(
   id: 'sto-33', cat: 'storage', domain: 'cost', svc: ['S3 수명 주기', '멀티파트 업로드'],
   q: 'S3 버킷의 청구 용량이 실제로 보이는 객체 용량보다 훨씬 크다. 조사해 보니 업로드에 실패하고 남은 미완료 멀티파트 업로드 조각과, 버전 관리로 쌓인 오래된 이전 버전이 원인이었다. 자동으로 정리하는 방법은? (2개 선택)',
   opts: [
-    '수명 주기 규칙에 "미완료 멀티파트 업로드 삭제(AbortIncompleteMultipartUpload)"를 추가한다',
-    '수명 주기 규칙에 "이전 버전 만료(NoncurrentVersionExpiration)"를 추가한다',
+    '수명 주기 규칙에 "미완료 멀티파트 업로드 삭제"를 추가한다',
+    '수명 주기 규칙에 "이전 버전 만료"를 추가한다',
     '버킷의 버전 관리를 일시 중지한다',
     'S3 Transfer Acceleration을 끈다',
     'Intelligent-Tiering으로 바꾼다',
@@ -58,7 +58,7 @@ QB.push(
 {
   id: 'sto-36', cat: 'storage', domain: 'cost', svc: ['Tape Gateway'],
   q: '회사가 기존 백업 소프트웨어(Veeam, NetBackup 등)로 물리 테이프에 백업하고, 테이프를 외부 창고에 보관하는 데 비용이 많이 든다. 백업 절차를 바꾸지 않고 테이프 인프라를 없애려면?',
-  opts: ['Storage Gateway 테이프 게이트웨이로 가상 테이프를 S3에 저장하고, 보관 테이프는 S3 Glacier(Flexible Retrieval/Deep Archive)로 아카이브한다', 'S3 File Gateway를 쓴다', 'EBS 스냅샷을 쓴다', 'Snowball로 매주 테이프를 보낸다'],
+  opts: ['Storage Gateway 테이프 게이트웨이로 가상 테이프를 S3에 저장하고, 보관 테이프는 S3 Glacier로 아카이브한다', 'S3 File Gateway를 쓴다', 'EBS 스냅샷을 쓴다', 'Snowball로 매주 테이프를 보낸다'],
   ans: [0],
   exp: '**테이프 게이트웨이**는 iSCSI 가상 테이프 라이브러리(VTL)를 제공해서, 기존 백업 소프트웨어가 **설정만 바꾸면** 그대로 쓸 수 있다. 가상 테이프는 S3에 저장되고, 보관용 테이프는 **Glacier 계층으로 아카이브**되어 비용이 크게 줄어든다.',
   tip: '"물리 테이프 대체 + 기존 백업 SW 유지" → Tape Gateway.',
@@ -82,7 +82,7 @@ QB.push(
 {
   id: 'db-34', cat: 'database', domain: 'cost', svc: ['RDS 예약 인스턴스'],
   q: '운영 RDS for MySQL Multi-AZ 인스턴스는 앞으로 3년 동안 같은 크기로 24시간 실행될 예정이다. 데이터베이스 비용을 가장 많이 줄이는 방법은?',
-  opts: ['3년 기간 RDS 예약 인스턴스(Multi-AZ)를 구매한다', 'Compute Savings Plans를 구매한다', '스팟 인스턴스로 실행한다', '매일 밤 인스턴스를 중지한다'],
+  opts: ['3년 기간 RDS 예약 인스턴스를 구매한다', 'Compute Savings Plans를 구매한다', '스팟 인스턴스로 실행한다', '매일 밤 인스턴스를 중지한다'],
   ans: [0],
   exp: '꾸준히 실행되는 RDS 워크로드는 **RDS 예약 인스턴스**로 할인을 받는다(기간이 길고 선결제가 많을수록 할인율이 높다). **Compute Savings Plans는 RDS에 적용되지 않는다**(EC2, Fargate, Lambda만 해당). RDS에는 스팟이 없다. 운영 DB는 매일 밤 중지할 수 없다.',
   tip: 'Compute Savings Plans 적용 대상 = EC2·Fargate·Lambda뿐. RDS/ElastiCache/OpenSearch/Redshift → 각 서비스의 예약 인스턴스/노드.',
@@ -106,7 +106,7 @@ QB.push(
 {
   id: 'net-33', cat: 'networking', domain: 'cost', svc: ['퍼블릭 IPv4 요금'],
   q: '비용 보고서를 보니 수백 대의 EC2 인스턴스에 할당된 퍼블릭 IPv4 주소에 상당한 요금이 붙고 있다. 이 인스턴스들은 ALB 뒤에서만 트래픽을 받는다. 비용을 줄이는 방법은?',
-  opts: ['인스턴스를 프라이빗 서브넷으로 옮기고, 퍼블릭 IP 자동 할당을 끄고, 아웃바운드는 NAT 게이트웨이(또는 VPC 엔드포인트)로 처리한다', '모든 인스턴스에 탄력적 IP를 할당한다', '인스턴스 유형을 줄인다', 'ALB를 NLB로 바꾼다'],
+  opts: ['인스턴스를 프라이빗 서브넷으로 옮기고, 퍼블릭 IP 자동 할당을 끄고, 아웃바운드는 NAT 게이트웨이로 처리한다', '모든 인스턴스에 탄력적 IP를 할당한다', '인스턴스 유형을 줄인다', 'ALB를 NLB로 바꾼다'],
   ans: [0],
   exp: '2024년부터 **모든 퍼블릭 IPv4 주소에 시간당 요금**이 붙는다(사용 중인 탄력적 IP 포함). ALB 뒤의 인스턴스는 퍼블릭 IP가 필요 없으므로 **프라이빗 서브넷**에 두고, 아웃바운드가 필요하면 NAT 게이트웨이나 VPC 엔드포인트를 쓴다. 보안도 함께 좋아진다. 장기적으로는 IPv6 도입도 대안이다.',
   tip: '퍼블릭 IPv4는 유료 → 불필요한 퍼블릭 IP 제거, 프라이빗 서브넷 + ALB/NAT.',
@@ -114,7 +114,7 @@ QB.push(
 {
   id: 'mgt-29', cat: 'management', domain: 'cost', svc: ['CloudWatch Logs 보존 기간'],
   q: '수십 개 로그 그룹의 보존 기간이 "만료되지 않음"으로 되어 있어 CloudWatch Logs 스토리지 비용이 계속 늘고 있다. 최근 30일 로그만 바로 검색할 수 있으면 되고, 감사용 로그는 1년 동안 저렴하게 보관해야 한다. 적절한 조치는?',
-  opts: ['로그 그룹 보존 기간을 30일로 설정하고, 장기 보관이 필요한 로그는 구독 필터(Firehose)로 S3에 보내 S3 수명 주기로 저렴한 클래스에 보관한다', '모든 로그를 삭제한다', '로그 수준을 DEBUG로 바꾼다', 'CloudWatch 상세 모니터링을 끈다'],
+  opts: ['로그 그룹 보존 기간을 30일로 설정하고, 장기 보관이 필요한 로그는 구독 필터로 S3에 보내 S3 수명 주기로 저렴한 클래스에 보관한다', '모든 로그를 삭제한다', '로그 수준을 DEBUG로 바꾼다', 'CloudWatch 상세 모니터링을 끈다'],
   ans: [0],
   exp: 'CloudWatch Logs의 기본 보존 기간은 **무기한**이라 스토리지 비용이 계속 쌓인다. **보존 기간을 설정**해 오래된 로그를 자동으로 지우고, 장기 보관이 필요한 로그는 **S3로 보내** 수명 주기 규칙으로 IA나 Glacier에 저렴하게 보관한다. 거의 조회하지 않는 로그라면 CloudWatch Logs Infrequent Access 로그 클래스도 대안이다.',
   tip: 'CloudWatch Logs 비용 → 보존 기간 설정 + S3 아카이브.',
@@ -130,7 +130,7 @@ QB.push(
 {
   id: 'cmp-33', cat: 'compute', domain: 'resilient', svc: ['스팟 중단 처리'],
   q: '스팟 인스턴스에서 실행되는 작업 노드가 회수되기 전에 진행 중인 작업 상태를 S3에 저장하고 대기열에 작업을 반납해야 한다. 회수가 임박했음을 어떻게 감지하는가?',
-  opts: ['인스턴스 메타데이터의 spot/instance-action이나 EventBridge의 "EC2 Spot Instance Interruption Warning"(2분 전 알림)과 리밸런싱 권장 신호를 처리한다', 'CloudTrail에서 TerminateInstances 이벤트를 기다린다', 'AWS Health Dashboard를 1시간마다 확인한다', '스팟은 알림 없이 즉시 종료되므로 방법이 없다'],
+  opts: ['인스턴스 메타데이터의 spot/instance-action이나 EventBridge의 "EC2 Spot Instance Interruption Warning"과 리밸런싱 권장 신호를 처리한다', 'CloudTrail에서 TerminateInstances 이벤트를 기다린다', 'AWS Health Dashboard를 1시간마다 확인한다', '스팟은 알림 없이 즉시 종료되므로 방법이 없다'],
   ans: [0],
   exp: '스팟 인스턴스는 회수되기 **2분 전에 중단 알림**을 준다. 인스턴스 메타데이터(`spot/instance-action`)나 **EventBridge 이벤트**로 감지해 체크포인트 저장 같은 정리 작업을 한다. **리밸런싱 권장 신호**는 중단 위험이 높아졌을 때 더 일찍 알려 주므로, 미리 대체 용량을 확보할 수 있다(ASG의 Capacity Rebalancing).',
   tip: '스팟 = 2분 경고 + Rebalance Recommendation. ASG Capacity Rebalancing.',
@@ -147,7 +147,7 @@ QB.push(
 {
   id: 'cmp-35', cat: 'compute', domain: 'resilient', svc: ['ASG 상태 확인 유예 기간'],
   q: '새로 시작된 인스턴스가 애플리케이션 초기화에 4분이 걸리는데, Auto Scaling 그룹이 ELB 상태 확인 실패를 이유로 초기화 도중 인스턴스를 계속 종료하고 다시 띄우는 루프에 빠졌다. 어떻게 해결해야 하는가?',
-  opts: ['Auto Scaling 그룹의 상태 확인 유예 기간(health check grace period)을 초기화 시간보다 길게 설정한다', 'ELB 상태 확인을 끄고 EC2 상태 확인만 쓴다', '최소 용량을 0으로 설정한다', '인스턴스 유형을 줄인다'],
+  opts: ['Auto Scaling 그룹의 상태 확인 유예 기간을 초기화 시간보다 길게 설정한다', 'ELB 상태 확인을 끄고 EC2 상태 확인만 쓴다', '최소 용량을 0으로 설정한다', '인스턴스 유형을 줄인다'],
   ans: [0],
   exp: '**상태 확인 유예 기간** 동안에는 새 인스턴스가 상태 확인에 실패해도 비정상으로 판단하지 않는다. 초기화 시간보다 길게(예: 300초 이상) 설정하면 교체 루프가 사라진다. ELB 상태 확인을 끄면 애플리케이션 장애를 감지하지 못하게 된다. 수명 주기 후크로 준비가 끝날 때까지 대기시키는 방법도 있다.',
   tip: '"초기화 중 종료 반복" → Health Check Grace Period.',
@@ -155,7 +155,7 @@ QB.push(
 {
   id: 'cmp-36', cat: 'compute', domain: 'resilient', svc: ['ELB 등록 취소 지연'],
   q: '스케일 인이나 배포 중에 인스턴스가 대상 그룹에서 빠질 때, 처리 중이던 사용자 요청(최대 60초 소요)이 끊기는 문제가 생긴다. 어떻게 해결해야 하는가?',
-  opts: ['대상 그룹의 등록 취소 지연(deregistration delay, 연결 드레이닝) 시간을 60초 이상으로 설정한다', '고정 세션을 켠다', '상태 확인 간격을 줄인다', 'Auto Scaling 그룹 최대 용량을 늘린다'],
+  opts: ['대상 그룹의 등록 취소 지연 시간을 60초 이상으로 설정한다', '고정 세션을 켠다', '상태 확인 간격을 줄인다', 'Auto Scaling 그룹 최대 용량을 늘린다'],
   ans: [0],
   exp: '**등록 취소 지연**이 걸린 동안 ALB나 NLB는 등록이 취소되는 대상에 **새 요청은 보내지 않고, 처리 중인 요청은 마칠 때까지** 기다린다(기본 300초). 요청 처리 시간에 맞춰 설정하면 요청이 끊기지 않는다.',
   tip: '"종료 시 진행 중 요청 보호" → Deregistration Delay(Connection Draining).',
@@ -163,7 +163,7 @@ QB.push(
 {
   id: 'cmp-37', cat: 'compute', domain: 'resilient', svc: ['ELB 교차 영역 로드 밸런싱'],
   q: 'NLB 뒤의 인스턴스가 AZ-a에 2대, AZ-b에 8대로 고르지 않게 분포되어 있다. 클라이언트 트래픽이 각 AZ의 NLB 노드에 반씩 들어와서 AZ-a의 인스턴스 2대가 과부하에 걸렸다. 인스턴스 사이에 트래픽을 고르게 분산하려면?',
-  opts: ['NLB 대상 그룹(또는 로드 밸런서)에서 교차 영역 로드 밸런싱을 켠다', 'AZ-a의 인스턴스를 종료한다', 'Route 53 가중치 라우팅을 쓴다', '고정 세션을 켠다'],
+  opts: ['NLB 대상 그룹에서 교차 영역 로드 밸런싱을 켠다', 'AZ-a의 인스턴스를 종료한다', 'Route 53 가중치 라우팅을 쓴다', '고정 세션을 켠다'],
   ans: [0],
   exp: '**교차 영역 로드 밸런싱**을 켜면 각 로드 밸런서 노드가 **모든 AZ의 등록된 대상**에 고르게 분산한다. **ALB는 기본으로 켜져 있고**, **NLB와 GWLB는 기본으로 꺼져 있다**(NLB는 켜면 AZ 간 데이터 전송 요금이 붙을 수 있다). 근본적으로는 ASG로 AZ마다 인스턴스를 고르게 배치하는 것이 좋다.',
   tip: '교차 영역: ALB 기본 ON, NLB/GWLB 기본 OFF.',
@@ -171,7 +171,7 @@ QB.push(
 {
   id: 'cmp-38', cat: 'compute', domain: 'resilient', svc: ['블루/그린 배포'],
   q: '새 버전을 배포할 때 다운타임이 없어야 하고, 문제가 생기면 **몇 초 안에** 이전 버전으로 되돌릴 수 있어야 한다. 새 버전에는 처음에 트래픽의 10%만 보내 검증하고 싶다. 가장 적합한 방법은?',
-  opts: ['새 환경(그린)을 별도 대상 그룹으로 띄우고, ALB 가중치 기반 대상 그룹(또는 Route 53 가중치 레코드)으로 트래픽을 점진적으로 옮긴다', '기존 인스턴스에 직접 SSH로 접속해 새 버전을 설치한다', '모든 인스턴스를 동시에 종료하고 새로 띄운다', '인플레이스(in-place) 롤링 배포만 쓴다'],
+  opts: ['새 환경을 별도 대상 그룹으로 띄우고, ALB 가중치 기반 대상 그룹으로 트래픽을 점진적으로 옮긴다', '기존 인스턴스에 직접 SSH로 접속해 새 버전을 설치한다', '모든 인스턴스를 동시에 종료하고 새로 띄운다', '인플레이스(in-place) 롤링 배포만 쓴다'],
   ans: [0],
   exp: '**블루/그린 배포**는 기존 환경(블루)을 그대로 둔 채 새 환경(그린)을 만들고, **가중치 라우팅**으로 트래픽을 조금씩 옮긴다(카나리). 문제가 생기면 가중치를 블루로 되돌리면 되므로 **롤백이 즉시** 이루어진다. ALB 가중치 대상 그룹은 DNS 캐시의 영향을 받지 않아 Route 53 방식보다 전환이 빠르다. 인플레이스 배포는 롤백하려면 다시 배포해야 한다.',
   tip: '즉시 롤백 + 점진 전환 → 블루/그린 + 가중치(ALB 가중치 TG가 DNS보다 빠름).',
@@ -179,7 +179,7 @@ QB.push(
 {
   id: 'cmp-39', cat: 'compute', domain: 'resilient', svc: ['Elastic Beanstalk 배포 정책'],
   q: 'Elastic Beanstalk 운영 환경에 새 버전을 배포할 때, 배포 중에도 **용량이 전혀 줄면 안 되고**, 배포에 실패하면 기존 인스턴스에는 영향이 없어야 한다. 어떤 배포 정책을 써야 하는가?',
-  opts: ['변경 불가능(Immutable) 배포', '한 번에 모두(All at once)', '롤링(Rolling)', '추가 배치를 사용한 롤링(Rolling with additional batch)'],
+  opts: ['변경 불가능 배포', '한 번에 모두(All at once)', '롤링(Rolling)', '추가 배치를 사용한 롤링(Rolling with additional batch)'],
   ans: [0],
   exp: '**Immutable 배포**는 새 ASG에 새 인스턴스를 띄워 상태 확인을 통과한 뒤에 기존 환경으로 옮기므로, **용량이 줄지 않고**, 실패하면 새 인스턴스만 정리하면 된다. All at once는 다운타임이 생긴다. Rolling은 배포하는 동안 용량이 줄어든다. 추가 배치를 쓰는 롤링은 용량은 유지하지만 기존 인스턴스를 직접 업데이트하므로 롤백이 더 복잡하다.',
   tip: 'Beanstalk: 가장 안전 = Immutable / Blue-Green(환경 URL 교체). 가장 빠름 = All at once.',
@@ -195,7 +195,7 @@ QB.push(
 {
   id: 'int-26', cat: 'integration', domain: 'resilient', svc: ['지수 백오프'],
   q: '애플리케이션이 DynamoDB와 다른 AWS API를 호출할 때 트래픽이 급증하면 ThrottlingException이 나고, 모든 클라이언트가 즉시 재시도하면서 상황이 더 나빠진다. 클라이언트 측에서 할 수 있는 모범 사례는?',
-  opts: ['지터(jitter)를 섞은 지수 백오프로 재시도하고, 최대 재시도 횟수를 둔다', '실패하면 즉시 무한 재시도한다', '재시도를 전혀 하지 않는다', '요청마다 새 AWS 계정을 쓴다'],
+  opts: ['지터를 섞은 지수 백오프로 재시도하고, 최대 재시도 횟수를 둔다', '실패하면 즉시 무한 재시도한다', '재시도를 전혀 하지 않는다', '요청마다 새 AWS 계정을 쓴다'],
   ans: [0],
   exp: '**지수 백오프**는 재시도 간격을 점점 늘리고, **지터**는 간격에 무작위성을 더해서 여러 클라이언트가 **동시에 다시 몰리는 것(thundering herd)**을 막는다. AWS SDK에는 기본으로 들어 있다. 즉시 무한 재시도하면 스로틀링이 더 심해진다.',
   tip: '스로틀링/일시적 오류 → Exponential Backoff + Jitter.',
@@ -203,7 +203,7 @@ QB.push(
 {
   id: 'int-27', cat: 'integration', domain: 'resilient', svc: ['Lambda 예약된 동시성'],
   q: 'SQS 메시지를 처리하는 Lambda 함수가 트래픽이 몰리면 동시 실행 수가 수백 개로 늘어나, 연결 수가 제한된 온프레미스 DB를 과부하로 쓰러뜨린다. 처리가 조금 늦어지는 것은 괜찮다. 다운스트림을 보호하는 방법은?',
-  opts: ['함수에 예약된 동시성(또는 SQS 이벤트 소스 최대 동시성)을 설정해 동시 실행 수를 제한한다', '프로비저닝된 동시성을 늘린다', 'Lambda 메모리를 늘린다', 'SQS 대기열을 삭제한다'],
+  opts: ['함수에 예약된 동시성을 설정해 동시 실행 수를 제한한다', '프로비저닝된 동시성을 늘린다', 'Lambda 메모리를 늘린다', 'SQS 대기열을 삭제한다'],
   ans: [0],
   exp: '**예약된 동시성**은 함수의 동시 실행 **상한**을 정한다. SQS 이벤트 소스 매핑의 **최대 동시성** 설정으로도 폴링 동시성을 제한할 수 있다. 처리하지 못한 메시지는 SQS에 남아 있다가 나중에 처리되므로 유실되지 않는다. 프로비저닝된 동시성은 콜드 스타트를 없애는 기능이다.',
   tip: '"다운스트림 보호/동시 실행 상한" → Reserved Concurrency (SQS 최대 동시성).',
@@ -219,7 +219,7 @@ QB.push(
 {
   id: 'net-35', cat: 'networking', domain: 'resilient', svc: ['Route 53 ARC'],
   q: '대규모 결제 시스템이 두 리전에서 액티브-스탠바이로 운영된다. 리전 장애 시 운영자가 **DNS 컨트롤 플레인에 의존하지 않고** 안정적으로 트래픽을 수동 전환할 수 있어야 하고, 대기 리전이 전환할 준비가 되었는지 계속 점검해야 한다. 가장 적합한 서비스는?',
-  opts: ['Amazon Route 53 Application Recovery Controller(라우팅 제어, 준비 상태 확인)', 'Route 53 단순 라우팅', 'CloudFront 원본 그룹', 'AWS Backup'],
+  opts: ['Amazon Route 53 Application Recovery Controller', 'Route 53 단순 라우팅', 'CloudFront 원본 그룹', 'AWS Backup'],
   ans: [0],
   exp: '**Route 53 ARC**는 고가용성 데이터 플레인 API로 상태를 바꾸는 **라우팅 제어**(on/off 스위치), 대기 리전의 용량과 구성을 점검하는 **준비 상태 확인**, 실수로 전부 꺼 버리는 것을 막는 **안전 규칙**, AZ 단위로 트래픽을 빼는 **영역 이동(zonal shift)**을 제공한다. 미션 크리티컬한 다중 리전 장애 조치에 쓴다.',
   tip: '미션 크리티컬 다중 리전/AZ 장애 조치 통제 → Route 53 ARC (Zonal shift 포함).',
@@ -227,7 +227,7 @@ QB.push(
 {
   id: 'sto-37', cat: 'storage', domain: 'resilient', svc: ['S3 복제 시간 제어'],
   q: '규정상 서울 리전 버킷에 저장된 객체는 **15분 안에** 도쿄 리전 버킷으로 복제되어야 하고, 복제 지연을 모니터링하고 증명할 수 있어야 한다. 어떤 설정이 필요한가?',
-  opts: ['교차 리전 복제에 S3 복제 시간 제어(RTC)를 켜고 복제 지표와 알림을 활성화한다', '매시간 Lambda로 복사한다', 'S3 Transfer Acceleration을 켠다', 'S3 Batch Replication만 쓴다'],
+  opts: ['교차 리전 복제에 S3 복제 시간 제어를 켜고 복제 지표와 알림을 활성화한다', '매시간 Lambda로 복사한다', 'S3 Transfer Acceleration을 켠다', 'S3 Batch Replication만 쓴다'],
   ans: [0],
   exp: '**S3 RTC**는 새 객체의 **99.99%를 15분 안에** 복제하는 SLA를 제공하고, 복제 지연·대기 바이트 같은 **복제 지표**와 임계값 초과 이벤트 알림을 함께 제공한다. 일반 CRR은 대부분 빠르게 복제되지만 시간 보장은 없다.',
   tip: '"복제 시간 보장(15분 SLA)" → S3 Replication Time Control.',
@@ -243,7 +243,7 @@ QB.push(
 {
   id: 'sto-39', cat: 'storage', domain: 'resilient', svc: ['EFS 복제'],
   q: 'EFS 파일 시스템에 저장된 콘텐츠 관리 데이터를 DR 리전에도 유지해야 한다. 리전 재해가 나면 DR 리전에서 읽기·쓰기 가능한 파일 시스템으로 바로 전환하고 싶다. 운영 부담이 가장 적은 방법은?',
-  opts: ['EFS 복제(replication)를 구성해 다른 리전에 대상 파일 시스템을 둔다', 'DataSync를 매일 실행한다', 'EFS를 S3로 동기화하는 cron 작업을 만든다', '두 리전의 EC2가 같은 EFS를 마운트한다'],
+  opts: ['EFS 복제를 구성해 다른 리전에 대상 파일 시스템을 둔다', 'DataSync를 매일 실행한다', 'EFS를 S3로 동기화하는 cron 작업을 만든다', '두 리전의 EC2가 같은 EFS를 마운트한다'],
   ans: [0],
   exp: '**EFS 복제**는 다른 리전이나 같은 리전의 대상 파일 시스템으로 **지속적으로 자동 복제**한다(대부분 몇 분 안의 RPO를 목표로 한다). 재해가 나면 복제를 중단(failover)해 대상 파일 시스템을 **쓰기 가능**하게 바꿀 수 있다. DataSync를 매일 실행하면 RPO가 하루가 된다.',
   tip: 'EFS 리전 DR → EFS Replication. FSx → 백업 교차 리전 복사/Multi-AZ.',
@@ -251,7 +251,7 @@ QB.push(
 {
   id: 'sto-40', cat: 'storage', domain: 'resilient', svc: ['FSx for Windows Multi-AZ'],
   q: 'FSx for Windows File Server로 운영하는 부서 공유 드라이브는 AZ 하나에 장애가 나도 계속 사용할 수 있어야 한다. 어떤 구성이 필요한가?',
-  opts: ['FSx for Windows File Server를 다중 AZ(Multi-AZ) 배포 유형으로 만든다', '단일 AZ 파일 시스템을 두 개 만들고 수동으로 복사한다', 'EFS로 바꾼다', '일일 백업만 켠다'],
+  opts: ['FSx for Windows File Server를 다중 AZ 배포 유형으로 만든다', '단일 AZ 파일 시스템을 두 개 만들고 수동으로 복사한다', 'EFS로 바꾼다', '일일 백업만 켠다'],
   ans: [0],
   exp: '**Multi-AZ 배포**는 다른 AZ에 대기 파일 서버를 두고 **동기식으로 복제**하며, 장애가 나면 **자동으로 장애 조치**한다. DNS 이름은 그대로 유지된다. 단일 AZ 배포는 AZ에 장애가 나면 쓸 수 없다. EFS는 SMB를 지원하지 않는다.',
   tip: 'FSx Windows/ONTAP/OpenZFS 고가용성 → Multi-AZ 배포 유형.',
@@ -259,7 +259,7 @@ QB.push(
 {
   id: 'db-35', cat: 'database', domain: 'resilient', svc: ['RDS 교차 리전 자동 백업'],
   q: '규정상 RDS for PostgreSQL 데이터베이스를 리전 재해가 났을 때도 **다른 리전에서 특정 시점으로** 복원할 수 있어야 한다. 읽기 전용 복제본은 비용 때문에 쓰지 않으려 한다. 어떻게 해야 하는가?',
-  opts: ['RDS 교차 리전 자동 백업 복제(automated backups replication)를 켠다', 'Multi-AZ를 켠다', '같은 리전에 수동 스냅샷을 만든다', '읽기 전용 복제본을 같은 리전에 만든다'],
+  opts: ['RDS 교차 리전 자동 백업 복제를 켠다', 'Multi-AZ를 켠다', '같은 리전에 수동 스냅샷을 만든다', '읽기 전용 복제본을 같은 리전에 만든다'],
   ans: [0],
   exp: '**교차 리전 자동 백업 복제**는 스냅샷과 **트랜잭션 로그**를 다른 리전으로 복제해서, 그 리전에서도 보존 기간 안의 **원하는 시점으로 복원(PITR)**할 수 있게 한다. 상시 실행되는 복제본 인스턴스가 필요 없어서 비용이 낮다. 다만 복원하는 데 시간이 걸리므로 RTO는 복제본 방식보다 길다.',
   tip: '다른 리전 PITR, 저비용 → Cross-Region Automated Backups.',
@@ -275,7 +275,7 @@ QB.push(
 {
   id: 'ana-18', cat: 'analytics', domain: 'performance', svc: ['Kinesis 향상된 팬아웃'],
   q: 'Kinesis Data Streams의 샤드 하나를 소비자 애플리케이션 5개가 동시에 읽는다. 소비자들이 샤드당 초당 2MB의 읽기 처리량을 나눠 쓰다 보니 지연 시간이 길어졌다. 소비자마다 독립적인 처리량과 낮은 지연을 보장하려면?',
-  opts: ['각 소비자를 향상된 팬아웃(Enhanced Fan-Out) 소비자로 등록한다', '데이터 보존 기간을 늘린다', '소비자 수를 1로 줄인다', 'Firehose로 바꾼다'],
+  opts: ['각 소비자를 향상된 팬아웃 소비자로 등록한다', '데이터 보존 기간을 늘린다', '소비자 수를 1로 줄인다', 'Firehose로 바꾼다'],
   ans: [0],
   exp: '**향상된 팬아웃**은 등록된 소비자마다 **샤드당 초당 2MB의 전용 처리량**을 HTTP/2 푸시(SubscribeToShard)로 제공하고, 지연 시간을 약 70ms 수준으로 낮춘다. 일반(공유) 소비자는 샤드당 2MB/s를 모든 소비자가 나눠 쓴다.',
   tip: '여러 소비자 + 각자 처리량/저지연 → Enhanced Fan-Out.',
@@ -283,7 +283,7 @@ QB.push(
 {
   id: 'mgt-30', cat: 'management', domain: 'resilient', svc: ['CloudWatch 복합 알람'],
   q: '운영팀이 CPU, 지연 시간, 오류율 알람이 각각 따로 울려서 알림 피로를 겪고 있다. "지연 시간과 오류율이 **둘 다** 임계값을 넘을 때만" 호출(page)을 받고 싶다. 가장 간단한 방법은?',
-  opts: ['두 알람을 AND 조건으로 묶는 CloudWatch 복합 알람(composite alarm)을 만들고, 복합 알람에만 알림 작업을 연결한다', '모든 알람의 임계값을 두 배로 올린다', '알람을 모두 삭제한다', 'Lambda로 알람 상태를 1분마다 확인한다'],
+  opts: ['두 알람을 AND 조건으로 묶는 CloudWatch 복합 알람을 만들고, 복합 알람에만 알림 작업을 연결한다', '모든 알람의 임계값을 두 배로 올린다', '알람을 모두 삭제한다', 'Lambda로 알람 상태를 1분마다 확인한다'],
   ans: [0],
   exp: '**복합 알람**은 여러 알람의 상태를 **AND/OR/NOT 규칙**으로 조합해서 상위 알람 하나로 만든다. 개별 알람에서는 알림을 빼고 복합 알람에만 작업을 연결하면 **알림 소음**이 크게 줄어든다.',
   tip: '"여러 조건 동시 충족 시에만 알림/알람 소음 감소" → Composite Alarm.',
@@ -291,7 +291,7 @@ QB.push(
 {
   id: 'mgt-31', cat: 'management', domain: 'resilient', svc: ['DR 전략'],
   q: '내부 인사 시스템은 RTO 24시간, RPO 24시간이면 충분하고, DR 비용은 최소화해야 한다. 가장 적합한 DR 전략은?',
-  opts: ['백업 및 복원(Backup & Restore): AWS Backup으로 다른 리전에 매일 백업을 복사하고, 재해가 나면 IaC로 환경을 재구성한다', '다중 사이트 액티브-액티브', '웜 스탠바이', '파일럿 라이트'],
+  opts: ['백업 및 복원: AWS Backup으로 다른 리전에 매일 백업을 복사하고, 재해가 나면 IaC로 환경을 재구성한다', '다중 사이트 액티브-액티브', '웜 스탠바이', '파일럿 라이트'],
   ans: [0],
   exp: 'RTO와 RPO가 **몇 시간 이상**이면 **백업 및 복원**이 가장 저렴하다. 평소에는 백업 스토리지 비용만 들고, 재해가 나면 CloudFormation 같은 **IaC**로 인프라를 다시 만들고 데이터를 복원한다. 다른 전략은 상시 실행되는 리소스 때문에 비용이 더 든다.',
   tip: '시간 단위 RTO/RPO + 최저 비용 → Backup & Restore.',
@@ -308,7 +308,7 @@ QB.push(
 {
   id: 'sec-31', cat: 'security', domain: 'secure', svc: ['Secrets Manager 복제'],
   q: '다중 리전 DR 구성에서 DR 리전의 애플리케이션도 같은 데이터베이스 자격 증명을 써야 한다. 자격 증명은 기본 리전에서 자동으로 교체된다. DR 리전에서도 항상 최신 비밀을 쓰게 하려면?',
-  opts: ['Secrets Manager의 비밀 복제(replica secret) 기능으로 DR 리전에 복제한다', 'DR 리전에 비밀을 수동으로 만든다', '자격 증명을 S3에 저장한다', 'Parameter Store 표준 파라미터로 옮긴다'],
+  opts: ['Secrets Manager의 비밀 복제 기능으로 DR 리전에 복제한다', 'DR 리전에 비밀을 수동으로 만든다', '자격 증명을 S3에 저장한다', 'Parameter Store 표준 파라미터로 옮긴다'],
   ans: [0],
   exp: 'Secrets Manager는 비밀을 **다른 리전으로 복제**하는 기능을 지원한다. 기본 비밀이 교체되면 **복제본도 자동으로 갱신**되고, DR 상황에서는 복제본을 독립 비밀로 승격할 수 있다. 복제본은 대상 리전의 KMS 키로 암호화된다.',
   tip: '다중 리전 비밀 공유 → Secrets Manager Replica.',
@@ -316,7 +316,7 @@ QB.push(
 {
   id: 'net-36', cat: 'networking', domain: 'performance', svc: ['Route 53 Resolver 엔드포인트'],
   q: '온프레미스 서버가 Route 53 프라이빗 호스팅 영역의 이름(예: db.aws.internal)을 조회해야 하고, VPC의 EC2는 온프레미스 DNS 영역(corp.local)을 조회해야 한다. Direct Connect로 연결되어 있다. 어떻게 구성해야 하는가?',
-  opts: ['Route 53 Resolver 인바운드 엔드포인트(온프레미스→AWS)와 아웃바운드 엔드포인트 + 전달 규칙(AWS→온프레미스)을 만든다', 'EC2에 BIND 서버를 설치해 직접 관리한다', '퍼블릭 호스팅 영역으로 바꾼다', '모든 서버의 hosts 파일을 수정한다'],
+  opts: ['Route 53 Resolver 인바운드 엔드포인트와 아웃바운드 엔드포인트 + 전달 규칙을 만든다', 'EC2에 BIND 서버를 설치해 직접 관리한다', '퍼블릭 호스팅 영역으로 바꾼다', '모든 서버의 hosts 파일을 수정한다'],
   ans: [0],
   exp: '**인바운드 엔드포인트**는 온프레미스 DNS 서버가 VPC의 Resolver로 쿼리를 보낼 수 있는 IP를 제공한다. **아웃바운드 엔드포인트**와 **전달 규칙**은 VPC에서 특정 도메인(corp.local) 쿼리를 온프레미스 DNS로 넘긴다. DNS 서버를 직접 운영할 필요가 없는 관리형 하이브리드 DNS다.',
   tip: '온프렘→AWS DNS = Inbound Endpoint. AWS→온프렘 = Outbound Endpoint + Forwarding Rule.',

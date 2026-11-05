@@ -36,7 +36,7 @@ QB.push(
 {
   id: 'sto-48', cat: 'storage', domain: 'secure', svc: ['SSE-C'],
   q: '보안 정책상 암호화 키를 AWS에 저장하면 안 되고, 회사가 자체 키 관리 시스템에서만 키를 보관해야 한다. 그래도 S3 서버 측 암호화를 쓰고 싶다. 어떤 방식이 맞는가?',
-  opts: ['SSE-C (고객 제공 키): 요청마다 키를 HTTPS로 전달한다', 'SSE-S3', 'SSE-KMS (AWS 관리형 키)', 'SSE-KMS (고객 관리형 키)'],
+  opts: ['SSE-C: 요청마다 키를 HTTPS로 전달한다', 'SSE-S3', 'SSE-KMS (AWS 관리형 키)', 'SSE-KMS (고객 관리형 키)'],
   ans: [0],
   exp: '**SSE-C**는 고객이 요청마다 암호화 키를 제공하고, S3는 그 키로 암호화·복호화만 할 뿐 **키를 저장하지 않는다**(검증용 HMAC만 저장). 키를 잃으면 데이터를 복구할 수 없고, HTTPS가 필수다. KMS를 쓰는 방식은 키가 AWS에 저장된다(KMS 외부 키 스토어 XKS는 별도 옵션).',
   tip: '"키를 AWS에 저장 금지" → SSE-C 또는 클라이언트 측 암호화.',
@@ -44,7 +44,7 @@ QB.push(
 {
   id: 'sto-49', cat: 'storage', domain: 'resilient', svc: ['S3 일관성'],
   q: '애플리케이션이 S3에 객체를 PUT으로 덮어쓴 직후 같은 키로 GET을 실행한다. 이 GET은 어떤 데이터를 돌려주는가?',
-  opts: ['항상 방금 쓴 최신 데이터(강력한 읽기 후 쓰기 일관성)', '최대 몇 초 동안 이전 데이터가 돌아올 수 있다', '최대 24시간 동안 이전 데이터가 돌아올 수 있다', '버전 관리를 켠 경우에만 최신 데이터가 보장된다'],
+  opts: ['항상 방금 쓴 최신 데이터', '최대 몇 초 동안 이전 데이터가 돌아올 수 있다', '최대 24시간 동안 이전 데이터가 돌아올 수 있다', '버전 관리를 켠 경우에만 최신 데이터가 보장된다'],
   ans: [0],
   exp: 'S3는 2020년 12월부터 모든 리전에서 PUT, DELETE, LIST에 대해 **강력한 읽기 후 쓰기 일관성**을 추가 비용 없이 제공한다. 쓰기가 성공하면 이후 읽기와 목록 조회는 항상 최신 상태를 돌려준다. 예전 시험 자료의 "최종적 일관성" 설명은 지금은 맞지 않는다.',
   tip: 'S3 = 강력한 일관성(Strong read-after-write). 옛 자료 주의.',
@@ -52,7 +52,7 @@ QB.push(
 {
   id: 'sto-50', cat: 'storage', domain: 'performance', svc: ['S3 Express One Zone'],
   q: 'ML 학습 작업이 같은 AZ의 GPU 인스턴스에서 S3의 작은 파일 수백만 개를 반복해서 읽는다. S3 Standard보다 훨씬 낮은 한 자릿수 밀리초의 일관된 지연 시간과 매우 높은 요청 처리량이 필요하다. 어떤 스토리지 클래스가 적합한가?',
-  opts: ['S3 Express One Zone (디렉터리 버킷)', 'S3 Standard-IA', 'S3 Glacier Instant Retrieval', 'S3 Intelligent-Tiering'],
+  opts: ['S3 Express One Zone', 'S3 Standard-IA', 'S3 Glacier Instant Retrieval', 'S3 Intelligent-Tiering'],
   ans: [0],
   exp: '**S3 Express One Zone**은 **AZ 하나**에 데이터를 저장하는 고성능 스토리지 클래스로, **한 자릿수 ms 지연 시간**과 초당 수십만 건 이상의 요청을 처리한다. 컴퓨팅과 **같은 AZ**에 두면 효과가 가장 크다. 단일 AZ라 AZ 장애에 대비한 내구성은 낮다.',
   tip: '초저지연 S3 + 같은 AZ 컴퓨팅 → S3 Express One Zone.',
@@ -77,7 +77,7 @@ QB.push(
 {
   id: 'cmp-48', cat: 'compute', domain: 'performance', svc: ['ASG 사용자 지정 지표', 'SQS'],
   q: 'SQS 대기열을 처리하는 워커 Auto Scaling 그룹이 있다. 메시지 하나를 처리하는 데 평균 10초가 걸리고, 백로그를 1분 안에 처리하고 싶다. CPU 기반 조정은 대기열 길이를 반영하지 못한다. 가장 적합한 조정 방법은?',
-  opts: ['"인스턴스당 백로그"(대기열 메시지 수 ÷ 실행 중인 인스턴스 수) 사용자 지정 지표를 만들고 목표값 6으로 대상 추적 조정을 한다', 'CPU 사용률 대상 추적을 쓴다', '대기열 메시지 수 알람으로 단순 조정을 한다', '예약된 조정을 쓴다'],
+  opts: ['"인스턴스당 백로그" 사용자 지정 지표를 만들고 목표값 6으로 대상 추적 조정을 한다', 'CPU 사용률 대상 추적을 쓴다', '대기열 메시지 수 알람으로 단순 조정을 한다', '예약된 조정을 쓴다'],
   ans: [0],
   exp: 'AWS 권장 방식은 **인스턴스당 백로그**(ApproximateNumberOfMessagesVisible ÷ InService 인스턴스 수)를 사용자 지정 지표로 게시하고, **허용 가능한 인스턴스당 백로그**(허용 지연 60초 ÷ 처리 시간 10초 = **6**)를 목표로 대상 추적을 하는 것이다. 메시지 수만 보면 인스턴스 수가 반영되지 않는다.',
   tip: 'SQS 워커 확장 = backlog per instance 목표 추적.',
@@ -85,7 +85,7 @@ QB.push(
 {
   id: 'cmp-49', cat: 'compute', domain: 'cost', svc: ['시작 템플릿'],
   q: 'Auto Scaling 그룹에서 여러 인스턴스 유형과 스팟·온디맨드를 섞어 쓰고, 설정 버전 관리도 하고 싶다. 기존 시작 구성(launch configuration)으로는 이 기능들을 쓸 수 없다. 어떻게 해야 하는가?',
-  opts: ['시작 템플릿(launch template)으로 전환하고 혼합 인스턴스 정책을 구성한다', '시작 구성을 여러 개 만든다', 'ASG를 여러 개 만든다', 'EC2 플릿을 수동으로 관리한다'],
+  opts: ['시작 템플릿으로 전환하고 혼합 인스턴스 정책을 구성한다', '시작 구성을 여러 개 만든다', 'ASG를 여러 개 만든다', 'EC2 플릿을 수동으로 관리한다'],
   ans: [0],
   exp: '**시작 템플릿**은 **버전 관리**, 여러 인스턴스 유형과 구매 옵션을 섞는 **혼합 인스턴스 정책**, 최신 EC2 기능을 지원한다. **시작 구성은 레거시**라서 새 인스턴스 유형과 기능을 지원하지 않으며, AWS는 시작 템플릿으로 옮기라고 권장한다.',
   tip: '시작 구성(Launch Configuration) = 레거시. 항상 Launch Template.',
@@ -101,7 +101,7 @@ QB.push(
 {
   id: 'cmp-51', cat: 'compute', domain: 'secure', svc: ['ALB 리디렉션'],
   q: '사용자가 http://로 접속해도 자동으로 https://로 이동하게 하고 싶다. 웹 서버 코드를 고치지 않고 ALB에서 처리하는 방법은?',
-  opts: ['HTTP(80) 리스너에 HTTPS(443)로 보내는 리디렉션 작업(HTTP 301)을 설정한다', 'HTTP 리스너를 삭제한다', '보안 그룹에서 80번을 막는다', 'CloudTrail로 HTTP 요청을 감지한다'],
+  opts: ['HTTP 리스너에 HTTPS로 보내는 리디렉션 작업을 설정한다', 'HTTP 리스너를 삭제한다', '보안 그룹에서 80번을 막는다', 'CloudTrail로 HTTP 요청을 감지한다'],
   ans: [0],
   exp: 'ALB 리스너 규칙의 **리디렉션 작업**으로 HTTP 요청을 HTTPS로 **301/302 리디렉션**할 수 있다. 80번을 막거나 리스너를 지우면 http://로 들어온 사용자가 접속 오류를 보게 된다. CloudFront를 쓴다면 뷰어 프로토콜 정책에서 "Redirect HTTP to HTTPS"를 고른다.',
   tip: 'HTTP→HTTPS 강제 = ALB 리디렉션 규칙 / CloudFront Viewer Protocol Policy.',
@@ -109,7 +109,7 @@ QB.push(
 {
   id: 'cmp-52', cat: 'compute', domain: 'resilient', svc: ['분산형 배치 그룹'],
   q: '핵심 서비스를 처리하는 EC2 인스턴스 5대가 서로 다른 하드웨어 랙에 배치되어, 하드웨어 장애 하나가 여러 인스턴스에 동시에 영향을 주지 않게 하고 싶다. 어떤 배치 그룹이 적합한가?',
-  opts: ['분산형(Spread) 배치 그룹', '클러스터 배치 그룹', '파티션 배치 그룹(파티션 1개)', '배치 그룹 없이 같은 AZ'],
+  opts: ['분산형 배치 그룹', '클러스터 배치 그룹', '파티션 배치 그룹(파티션 1개)', '배치 그룹 없이 같은 AZ'],
   ans: [0],
   exp: '**분산형 배치 그룹**은 인스턴스를 각각 **서로 다른 랙**(별도 네트워크와 전원)에 배치한다. AZ당 최대 **7개** 인스턴스까지 넣을 수 있어서 소수의 핵심 인스턴스에 적합하다. 클러스터 배치 그룹은 오히려 인스턴스를 한곳에 모은다.',
   tip: '소수 핵심 인스턴스 장애 격리 → Spread (AZ당 7개).',
@@ -117,7 +117,7 @@ QB.push(
 {
   id: 'cmp-53', cat: 'compute', domain: 'performance', svc: ['골든 AMI', 'EC2 Image Builder'],
   q: 'Auto Scaling으로 새 인스턴스가 뜰 때 사용자 데이터 스크립트로 패키지를 설치하고 설정하느라 15분이 걸려 확장이 느리다. 부팅 시간을 크게 줄이려면?',
-  opts: ['필요한 소프트웨어를 미리 설치한 골든 AMI를 만들고(예: EC2 Image Builder 파이프라인), 시작 템플릿에서 그 AMI를 쓴다', '인스턴스 유형을 늘린다', '사용자 데이터 스크립트를 두 번 실행한다', '쿨다운 시간을 늘린다'],
+  opts: ['필요한 소프트웨어를 미리 설치한 골든 AMI를 만들고, 시작 템플릿에서 그 AMI를 쓴다', '인스턴스 유형을 늘린다', '사용자 데이터 스크립트를 두 번 실행한다', '쿨다운 시간을 늘린다'],
   ans: [0],
   exp: '**골든 AMI**에 소프트웨어를 미리 구워 두면(pre-bake) 부팅할 때 설치 과정이 없어 시작 시간이 크게 줄어든다. **EC2 Image Builder**로 AMI 생성, 패치, 테스트, 배포를 자동화할 수 있다. 사용자 데이터에는 환경별 설정처럼 동적인 부분만 남긴다.',
   tip: '느린 부트스트랩 → Golden AMI(Image Builder). 동적 설정만 User Data.',
@@ -142,7 +142,7 @@ QB.push(
 {
   id: 'net-41', cat: 'networking', domain: 'resilient', svc: ['NACL 임시 포트'],
   q: '웹 서버 서브넷의 NACL에서 인바운드 443은 허용했는데, 클라이언트가 응답을 받지 못한다. 아웃바운드 규칙은 80과 443만 허용하고 있다. 원인과 해결책은?',
-  opts: ['NACL은 상태 비저장이라 응답 트래픽도 허용해야 한다. 아웃바운드에 임시 포트(1024–65535)를 허용한다', '보안 그룹에 443 아웃바운드를 추가한다', '인터넷 게이트웨이를 다시 연결한다', 'NACL을 삭제하면 모든 트래픽이 막힌다'],
+  opts: ['NACL은 상태 비저장이라 응답 트래픽도 허용해야 한다. 아웃바운드에 임시 포트를 허용한다', '보안 그룹에 443 아웃바운드를 추가한다', '인터넷 게이트웨이를 다시 연결한다', 'NACL을 삭제하면 모든 트래픽이 막힌다'],
   ans: [0],
   exp: '**NACL은 상태 비저장**이라 요청과 응답을 따로 평가한다. 서버의 응답은 클라이언트의 **임시 포트**(ephemeral port, 보통 1024–65535)로 나가므로 **아웃바운드 규칙**에서 이 포트를 허용해야 한다. **보안 그룹은 상태 저장**이라 응답이 자동으로 허용된다.',
   tip: 'NACL 문제의 단골 정답 = 임시 포트(1024–65535) 허용.',
@@ -158,7 +158,7 @@ QB.push(
 {
   id: 'net-43', cat: 'networking', domain: 'secure', svc: ['인터페이스 엔드포인트'],
   q: '프라이빗 서브넷의 애플리케이션이 SQS, KMS, Secrets Manager API를 호출해야 한다. 보안 정책상 인터넷이나 NAT 게이트웨이를 거치면 안 되고, 애플리케이션 코드의 엔드포인트 URL도 바꾸지 않아야 한다. 어떻게 해야 하는가?',
-  opts: ['각 서비스의 인터페이스 VPC 엔드포인트(PrivateLink)를 만들고 프라이빗 DNS를 켠다', 'S3 게이트웨이 엔드포인트를 만든다', 'VPC 피어링을 만든다', '인터넷 게이트웨이를 붙이고 보안 그룹으로 제한한다'],
+  opts: ['각 서비스의 인터페이스 VPC 엔드포인트를 만들고 프라이빗 DNS를 켠다', 'S3 게이트웨이 엔드포인트를 만든다', 'VPC 피어링을 만든다', '인터넷 게이트웨이를 붙이고 보안 그룹으로 제한한다'],
   ans: [0],
   exp: '**인터페이스 엔드포인트**는 서브넷에 ENI(프라이빗 IP)를 만들어 AWS 서비스 API에 **프라이빗하게** 접근하게 한다. **프라이빗 DNS**를 켜면 기본 서비스 도메인(예: sqs.ap-northeast-2.amazonaws.com)이 엔드포인트 IP로 풀리므로 코드를 바꿀 필요가 없다. 게이트웨이 엔드포인트는 S3와 DynamoDB만 지원한다.',
   tip: 'S3/DynamoDB 외 AWS API 프라이빗 접근 → Interface Endpoint + Private DNS.',
@@ -166,7 +166,7 @@ QB.push(
 {
   id: 'net-44', cat: 'networking', domain: 'secure', svc: ['Direct Connect 암호화'],
   q: '회사가 Direct Connect로 AWS와 연결되어 있는데, 감사에서 "전송 중 데이터가 암호화되지 않는다"는 지적을 받았다. Direct Connect의 일관된 성능은 유지하면서 암호화하려면?',
-  opts: ['Direct Connect 위에 Site-to-Site VPN(IPsec)을 구성하거나, 지원되는 연결에서 MACsec을 켠다', 'Direct Connect를 해지하고 인터넷만 쓴다', 'VPC 피어링을 쓴다', 'S3 기본 암호화를 켠다'],
+  opts: ['Direct Connect 위에 Site-to-Site VPN을 구성하거나, 지원되는 연결에서 MACsec을 켠다', 'Direct Connect를 해지하고 인터넷만 쓴다', 'VPC 피어링을 쓴다', 'S3 기본 암호화를 켠다'],
   ans: [0],
   exp: 'Direct Connect는 전용 회선이지만 **기본으로 암호화되지 않는다.** **DX 위에 IPsec VPN**(퍼블릭 VIF나 전송 VIF를 통한 프라이빗 IP VPN)을 구성하거나, 10/100Gbps 전용 연결에서 **MACsec**(L2 암호화)을 켜면 성능을 유지하면서 암호화할 수 있다.',
   tip: 'DX는 암호화 X → VPN over DX 또는 MACsec.',
@@ -191,7 +191,7 @@ QB.push(
 {
   id: 'db-40', cat: 'database', domain: 'cost', svc: ['DynamoDB S3 내보내기'],
   q: '분석팀이 운영 중인 DynamoDB 테이블(수 TB) 전체를 매일 Athena로 분석하려 한다. 테이블을 Scan하면 운영 트래픽에 영향을 주고 읽기 용량도 많이 소모한다. 가장 적합한 방법은?',
-  opts: ['PITR을 켜고 DynamoDB의 "S3로 내보내기(Export to S3)" 기능으로 내보낸 뒤 Athena로 쿼리한다', '매일 전체 Scan을 실행한다', 'DAX로 캐싱한 뒤 읽는다', '글로벌 테이블을 하나 더 만든다'],
+  opts: ['PITR을 켜고 DynamoDB의 "S3로 내보내기" 기능으로 내보낸 뒤 Athena로 쿼리한다', '매일 전체 Scan을 실행한다', 'DAX로 캐싱한 뒤 읽는다', '글로벌 테이블을 하나 더 만든다'],
   ans: [0],
   exp: '**Export to S3**는 PITR 백업 데이터를 바탕으로 내보내기 때문에 테이블의 **읽기 용량을 전혀 소모하지 않고** 운영 성능에도 영향이 없다. 결과는 DynamoDB JSON이나 Ion 형식으로 S3에 저장되고, Athena나 Glue로 분석할 수 있다. 증분 내보내기도 지원한다.',
   tip: 'DynamoDB 분석 → Export to S3(RCU 소모 X) + Athena. (반대 방향: Import from S3)',
@@ -208,7 +208,7 @@ QB.push(
 {
   id: 'sec-34', cat: 'security', domain: 'secure', svc: ['IAM MFA 조건'],
   q: '관리자가 EC2 인스턴스를 종료하거나 S3 버킷을 삭제하는 것 같은 위험한 작업은 MFA로 인증한 세션에서만 할 수 있게 하고 싶다. IAM 정책에 어떤 조건을 써야 하는가?',
-  opts: ['aws:MultiFactorAuthPresent가 true일 때만 해당 작업을 허용(또는 false면 Deny)하는 조건', 'aws:SecureTransport 조건', 'aws:SourceIp 조건', 'aws:RequestedRegion 조건'],
+  opts: ['aws:MultiFactorAuthPresent가 true일 때만 해당 작업을 허용하는 조건', 'aws:SecureTransport 조건', 'aws:SourceIp 조건', 'aws:RequestedRegion 조건'],
   ans: [0],
   exp: '**aws:MultiFactorAuthPresent** 조건 키를 쓰면 MFA로 인증한 자격 증명에서만 특정 작업을 허용할 수 있다. 보통 `BoolIfExists`와 Deny를 함께 써서 MFA가 없으면 거부한다. 필요하면 `aws:MultiFactorAuthAge`로 MFA 인증 후 경과 시간도 제한할 수 있다.',
   tip: '"MFA 있을 때만 위험 작업" → aws:MultiFactorAuthPresent.',
@@ -224,7 +224,7 @@ QB.push(
 {
   id: 'sec-36', cat: 'security', domain: 'secure', svc: ['KMS 키 교체'],
   q: '보안 정책상 데이터 암호화에 쓰는 KMS 고객 관리형 키를 매년 교체해야 한다. 이미 암호화한 데이터는 다시 암호화하지 않고 계속 복호화할 수 있어야 하며, 애플리케이션의 키 ID도 바뀌지 않아야 한다. 가장 간단한 방법은?',
-  opts: ['KMS 키의 자동 키 교체를 켠다(교체 주기 설정 가능, 기본 1년)', '매년 새 키를 만들고 모든 데이터를 다시 암호화한다', '키를 삭제하고 다시 만든다', 'SSE-S3로 바꾼다'],
+  opts: ['KMS 키의 자동 키 교체를 켠다', '매년 새 키를 만들고 모든 데이터를 다시 암호화한다', '키를 삭제하고 다시 만든다', 'SSE-S3로 바꾼다'],
   ans: [0],
   exp: 'KMS **자동 키 교체**는 새 키 자료(backing key)를 만들면서 **이전 키 자료를 보관**한다. 그래서 기존 암호문은 그대로 복호화되고, 새 암호화에는 새 키 자료가 쓰인다. **키 ID와 ARN은 바뀌지 않는다.** 단, **가져온 키 자료(BYOK)**나 비대칭 키는 자동 교체를 지원하지 않아 수동으로 교체해야 한다(별칭 변경).',
   tip: 'KMS 자동 교체 = 같은 키 ID, 옛 키 자료 보존. 가져온 키 자료는 수동 교체.',
@@ -240,7 +240,7 @@ QB.push(
 {
   id: 'sec-38', cat: 'security', domain: 'secure', svc: ['SQS 액세스 정책', 'SNS'],
   q: '계정 A의 SNS 토픽이 계정 B의 SQS 대기열로 메시지를 보내야 한다. 구독은 만들었지만 메시지가 대기열에 들어오지 않는다. 무엇을 설정해야 하는가?',
-  opts: ['계정 B SQS 대기열의 액세스 정책(리소스 기반 정책)에서 해당 SNS 토픽 ARN(aws:SourceArn)의 sqs:SendMessage를 허용한다', '계정 A의 IAM 사용자에게 SQS 권한을 준다', 'SNS 토픽을 FIFO로 바꾼다', 'SQS 대기열을 퍼블릭으로 연다'],
+  opts: ['계정 B SQS 대기열의 액세스 정책에서 해당 SNS 토픽 ARN의 sqs:SendMessage를 허용한다', '계정 A의 IAM 사용자에게 SQS 권한을 준다', 'SNS 토픽을 FIFO로 바꾼다', 'SQS 대기열을 퍼블릭으로 연다'],
   ans: [0],
   exp: 'SNS가 SQS에 메시지를 넣으려면 **SQS 대기열 정책**에서 `sns.amazonaws.com` 주체(또는 토픽)가 `sqs:SendMessage`를 할 수 있게 허용해야 하고, **aws:SourceArn**으로 특정 토픽만 허용한다. 대기열이 KMS로 암호화되어 있다면 KMS 키 정책에서도 SNS의 키 사용을 허용해야 한다.',
   tip: 'SNS→SQS 실패 = SQS 대기열 정책 or KMS 키 정책 누락.',
@@ -249,7 +249,7 @@ QB.push(
 {
   id: 'int-34', cat: 'integration', domain: 'resilient', svc: ['SQS FIFO 중복 제거'],
   q: '클라이언트가 네트워크 오류로 같은 주문 메시지를 SQS FIFO 대기열에 몇 초 간격으로 여러 번 보내는 일이 생긴다. 대기열 수준에서 중복 메시지를 자동으로 제거하려면?',
-  opts: ['콘텐츠 기반 중복 제거를 켜거나, 메시지마다 같은 MessageDeduplicationId(예: 주문 ID)를 지정한다', '가시성 제한 시간을 늘린다', '지연 대기열을 설정한다', 'DLQ를 설정한다'],
+  opts: ['콘텐츠 기반 중복 제거를 켜거나, 메시지마다 같은 MessageDeduplicationId를 지정한다', '가시성 제한 시간을 늘린다', '지연 대기열을 설정한다', 'DLQ를 설정한다'],
   ans: [0],
   exp: 'SQS FIFO는 **5분 중복 제거 기간** 동안 같은 **MessageDeduplicationId**를 가진 메시지를 한 번만 받아들인다. **콘텐츠 기반 중복 제거**를 켜면 메시지 본문의 SHA-256 해시를 중복 제거 ID로 쓴다. 표준 대기열에는 이 기능이 없다.',
   tip: 'FIFO 중복 제거 = 5분 창 + Deduplication ID/콘텐츠 기반.',
@@ -257,7 +257,7 @@ QB.push(
 {
   id: 'int-35', cat: 'integration', domain: 'secure', svc: ['API Gateway 권한 부여자'],
   q: 'REST API를 호출하는 클라이언트가 외부 IdP(Auth0)가 발급한 베어러 토큰을 보낸다. 토큰을 검증하고 사용자 그룹에 따라 접근을 제어하는 사용자 지정 로직이 필요하다. 가장 적합한 API Gateway 기능은?',
-  opts: ['Lambda 권한 부여자(Lambda authorizer)', 'API 키', 'IAM 인증(SigV4)', 'CORS 설정'],
+  opts: ['Lambda 권한 부여자', 'API 키', 'IAM 인증(SigV4)', 'CORS 설정'],
   ans: [0],
   exp: '**Lambda 권한 부여자**는 요청의 토큰이나 헤더를 Lambda 함수로 검증하고 IAM 정책을 돌려줘서 **사용자 지정 인증과 권한 부여 로직**을 구현한다(결과 캐싱 가능). Cognito 사용자 풀을 쓴다면 Cognito 권한 부여자를, HTTP API라면 표준 OIDC/OAuth 토큰에 **JWT 권한 부여자**를 쓸 수 있다. API 키는 인증 수단이 아니다.',
   tip: '외부 토큰/사용자 지정 인증 → Lambda Authorizer. Cognito → Cognito Authorizer. AWS 자격 증명 → IAM.',
@@ -274,7 +274,7 @@ QB.push(
 {
   id: 'mgt-39', cat: 'management', domain: 'secure', svc: ['CloudTrail 데이터 이벤트'],
   q: '보안팀이 민감한 S3 버킷에서 **어떤 사용자가 어떤 객체를 다운로드(GetObject)했는지** 기록해야 한다. CloudTrail 관리 이벤트에는 이 정보가 없다. 무엇을 켜야 하는가?',
-  opts: ['해당 버킷에 대한 CloudTrail 데이터 이벤트(S3 객체 수준 API 로깅)', 'CloudTrail Insights', 'VPC 흐름 로그', 'S3 Storage Lens'],
+  opts: ['해당 버킷에 대한 CloudTrail 데이터 이벤트', 'CloudTrail Insights', 'VPC 흐름 로그', 'S3 Storage Lens'],
   ans: [0],
   exp: 'CloudTrail은 기본으로 **관리 이벤트**(버킷 생성, 정책 변경 등 컨트롤 플레인 작업)만 기록한다. **데이터 이벤트**(S3 GetObject, PutObject, Lambda Invoke 등)는 양이 많아서 **따로 켜야** 하고 추가 요금이 붙는다. 고급 이벤트 선택기로 특정 버킷이나 접두사만 골라 기록할 수 있다. S3 서버 액세스 로그도 대안이다.',
   tip: 'S3 객체 단위 감사 → CloudTrail Data Events (또는 S3 Server Access Logs).',
@@ -291,8 +291,8 @@ QB.push(
   id: 'mgt-41', cat: 'management', domain: 'resilient', svc: ['CloudFormation 스택 정책', 'DeletionPolicy'],
   q: 'CloudFormation 스택을 업데이트하거나 삭제할 때 운영 RDS 데이터베이스가 실수로 교체되거나 삭제되어 데이터가 사라지는 것을 막고 싶다. 적절한 조치는? (2개 선택)',
   opts: [
-    'RDS 리소스에 DeletionPolicy: Snapshot(또는 Retain)과 UpdateReplacePolicy를 설정한다',
-    '스택 정책(stack policy)으로 해당 RDS 리소스의 Update:Replace와 Update:Delete를 거부한다',
+    'RDS 리소스에 DeletionPolicy: Snapshot과 UpdateReplacePolicy를 설정한다',
+    '스택 정책으로 해당 RDS 리소스의 Update:Replace와 Update:Delete를 거부한다',
     'CloudFormation 드리프트 감지를 매일 실행한다',
     'RDS 인스턴스 크기를 키운다',
     '스택 이름을 바꾼다',

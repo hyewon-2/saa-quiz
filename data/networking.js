@@ -40,7 +40,7 @@ QB.push(
 {
   id: 'net-05', cat: 'networking', domain: 'resilient', svc: ['Route 53'],
   q: '웹 애플리케이션이 기본 리전(서울)에서 운영되고, 도쿄 리전에 대기 환경이 있다. 서울 리전의 상태 확인이 실패하면 DNS 트래픽이 자동으로 도쿄로 넘어가야 한다. 어떤 Route 53 라우팅 정책을 써야 하는가?',
-  opts: ['단순 라우팅', '가중치 기반 라우팅', '상태 확인을 연결한 장애 조치(failover) 라우팅', '지리 위치 라우팅'],
+  opts: ['단순 라우팅', '가중치 기반 라우팅', '상태 확인을 연결한 장애 조치 라우팅', '지리 위치 라우팅'],
   ans: [2],
   exp: '**장애 조치 라우팅**은 기본(primary) 레코드의 상태 확인이 실패하면 보조(secondary) 레코드로 응답한다. **액티브-패시브** DR 구성의 기본이다. 가중치 라우팅은 비율로 트래픽을 나누는 방식이고(카나리, A/B 테스트), 지리 위치 라우팅은 사용자 위치로 나누는 방식이다.',
   tip: '액티브-패시브 → Failover. 비율 분산/블루그린 → Weighted. 가장 빠른 리전 → Latency. 국가별 콘텐츠/규제 → Geolocation.',
@@ -48,7 +48,7 @@ QB.push(
 {
   id: 'net-06', cat: 'networking', domain: 'performance', svc: ['Route 53'],
   q: '같은 애플리케이션이 us-east-1, eu-west-1, ap-northeast-2 리전에서 실행된다. 사용자를 네트워크 지연 시간이 가장 짧은 리전으로 보내고 싶다. 어떤 라우팅 정책이 맞는가?',
-  opts: ['지리 위치(Geolocation) 라우팅', '지연 시간 기반(Latency-based) 라우팅', '다중값 응답 라우팅', '가중치 기반 라우팅'],
+  opts: ['지리 위치(Geolocation) 라우팅', '지연 시간 기반 라우팅', '다중값 응답 라우팅', '가중치 기반 라우팅'],
   ans: [1],
   exp: '**지연 시간 기반 라우팅**은 AWS가 측정한 사용자와 리전 간 지연 시간 데이터를 바탕으로 **가장 빠른 리전**을 응답한다. 지리 위치 라우팅은 실제 지연 시간이 아니라 사용자의 국가나 대륙 기준으로 응답한다. 주로 규제나 현지화 목적으로 쓴다.',
   tip: '"가장 낮은 지연" → Latency. "특정 국가 사용자는 특정 리전" → Geolocation. 리소스 위치 기준 + 편향 조정 → Geoproximity.',
@@ -58,7 +58,7 @@ QB.push(
   q: 'S3에 있는 정적 웹 사이트를 CloudFront로 전 세계에 배포한다. 사용자가 S3 버킷 URL로 직접 접근하는 것은 막고, 반드시 CloudFront를 통해서만 접근하게 하려면?',
   opts: [
     'S3 버킷을 퍼블릭으로 설정하고 CloudFront 지리적 제한을 켠다',
-    'CloudFront 원본 액세스 제어(OAC)를 설정하고, 버킷 정책에서 해당 배포만 s3:GetObject를 할 수 있게 허용한다',
+    'CloudFront 원본 액세스 제어를 설정하고, 버킷 정책에서 해당 배포만 s3:GetObject를 할 수 있게 허용한다',
     'S3 정적 웹 사이트 엔드포인트를 원본으로 쓰고 보안 그룹을 연결한다',
     'S3 버킷에 CloudFront IP 대역만 허용하는 NACL을 적용한다',
   ],
@@ -77,7 +77,7 @@ QB.push(
 {
   id: 'net-09', cat: 'networking', domain: 'secure', svc: ['PrivateLink'],
   q: 'SaaS 공급자가 자기 VPC의 서비스를 수백 개의 고객 VPC에 프라이빗하게 제공하려 한다. 고객 VPC와 CIDR이 겹칠 수 있고, 트래픽이 인터넷을 거치면 안 되며, 고객이 공급자 VPC의 다른 리소스에는 접근할 수 없어야 한다. 가장 적합한 방법은?',
-  opts: ['고객 VPC마다 VPC 피어링을 맺는다', 'NLB 뒤에 VPC 엔드포인트 서비스(PrivateLink)를 만들고, 고객이 인터페이스 엔드포인트로 연결하게 한다', 'Transit Gateway로 모든 고객 VPC를 연결한다', '퍼블릭 ALB를 만들고 WAF로 고객 IP만 허용한다'],
+  opts: ['고객 VPC마다 VPC 피어링을 맺는다', 'NLB 뒤에 VPC 엔드포인트 서비스를 만들고, 고객이 인터페이스 엔드포인트로 연결하게 한다', 'Transit Gateway로 모든 고객 VPC를 연결한다', '퍼블릭 ALB를 만들고 WAF로 고객 IP만 허용한다'],
   ans: [1],
   exp: '**PrivateLink**는 서비스 하나만 **단방향으로** 노출한다. 고객 VPC에 인터페이스 엔드포인트(ENI)가 생기므로 **CIDR이 겹쳐도** 문제없고, 공급자 VPC의 나머지 리소스는 보이지 않는다. 피어링과 TGW는 CIDR이 겹치면 연결할 수 없고, 네트워크 전체가 연결된다. 퍼블릭 ALB는 인터넷을 거친다.',
   tip: '"서비스 노출", "CIDR 중복", "단방향", "SaaS" → PrivateLink (NLB 또는 GWLB 필요).',
@@ -114,7 +114,7 @@ QB.push(
 {
   id: 'net-13', cat: 'networking', domain: 'secure', svc: ['VPC 흐름 로그'],
   q: '프라이빗 서브넷의 애플리케이션 서버가 DB 서버에 간헐적으로 연결되지 않는다. 네트워크 엔지니어는 어떤 트래픽이 보안 그룹이나 NACL에서 거부(REJECT)되는지 IP·포트 단위로 확인하고 싶다. 어떤 기능을 써야 하는가?',
-  opts: ['AWS CloudTrail', 'VPC 흐름 로그(Flow Logs)', 'AWS X-Ray', 'Route 53 쿼리 로그'],
+  opts: ['AWS CloudTrail', 'VPC 흐름 로그', 'AWS X-Ray', 'Route 53 쿼리 로그'],
   ans: [1],
   exp: '**VPC 흐름 로그**는 VPC, 서브넷, ENI 단위로 **IP 트래픽 메타데이터**(출발지·목적지 IP와 포트, 프로토콜, ACCEPT/REJECT)를 CloudWatch Logs, S3, Firehose에 기록한다. 연결 문제를 해결하거나 보안을 분석할 때 쓴다. 패킷 내용은 담기지 않으며, 패킷 자체를 보려면 Traffic Mirroring을 쓴다. CloudTrail은 API 호출 기록이다.',
   tip: '"허용/거부된 트래픽 확인" → Flow Logs. 패킷 내용 검사 → Traffic Mirroring.',
@@ -122,7 +122,7 @@ QB.push(
 {
   id: 'net-14', cat: 'networking', domain: 'performance', svc: ['Route 53 프라이빗 호스팅 영역'],
   q: 'VPC 안의 마이크로서비스들이 IP 주소 대신 `orders.internal.example.com` 같은 내부 도메인 이름으로 서로를 찾게 하고 싶다. 이 이름은 인터넷에서 조회되면 안 된다. 어떻게 해야 하는가?',
-  opts: ['Route 53 퍼블릭 호스팅 영역을 만든다', 'Route 53 프라이빗 호스팅 영역을 만들어 VPC에 연결한다(enableDnsHostnames·enableDnsSupport 활성화)', '각 인스턴스의 /etc/hosts 파일을 수정한다', 'CloudFront 대체 도메인 이름을 설정한다'],
+  opts: ['Route 53 퍼블릭 호스팅 영역을 만든다', 'Route 53 프라이빗 호스팅 영역을 만들어 VPC에 연결한다', '각 인스턴스의 /etc/hosts 파일을 수정한다', 'CloudFront 대체 도메인 이름을 설정한다'],
   ans: [1],
   exp: '**프라이빗 호스팅 영역**은 **연결된 VPC 안에서만** 조회되는 DNS 영역이다. VPC 설정에서 DNS 확인과 DNS 호스트 이름이 켜져 있어야 한다. 온프레미스와 DNS를 서로 조회하려면 **Route 53 Resolver 인바운드·아웃바운드 엔드포인트**를 쓴다. hosts 파일 방식은 확장성이 없다.',
   tip: 'VPC 내부 전용 DNS → Private Hosted Zone. 온프레미스↔AWS DNS → Route 53 Resolver 엔드포인트.',

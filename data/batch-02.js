@@ -4,7 +4,7 @@ QB.push(
 {
   id: 'cmp-15', cat: 'compute', domain: 'performance', svc: ['Lambda 프로비저닝된 동시성'],
   q: 'Lambda 기반 API의 응답 시간이 대부분 100ms 이하인데, 트래픽이 뜸하다가 요청이 들어오면 가끔 2~3초씩 걸린다. 콜드 스타트 때문인 것으로 확인되었다. 지연 시간을 일정하게 유지하려면 어떻게 해야 하는가?',
-  opts: ['Lambda 메모리를 최소로 줄인다', '프로비저닝된 동시성(Provisioned Concurrency)을 설정한다', '예약된 동시성(Reserved Concurrency)을 0으로 설정한다', 'Lambda 제한 시간을 늘린다'],
+  opts: ['Lambda 메모리를 최소로 줄인다', '프로비저닝된 동시성을 설정한다', '예약된 동시성(Reserved Concurrency)을 0으로 설정한다', 'Lambda 제한 시간을 늘린다'],
   ans: [1],
   exp: '**프로비저닝된 동시성**은 지정한 수만큼 실행 환경을 **미리 초기화해 두어서** 콜드 스타트를 없앤다. Auto Scaling으로 일정에 맞춰 조정할 수도 있다. **예약된 동시성**은 함수의 최대 동시 실행 수를 보장하거나 제한하는 기능이고, 0으로 설정하면 함수가 아예 실행되지 않는다. 메모리를 줄이면 CPU도 함께 줄어 오히려 느려진다.',
   tip: '콜드 스타트 제거 → Provisioned Concurrency (Java는 SnapStart도 가능). 동시성 상한/보장 → Reserved Concurrency.',
@@ -12,7 +12,7 @@ QB.push(
 {
   id: 'cmp-16', cat: 'compute', domain: 'resilient', svc: ['ASG 수명 주기 후크'],
   q: 'Auto Scaling 그룹이 인스턴스를 종료하기 전에, 인스턴스의 로컬 로그 파일을 S3로 업로드하는 작업을 반드시 끝내야 한다. 어떤 기능을 써야 하는가?',
-  opts: ['인스턴스 축소 보호(scale-in protection)', 'Auto Scaling 수명 주기 후크(종료 대기 상태)', 'ELB 연결 드레이닝(등록 취소 지연)', 'EC2 사용자 데이터 스크립트'],
+  opts: ['인스턴스 축소 보호(scale-in protection)', 'Auto Scaling 수명 주기 후크', 'ELB 연결 드레이닝(등록 취소 지연)', 'EC2 사용자 데이터 스크립트'],
   ans: [1],
   exp: '**수명 주기 후크**를 쓰면 인스턴스가 시작 또는 종료 직전에 `Pending:Wait`나 `Terminating:Wait` 상태로 **잠시 멈추고**, 그 사이에 스크립트나 Lambda(EventBridge 연동)로 정리 작업을 한 뒤 계속 진행할 수 있다. 사용자 데이터는 **시작할 때만** 실행된다. 축소 보호를 켜면 인스턴스가 아예 종료되지 않는다. 연결 드레이닝은 처리 중인 요청을 마무리하는 기능일 뿐이다.',
   tip: '"시작/종료 전에 작업 수행" → Lifecycle Hook. 부팅 시간이 긴 앱의 빠른 확장 → Warm Pool.',
@@ -20,7 +20,7 @@ QB.push(
 {
   id: 'cmp-17', cat: 'compute', domain: 'performance', svc: ['ALB 고정 세션'],
   q: '레거시 웹 애플리케이션이 사용자 세션을 각 EC2 인스턴스의 메모리에 저장한다. ALB 뒤에서 요청이 다른 인스턴스로 가면 사용자가 로그아웃된다. 코드를 바꾸지 않고 **당장** 문제를 해결하는 방법은?',
-  opts: ['ALB 대상 그룹에서 고정 세션(sticky sessions)을 켠다', 'NLB로 바꾼다', '교차 영역 로드 밸런싱을 끈다', 'Auto Scaling 그룹의 최대 용량을 1로 설정한다'],
+  opts: ['ALB 대상 그룹에서 고정 세션을 켠다', 'NLB로 바꾼다', '교차 영역 로드 밸런싱을 끈다', 'Auto Scaling 그룹의 최대 용량을 1로 설정한다'],
   ans: [0],
   exp: '**고정 세션**(쿠키 기반 세션 어피니티)은 같은 사용자의 요청을 같은 대상 인스턴스로 보낸다. 다만 인스턴스가 종료되면 세션이 사라지고 부하가 고르게 분산되지 않을 수 있다. 장기적으로는 세션을 **ElastiCache나 DynamoDB**에 저장해 인스턴스를 무상태로 만드는 것이 모범 사례다.',
   tip: '"코드 변경 없이 즉시" → Sticky Session. "확장성·내결함성" → 세션 외부화(ElastiCache/DynamoDB).',
@@ -36,7 +36,7 @@ QB.push(
 {
   id: 'cmp-19', cat: 'compute', domain: 'cost', svc: ['AWS Batch'],
   q: '유전체 분석팀이 하루에 컨테이너 작업 수천 개를 제출한다. 작업마다 필요한 CPU와 메모리가 다르고, 작업 사이에 의존 관계가 있다. 작업 대기열, 스케줄링, 컴퓨팅 자원 프로비저닝을 직접 관리하지 않고, 스팟 인스턴스로 비용도 줄이고 싶다. 가장 적합한 서비스는?',
-  opts: ['AWS Batch (관리형 컴퓨팅 환경, 스팟 사용)', 'Lambda', 'EC2에 직접 스케줄러를 설치한다', 'Amazon EMR'],
+  opts: ['AWS Batch', 'Lambda', 'EC2에 직접 스케줄러를 설치한다', 'Amazon EMR'],
   ans: [0],
   exp: '**AWS Batch**는 작업 대기열, 작업 의존성, 우선순위를 관리하고, 필요한 만큼 EC2나 Fargate 자원(**스팟 포함**)을 자동으로 프로비저닝하는 완전 관리형 배치 서비스다. Lambda는 15분 실행 제한과 리소스 한도가 있다. EMR은 Hadoop·Spark 같은 빅데이터 프레임워크용이다.',
   tip: '"대량 배치 작업 + 대기열/의존성 + 자원 자동 관리" → AWS Batch.',
@@ -44,7 +44,7 @@ QB.push(
 {
   id: 'cmp-20', cat: 'compute', domain: 'performance', svc: ['EC2 인스턴스 스토어'],
   q: '분산 캐시 애플리케이션은 데이터를 여러 노드에 복제해 두기 때문에, 노드 하나가 데이터를 잃어도 괜찮다. 대신 블록 스토리지의 I/O 지연 시간이 가능한 한 낮고 IOPS가 매우 높아야 한다. 어떤 스토리지가 가장 적합한가?',
-  opts: ['EBS io2 Block Express', 'EC2 인스턴스 스토어(NVMe SSD)', 'Amazon EFS', 'Amazon S3'],
+  opts: ['EBS io2 Block Express', 'EC2 인스턴스 스토어', 'Amazon EFS', 'Amazon S3'],
   ans: [1],
   exp: '**인스턴스 스토어**는 호스트에 물리적으로 붙어 있는 디스크라서 **가장 낮은 지연 시간과 매우 높은 IOPS**를 제공한다. 대신 인스턴스가 중지되거나 종료되면, 또는 하드웨어에 장애가 나면 데이터가 **사라진다(휘발성).** 애플리케이션 수준에서 데이터를 복제하는 캐시, 버퍼, 임시 데이터에 적합하다. EBS는 네트워크를 거치는 스토리지라 지연이 조금 더 있다.',
   tip: '"임시 데이터/복제됨/최고 I/O 성능" → 인스턴스 스토어. "영구 보존 필요" → 인스턴스 스토어는 오답.',
@@ -93,7 +93,7 @@ QB.push(
 {
   id: 'sto-20', cat: 'storage', domain: 'secure', svc: ['Transfer Family'],
   q: '외부 파트너들이 지금도 SFTP로 매일 정산 파일을 업로드한다. 회사는 SFTP 서버를 직접 운영하지 않고 파일을 바로 S3에 저장하고 싶다. 파트너는 클라이언트 설정을 바꾸지 않아야 한다. 가장 적합한 서비스는?',
-  opts: ['AWS Transfer Family (SFTP 엔드포인트, S3 백엔드)', 'EC2에 SFTP 서버를 설치한다', 'S3 미리 서명된 URL', 'AWS DataSync'],
+  opts: ['AWS Transfer Family', 'EC2에 SFTP 서버를 설치한다', 'S3 미리 서명된 URL', 'AWS DataSync'],
   ans: [0],
   exp: '**AWS Transfer Family**는 **SFTP, FTPS, FTP, AS2** 프로토콜을 쓰는 완전 관리형 엔드포인트를 제공하고, 업로드된 파일을 **S3나 EFS**에 저장한다. 기존 호스트 이름(Route 53)과 SSH 키 인증을 그대로 쓸 수 있어서 파트너 쪽은 바꿀 것이 없다. 미리 서명된 URL은 SFTP 클라이언트로 쓸 수 없다.',
   tip: '"SFTP/FTPS" + S3 → Transfer Family.',
@@ -101,7 +101,7 @@ QB.push(
 {
   id: 'sto-21', cat: 'storage', domain: 'secure', svc: ['S3 퍼블릭 액세스 차단'],
   q: '보안팀은 조직의 어떤 S3 버킷도 실수로 공개되지 않게 하고 싶다. 개발자가 버킷 정책이나 ACL로 퍼블릭 접근을 허용하더라도 이를 무효화해야 한다. 가장 효과적인 방법은?',
-  opts: ['각 버킷의 ACL을 수동으로 점검한다', '계정 수준에서 S3 퍼블릭 액세스 차단(Block Public Access)을 켜고, SCP로 이 설정을 바꾸지 못하게 한다', 'S3 기본 암호화를 켠다', 'CloudTrail 데이터 이벤트를 켠다'],
+  opts: ['각 버킷의 ACL을 수동으로 점검한다', '계정 수준에서 S3 퍼블릭 액세스 차단을 켜고, SCP로 이 설정을 바꾸지 못하게 한다', 'S3 기본 암호화를 켠다', 'CloudTrail 데이터 이벤트를 켠다'],
   ans: [1],
   exp: '**S3 퍼블릭 액세스 차단**을 **계정 수준**에서 켜면 모든 버킷의 퍼블릭 ACL과 퍼블릭 버킷 정책이 무효화된다. 여기에 **SCP**로 `s3:PutAccountPublicAccessBlock` 작업을 거부하면 관리자도 설정을 끌 수 없다. 암호화와 로깅은 공개 여부를 통제하지 못한다.',
   tip: '"공개 노출 방지" → Block Public Access(계정 수준) + SCP.',
@@ -109,7 +109,7 @@ QB.push(
 {
   id: 'sto-22', cat: 'storage', domain: 'cost', svc: ['EFS 수명 주기 관리'],
   q: 'EFS 파일 시스템에 1년치 프로젝트 파일이 쌓여 있는데, 대부분의 파일은 만든 지 한 달이 지나면 거의 열리지 않는다. 애플리케이션을 바꾸지 않고 저장 비용을 줄이는 방법은?',
-  opts: ['EFS 수명 주기 정책으로 30일 동안 접근하지 않은 파일을 EFS Infrequent Access(또는 Archive) 스토리지 클래스로 옮긴다', '파일을 S3로 옮기고 애플리케이션을 수정한다', 'EBS로 마이그레이션한다', 'EFS 프로비저닝된 처리량 모드로 바꾼다'],
+  opts: ['EFS 수명 주기 정책으로 30일 동안 접근하지 않은 파일을 EFS Infrequent Access 스토리지 클래스로 옮긴다', '파일을 S3로 옮기고 애플리케이션을 수정한다', 'EBS로 마이그레이션한다', 'EFS 프로비저닝된 처리량 모드로 바꾼다'],
   ans: [0],
   exp: '**EFS 수명 주기 관리**는 일정 기간 접근하지 않은 파일을 **Infrequent Access(IA)**나 **Archive** 클래스로 자동으로 옮긴다. 파일 경로는 그대로라서 애플리케이션은 바뀐 것을 알 수 없다. 다시 접근하면 Standard로 되돌리도록 설정할 수도 있다. 처리량 모드는 성능 설정이고 저장 비용과는 관계없다.',
   tip: 'EFS 비용 절감 → 수명 주기 정책(IA/Archive). EFS One Zone도 저렴한 옵션.',
@@ -117,7 +117,7 @@ QB.push(
 {
   id: 'sto-23', cat: 'storage', domain: 'performance', svc: ['S3 이벤트 알림', 'SQS'],
   q: 'S3에 업로드되는 동영상을 트랜스코딩해야 한다. 작업 하나가 20~40분 걸리고, 업로드가 몰릴 때도 작업이 유실되면 안 된다. 가장 적합한 아키텍처는?',
-  opts: ['S3 이벤트 → Lambda에서 직접 트랜스코딩', 'S3 이벤트 알림 → SQS 대기열 → 대기열 깊이에 따라 확장하는 EC2 Auto Scaling 워커(또는 ECS 작업)', 'S3 이벤트 → SNS → 이메일', 'CloudWatch로 S3 버킷을 1분마다 스캔'],
+  opts: ['S3 이벤트 → Lambda에서 직접 트랜스코딩', 'S3 이벤트 알림 → SQS 대기열 → 대기열 깊이에 따라 확장하는 EC2 Auto Scaling 워커', 'S3 이벤트 → SNS → 이메일', 'CloudWatch로 S3 버킷을 1분마다 스캔'],
   ans: [1],
   exp: 'Lambda는 **최대 15분** 동안만 실행되므로 20~40분 걸리는 작업은 처리할 수 없다. **S3 이벤트를 SQS로 보내 버퍼링**하고, 대기열 깊이에 따라 확장하는 EC2나 ECS 워커가 처리하면 급증해도 유실되지 않는다. 미디어 변환에 특화된 관리형 서비스로는 AWS Elemental MediaConvert도 있다.',
   tip: '"15분 초과 작업" → Lambda 오답. SQS + EC2/ECS 워커 또는 Batch/Step Functions.',
@@ -125,7 +125,7 @@ QB.push(
 {
   id: 'sto-24', cat: 'storage', domain: 'resilient', svc: ['EBS 스냅샷'],
   q: '데이터베이스 서버의 EBS 볼륨을 다른 리전에서도 복구할 수 있도록 매일 백업하고, 백업은 30일 동안 보관해야 한다. 가장 간단한 자동화 방법은?',
-  opts: ['Amazon Data Lifecycle Manager(또는 AWS Backup)로 일별 스냅샷 정책과 교차 리전 복사, 30일 보존을 설정한다', '매일 수동으로 스냅샷을 만들고 복사한다', 'EBS 볼륨을 다른 리전에 직접 연결한다', 'RAID 1로 볼륨 2개를 미러링한다'],
+  opts: ['Amazon Data Lifecycle Manager로 일별 스냅샷 정책과 교차 리전 복사, 30일 보존을 설정한다', '매일 수동으로 스냅샷을 만들고 복사한다', 'EBS 볼륨을 다른 리전에 직접 연결한다', 'RAID 1로 볼륨 2개를 미러링한다'],
   ans: [0],
   exp: 'EBS 스냅샷은 S3에 **증분 방식**으로 저장되고, 다른 리전으로 **복사**할 수 있다. **Data Lifecycle Manager**나 **AWS Backup** 정책으로 스냅샷 생성, 교차 리전 복사, 보존 기간을 자동화한다. EBS 볼륨은 같은 AZ의 인스턴스에만 연결할 수 있다. RAID 1은 같은 AZ 안의 이중화일 뿐이다.',
   tip: 'EBS 볼륨은 AZ 리소스. 다른 AZ/리전으로 이동 = 스냅샷 → 복원/복사.',
@@ -134,7 +134,7 @@ QB.push(
 {
   id: 'db-15', cat: 'database', domain: 'resilient', svc: ['RDS 자동 백업'],
   q: '개발자가 오늘 오후 2시 13분에 실수로 RDS 운영 데이터베이스의 중요한 테이블을 삭제했다. 오후 2시 12분 시점의 데이터를 되살리려면 어떻게 해야 하는가?',
-  opts: ['가장 최근의 수동 스냅샷을 복원한다', '자동 백업을 이용한 특정 시점 복원(PITR)으로 오후 2시 12분 시점의 새 DB 인스턴스를 만든다', 'Multi-AZ 대기 인스턴스로 장애 조치한다', '읽기 전용 복제본을 승격한다'],
+  opts: ['가장 최근의 수동 스냅샷을 복원한다', '자동 백업을 이용한 특정 시점 복원으로 오후 2시 12분 시점의 새 DB 인스턴스를 만든다', 'Multi-AZ 대기 인스턴스로 장애 조치한다', '읽기 전용 복제본을 승격한다'],
   ans: [1],
   exp: 'RDS **자동 백업**(보존 기간 1~35일)은 일별 스냅샷과 트랜잭션 로그를 함께 보관해서, 보존 기간 안의 **원하는 초 단위 시점으로 복원(PITR)**할 수 있다. 복원하면 **새 DB 인스턴스**가 생성된다. Multi-AZ 대기 인스턴스와 읽기 전용 복제본에는 삭제 작업도 그대로 복제되므로 복구 수단이 되지 않는다.',
   tip: '"실수로 삭제한 데이터를 특정 시점으로" → PITR(새 인스턴스 생성). Aurora MySQL은 Backtrack으로 제자리 되감기 가능.',
@@ -158,7 +158,7 @@ QB.push(
 {
   id: 'db-18', cat: 'database', domain: 'performance', svc: ['ElastiCache for Redis'],
   q: '게임 회사가 실시간 순위표(정렬된 점수 목록)를 구현하려 한다. 데이터는 노드 장애 시에도 유지되어야 하고, 다중 AZ 자동 장애 조치와 복제가 필요하다. ElastiCache 엔진으로 무엇을 선택해야 하는가?',
-  opts: ['Memcached', 'Redis OSS (또는 Valkey)', '둘 다 상관없다', 'ElastiCache는 순위표에 쓸 수 없다'],
+  opts: ['Memcached', 'Redis OSS', '둘 다 상관없다', 'ElastiCache는 순위표에 쓸 수 없다'],
   ans: [1],
   exp: '**Redis OSS/Valkey**는 **Sorted Set** 같은 고급 자료 구조, **복제와 다중 AZ 자동 장애 조치**, 스냅샷 백업과 영속성을 지원해서 순위표에 딱 맞다. **Memcached**는 단순한 키-값, 멀티스레드, 수평 분할에 강하지만 복제, 영속성, 백업이 없다.',
   tip: '복제/HA/백업/정렬 자료구조/Pub-Sub → Redis·Valkey. 단순 캐시·멀티스레드 → Memcached.',
@@ -182,7 +182,7 @@ QB.push(
 {
   id: 'db-21', cat: 'database', domain: 'resilient', svc: ['DynamoDB PITR'],
   q: 'DynamoDB 테이블의 데이터가 애플리케이션 버그로 손상되었다. 지난 35일 안의 원하는 초 단위 시점으로 복원할 수 있게 하려면 어떤 기능을 미리 켜 두어야 하는가?',
-  opts: ['DynamoDB Streams', 'DynamoDB 특정 시점 복구(PITR)', 'DynamoDB 글로벌 테이블', 'DAX'],
+  opts: ['DynamoDB Streams', 'DynamoDB 특정 시점 복구', 'DynamoDB 글로벌 테이블', 'DAX'],
   ans: [1],
   exp: '**PITR(연속 백업)**을 켜면 최대 35일 안의 **어느 초로든** 테이블을 복원할 수 있다(새 테이블로 복원). 성능에는 영향이 없다. 글로벌 테이블은 손상된 데이터도 그대로 복제한다. 장기 보관이 필요하면 온디맨드 백업이나 AWS Backup을 쓴다.',
   tip: '복제(글로벌 테이블, Multi-AZ)는 백업이 아니다. 논리적 오류 복구 → PITR/백업.',
@@ -190,7 +190,7 @@ QB.push(
 {
   id: 'db-22', cat: 'database', domain: 'cost', svc: ['RDS 스토리지 자동 조정'],
   q: 'RDS 데이터베이스의 데이터가 예측할 수 없는 속도로 늘어나서 가끔 스토리지가 꽉 차 장애가 난다. 처음부터 과하게 프로비저닝하지 않으면서 이 문제를 막는 방법은?',
-  opts: ['RDS 스토리지 자동 조정(Storage Auto Scaling)을 켜고 최대 스토리지 임계값을 설정한다', '처음부터 최대 용량으로 프로비저닝한다', '매일 오래된 데이터를 삭제한다', '인스턴스 클래스를 늘린다'],
+  opts: ['RDS 스토리지 자동 조정을 켜고 최대 스토리지 임계값을 설정한다', '처음부터 최대 용량으로 프로비저닝한다', '매일 오래된 데이터를 삭제한다', '인스턴스 클래스를 늘린다'],
   ans: [0],
   exp: '**RDS 스토리지 자동 조정**은 여유 공간이 부족해지면 지정한 최대값까지 **다운타임 없이 자동으로** 스토리지를 늘린다. 미리 크게 잡을 필요가 없어 비용이 효율적이다. 참고로 Aurora는 스토리지가 처음부터 자동으로 늘어난다(최대 128TiB).',
   tip: 'RDS 용량 부족 예방 → Storage Auto Scaling.',
@@ -199,7 +199,7 @@ QB.push(
 {
   id: 'net-15', cat: 'networking', domain: 'secure', svc: ['CloudFront 서명된 URL/쿠키'],
   q: '온라인 강의 사이트가 유료 회원에게만 CloudFront를 통해 수백 개의 강의 동영상 파일을 제공하려 한다. 회원이 로그인하면 여러 파일에 한꺼번에 접근할 수 있어야 하고, URL은 바꾸지 않아야 한다. 가장 적합한 방법은?',
-  opts: ['CloudFront 서명된 쿠키(signed cookies)', 'CloudFront 서명된 URL(signed URLs)', 'S3 미리 서명된 URL', 'CloudFront 지리적 제한'],
+  opts: ['CloudFront 서명된 쿠키', 'CloudFront 서명된 URL(signed URLs)', 'S3 미리 서명된 URL', 'CloudFront 지리적 제한'],
   ans: [0],
   exp: '**서명된 쿠키**는 쿠키 하나로 **여러 파일**(예: `/courses/*`)에 대한 접근을 허용하고, 기존 URL을 바꾸지 않아도 된다. **서명된 URL**은 **개별 파일**에 대한 접근을 줄 때 적합하다(파일 하나 다운로드, 쿠키를 지원하지 않는 클라이언트). S3 미리 서명된 URL은 CloudFront를 거치지 않는다.',
   tip: '파일 하나 → Signed URL. 여러 파일/URL 유지 → Signed Cookies.',
@@ -207,7 +207,7 @@ QB.push(
 {
   id: 'net-16', cat: 'networking', domain: 'secure', svc: ['CloudFront 지리적 제한'],
   q: '라이선스 계약 때문에 동영상 콘텐츠를 한국과 일본 사용자에게만 제공해야 한다. 콘텐츠는 CloudFront로 배포된다. 가장 간단한 방법은?',
-  opts: ['CloudFront 지리적 제한(허용 목록: KR, JP)을 설정한다', 'Route 53 지리 위치 라우팅을 쓴다', '보안 그룹으로 국가별 IP를 막는다', 'S3 버킷 정책으로 국가를 제한한다'],
+  opts: ['CloudFront 지리적 제한을 설정한다', 'Route 53 지리 위치 라우팅을 쓴다', '보안 그룹으로 국가별 IP를 막는다', 'S3 버킷 정책으로 국가를 제한한다'],
   ans: [0],
   exp: '**CloudFront 지리적 제한**은 뷰어 IP의 국가를 기준으로 **허용 목록이나 차단 목록**을 적용하고, 차단된 사용자에게는 403을 돌려준다. 더 세밀한 규칙이 필요하면 WAF의 지역 일치 조건을 쓸 수 있다. Route 53 지리 위치 라우팅은 응답할 엔드포인트를 고르는 기능이지 접근을 막는 기능이 아니다.',
   tip: '"특정 국가만 허용/차단" + CloudFront → Geo Restriction (또는 WAF Geo match).',
@@ -215,7 +215,7 @@ QB.push(
 {
   id: 'net-17', cat: 'networking', domain: 'performance', svc: ['Direct Connect Gateway'],
   q: '회사가 서울 Direct Connect 로케이션에 연결 하나를 갖고 있다. 이 연결 하나로 서울, 도쿄, 버지니아 리전의 여러 VPC에 모두 프라이빗하게 접근하려 한다. 어떤 구성이 필요한가?',
-  opts: ['Direct Connect Gateway를 만들고 각 리전의 VGW(또는 Transit Gateway)를 연결한다', '리전마다 Direct Connect 연결을 따로 신청한다', 'VPC 피어링으로 리전 간을 연결한다', 'Site-to-Site VPN만 쓴다'],
+  opts: ['Direct Connect Gateway를 만들고 각 리전의 VGW를 연결한다', '리전마다 Direct Connect 연결을 따로 신청한다', 'VPC 피어링으로 리전 간을 연결한다', 'Site-to-Site VPN만 쓴다'],
   ans: [0],
   exp: '**Direct Connect Gateway**는 글로벌 리소스라서, DX 연결 하나(프라이빗 VIF 또는 전송 VIF)로 **여러 리전의 VPC**(VGW나 TGW 연결)에 접근할 수 있게 해 준다. 리전마다 DX를 신청하면 비용과 시간이 많이 든다.',
   tip: 'DX 하나로 여러 리전/여러 VPC → Direct Connect Gateway (+TGW면 대규모).',
@@ -239,7 +239,7 @@ QB.push(
 {
   id: 'net-20', cat: 'networking', domain: 'cost', svc: ['VPC 공유 (RAM)'],
   q: '여러 애플리케이션 팀이 각자 AWS 계정을 쓰지만, 네트워크팀이 VPC와 서브넷을 중앙에서 관리하고 싶어 한다. 팀마다 VPC를 따로 만들고 피어링하는 대신, 하나의 VPC 서브넷에 각 계정이 리소스를 직접 만들 수 있게 하려면?',
-  opts: ['AWS Resource Access Manager(RAM)로 서브넷을 다른 계정과 공유한다(VPC 공유)', '모든 팀이 같은 IAM 사용자를 쓴다', '팀마다 VPC를 만들고 Transit Gateway로 연결한다', 'VPC 엔드포인트를 공유한다'],
+  opts: ['AWS Resource Access Manager로 서브넷을 다른 계정과 공유한다', '모든 팀이 같은 IAM 사용자를 쓴다', '팀마다 VPC를 만들고 Transit Gateway로 연결한다', 'VPC 엔드포인트를 공유한다'],
   ans: [0],
   exp: '**VPC 공유**는 AWS RAM으로 소유자 계정의 **서브넷을 같은 조직의 다른 계정과 공유**한다. 참여 계정은 공유된 서브넷에 EC2, RDS 같은 자기 리소스를 만들 수 있다. 네트워크는 중앙에서 관리하고, VPC 수, 피어링, NAT 게이트웨이 중복을 줄여 비용과 복잡도를 낮춘다. 각 계정은 자기 리소스만 관리할 수 있다.',
   tip: '"중앙 네트워크 관리 + 여러 계정이 같은 VPC 사용" → VPC Sharing(RAM).',
@@ -255,7 +255,7 @@ QB.push(
 {
   id: 'net-22', cat: 'networking', domain: 'performance', svc: ['Elastic IP', 'ENI'],
   q: '라이선스 서버가 특정 MAC 주소에 묶여 있다. 인스턴스에 장애가 나서 새 인스턴스로 바꿀 때 같은 MAC 주소와 프라이빗 IP를 그대로 유지해야 한다. 어떻게 해야 하는가?',
-  opts: ['보조 탄력적 네트워크 인터페이스(ENI)를 만들어 연결하고, 장애가 나면 새 인스턴스로 옮겨 연결한다', '탄력적 IP만 다시 연결한다', '인스턴스를 재부팅한다', 'NLB를 앞에 둔다'],
+  opts: ['보조 탄력적 네트워크 인터페이스를 만들어 연결하고, 장애가 나면 새 인스턴스로 옮겨 연결한다', '탄력적 IP만 다시 연결한다', '인스턴스를 재부팅한다', 'NLB를 앞에 둔다'],
   ans: [0],
   exp: '**ENI**는 MAC 주소, 프라이빗 IP, 보안 그룹, 탄력적 IP를 가진 독립 리소스라서, 한 인스턴스에서 떼어 **같은 AZ의 다른 인스턴스로 옮겨 붙일 수** 있다. 탄력적 IP는 퍼블릭 IP만 유지하므로 MAC 주소는 바뀐다.',
   tip: '"MAC 주소 유지/네트워크 장애 조치" → ENI 이동 (같은 AZ에서만).',
@@ -264,7 +264,7 @@ QB.push(
 {
   id: 'sec-16', cat: 'security', domain: 'secure', svc: ['IAM Identity Center'],
   q: '회사가 AWS 계정 30개를 Organizations로 관리한다. 직원들이 기존 사내 IdP(Okta, Entra ID 등) 계정으로 한 번 로그인하면 권한이 있는 여러 AWS 계정과 콘솔에 접근할 수 있게 하고 싶다. 가장 적합한 서비스는?',
-  opts: ['AWS IAM Identity Center (구 AWS SSO)', '계정마다 IAM 사용자를 만든다', 'Amazon Cognito 사용자 풀', 'AWS Directory Service Simple AD'],
+  opts: ['AWS IAM Identity Center', '계정마다 IAM 사용자를 만든다', 'Amazon Cognito 사용자 풀', 'AWS Directory Service Simple AD'],
   ans: [0],
   exp: '**IAM Identity Center**는 Organizations와 통합되어, **외부 IdP(SAML 2.0/SCIM)**나 AD와 연동한 사용자에게 **여러 계정에 대한 SSO**와 **권한 세트**를 중앙에서 할당한다. Cognito는 고객용(앱 최종 사용자) 인증 서비스다. 계정마다 IAM 사용자를 만들면 관리가 불가능해진다.',
   tip: '직원(workforce) 다중 계정 SSO → IAM Identity Center. 앱 고객 로그인 → Cognito.',
@@ -272,7 +272,7 @@ QB.push(
 {
   id: 'sec-17', cat: 'security', domain: 'secure', svc: ['IAM 권한 경계'],
   q: '개발자들이 자기 Lambda 함수용 IAM 역할을 직접 만들 수 있게 하되, 그 역할이 개발자 자신보다 더 큰 권한(예: IAM 관리, 결제 접근)을 갖지는 못하게 하려 한다. 가장 적합한 방법은?',
-  opts: ['IAM 권한 경계(Permissions Boundary)를 쓰고, 역할을 만들 때 해당 경계를 반드시 붙이게 하는 조건을 건다', '개발자에게 AdministratorAccess를 준다', 'SCP로 모든 IAM 작업을 거부한다', '역할은 관리자만 만들도록 하고 티켓으로 요청받는다'],
+  opts: ['IAM 권한 경계를 쓰고, 역할을 만들 때 해당 경계를 반드시 붙이게 하는 조건을 건다', '개발자에게 AdministratorAccess를 준다', 'SCP로 모든 IAM 작업을 거부한다', '역할은 관리자만 만들도록 하고 티켓으로 요청받는다'],
   ans: [0],
   exp: '**권한 경계**는 IAM 사용자나 역할이 가질 수 있는 **최대 권한**을 정한다. 개발자에게 `iam:CreateRole`을 허용하면서 `iam:PermissionsBoundary` 조건으로 특정 경계 정책을 붙이도록 강제하면, 개발자가 만든 역할은 그 경계를 넘을 수 없다(권한 상승 방지). SCP는 계정 전체에 적용되는 가드레일이라 이런 위임 시나리오에는 지나치게 넓다.',
   tip: '"권한 위임 + 권한 상승 방지" → Permissions Boundary.',
@@ -288,7 +288,7 @@ QB.push(
 {
   id: 'sec-19', cat: 'security', domain: 'secure', svc: ['KMS 다중 리전 키'],
   q: '애플리케이션이 서울 리전에서 KMS로 데이터를 암호화해 도쿄 리전으로 복제한다. 도쿄에서 데이터를 복호화할 때 리전 간 KMS 호출 없이, 같은 키 자료로 바로 복호화할 수 있어야 한다. 무엇을 써야 하는가?',
-  opts: ['KMS 다중 리전 키(Multi-Region keys)', '리전마다 별도의 KMS 키를 만든다', 'CloudHSM 클러스터', 'SSE-S3'],
+  opts: ['KMS 다중 리전 키', '리전마다 별도의 KMS 키를 만든다', 'CloudHSM 클러스터', 'SSE-S3'],
   ans: [0],
   exp: '**다중 리전 키**는 여러 리전에 **같은 키 ID와 키 자료**를 가진 기본 키와 복제본 키를 둔다. 한 리전에서 암호화한 데이터를 다른 리전에서 **다시 암호화하지 않고 바로 복호화**할 수 있다. DR이나 글로벌 애플리케이션, DynamoDB 글로벌 테이블의 클라이언트 측 암호화 등에 쓴다. 일반 KMS 키는 리전 밖으로 나갈 수 없다.',
   tip: 'KMS 키는 기본적으로 리전 한정. 리전 간 동일 키 → Multi-Region Key.',
@@ -312,7 +312,7 @@ QB.push(
 {
   id: 'sec-22', cat: 'security', domain: 'cost', svc: ['S3 버킷 키'],
   q: 'S3 버킷이 SSE-KMS로 암호화되어 있는데, 하루 수억 건의 객체 요청 때문에 KMS 요청 비용이 크게 늘고 KMS 요청 한도에 가까워지고 있다. 보안 수준을 유지하면서 KMS 호출을 줄이는 방법은?',
-  opts: ['S3 버킷 키(Bucket Keys)를 켠다', 'SSE-C로 바꾼다', '암호화를 끈다', 'KMS 키를 매일 교체한다'],
+  opts: ['S3 버킷 키를 켠다', 'SSE-C로 바꾼다', '암호화를 끈다', 'KMS 키를 매일 교체한다'],
   ans: [0],
   exp: '**S3 버킷 키**를 켜면 S3가 KMS 키로 버킷 수준의 데이터 키를 만들어 일정 기간 재사용하므로, 객체마다 KMS를 호출하지 않아도 된다. **KMS 요청 비용이 최대 99%** 줄어든다. 고객 관리형 키와 CloudTrail 감사는 그대로 유지된다.',
   tip: 'SSE-KMS 비용/스로틀링 → S3 Bucket Key.',
@@ -329,7 +329,7 @@ QB.push(
 {
   id: 'int-14', cat: 'integration', domain: 'performance', svc: ['SQS 지연 대기열'],
   q: '주문 취소 요청은 결제 시스템과 동기화되는 시간을 고려해 **대기열에 들어간 뒤 최소 60초가 지나야** 처리되어야 한다. 소비자 코드를 바꾸지 않고 구현하는 가장 간단한 방법은?',
-  opts: ['SQS 대기열의 전송 지연(DelaySeconds)을 60초로 설정한다', '가시성 제한 시간을 60초로 설정한다', '긴 폴링 대기 시간을 60초로 설정한다', '메시지 보존 기간을 60초로 설정한다'],
+  opts: ['SQS 대기열의 전송 지연을 60초로 설정한다', '가시성 제한 시간을 60초로 설정한다', '긴 폴링 대기 시간을 60초로 설정한다', '메시지 보존 기간을 60초로 설정한다'],
   ans: [0],
   exp: '**지연 대기열**(전송 지연, 최대 15분)을 설정하면 새 메시지가 그 시간 동안 **소비자에게 보이지 않는다.** 메시지별로 지연을 설정하는 메시지 타이머도 있다. **가시성 제한 시간**은 소비자가 메시지를 **받은 뒤** 숨기는 시간이라 의미가 다르다. 긴 폴링은 최대 20초까지만 설정할 수 있다.',
   tip: '"메시지 전달을 늦춤" → Delay Queue. "받은 후 숨김" → Visibility Timeout.',
@@ -337,7 +337,7 @@ QB.push(
 {
   id: 'int-15', cat: 'integration', domain: 'resilient', svc: ['EventBridge 아카이브/재생'],
   q: '이벤트 기반 시스템에서 소비자 서비스의 버그 때문에 지난 6시간 동안의 이벤트가 잘못 처리되었다. 버그를 고친 뒤 그 기간의 이벤트를 다시 처리하고 싶다. EventBridge 이벤트 버스에 미리 켜 두었어야 하는 기능은?',
-  opts: ['EventBridge 아카이브(Archive)와 재생(Replay)', 'EventBridge Scheduler', 'SQS DLQ', 'CloudTrail Insights'],
+  opts: ['EventBridge 아카이브와 재생', 'EventBridge Scheduler', 'SQS DLQ', 'CloudTrail Insights'],
   ans: [0],
   exp: '**EventBridge 아카이브**는 이벤트 버스의 이벤트를 (필터 패턴에 맞춰) 보관하고, **재생**으로 지정한 기간의 이벤트를 다시 버스로 보낼 수 있다. 버그를 고친 뒤 재처리하거나 새 소비자를 테스트할 때 쓴다. DLQ는 전달에 실패한 이벤트만 보관한다.',
   tip: '"과거 이벤트 재처리" → EventBridge Archive & Replay (Kinesis라면 스트림 재생).',
@@ -345,7 +345,7 @@ QB.push(
 {
   id: 'int-16', cat: 'integration', domain: 'performance', svc: ['AppSync'],
   q: '모바일 앱이 여러 데이터 소스(DynamoDB, Lambda, HTTP API)에서 필요한 필드만 쿼리 하나로 가져오고, 데이터가 바뀌면 실시간 구독으로 화면을 갱신해야 한다. 가장 적합한 관리형 서비스는?',
-  opts: ['AWS AppSync (GraphQL)', 'API Gateway REST API', 'Amazon SNS 모바일 푸시', 'Amazon SQS'],
+  opts: ['AWS AppSync', 'API Gateway REST API', 'Amazon SNS 모바일 푸시', 'Amazon SQS'],
   ans: [0],
   exp: '**AppSync**는 관리형 **GraphQL** 서비스다. 여러 데이터 소스를 리졸버로 연결해서 클라이언트가 **필요한 필드만** 한 번에 가져오게 하고, **WebSocket 기반 실시간 구독**과 오프라인 동기화를 지원한다. REST API는 필요한 데이터가 여러 엔드포인트에 나뉘어 있으면 여러 번 호출해야 한다.',
   tip: '"GraphQL", "실시간 구독", "여러 소스 통합 쿼리" → AppSync.',
@@ -361,7 +361,7 @@ QB.push(
 {
   id: 'int-18', cat: 'integration', domain: 'performance', svc: ['SQS', 'Lambda 배치'],
   q: 'Lambda 함수가 SQS 대기열의 메시지를 처리한다. 메시지 하나를 처리하는 시간은 짧지만, 호출 횟수가 많아 비용과 다운스트림 DB 연결 수가 늘고 있다. 처리 효율을 높이는 방법은?',
-  opts: ['이벤트 소스 매핑의 배치 크기와 배치 기간(batch window)을 늘린다', 'Lambda 제한 시간을 줄인다', '대기열을 SNS로 바꾼다', '메시지마다 별도의 Lambda 함수를 만든다'],
+  opts: ['이벤트 소스 매핑의 배치 크기와 배치 기간을 늘린다', 'Lambda 제한 시간을 줄인다', '대기열을 SNS로 바꾼다', '메시지마다 별도의 Lambda 함수를 만든다'],
   ans: [0],
   exp: '**배치 크기**(최대 10,000)와 **최대 배치 기간**(최대 5분)을 늘리면 Lambda가 한 번 호출될 때 여러 메시지를 함께 처리하므로 **호출 횟수와 DB 연결 수가 줄어든다.** 부분 배치 실패 응답(`ReportBatchItemFailures`)을 켜면 실패한 메시지만 다시 처리할 수 있다.',
   tip: 'SQS→Lambda 효율 = 배치 크기/배치 윈도 + 부분 실패 보고.',
@@ -370,7 +370,7 @@ QB.push(
 {
   id: 'ana-11', cat: 'analytics', domain: 'performance', svc: ['Kinesis Data Streams 샤드'],
   q: 'Kinesis Data Streams(프로비저닝 모드)에 쓰기를 하면 ProvisionedThroughputExceededException이 자주 발생한다. 데이터는 파티션 키로 고르게 분산되어 있고, 전체 입력량이 늘어난 것이 원인이다. 어떻게 해결해야 하는가?',
-  opts: ['샤드 수를 늘린다(리샤딩) 또는 온디맨드 용량 모드로 바꾼다', '데이터 보존 기간을 늘린다', '소비자 수를 줄인다', '파티션 키를 하나로 통일한다'],
+  opts: ['샤드 수를 늘린다 또는 온디맨드 용량 모드로 바꾼다', '데이터 보존 기간을 늘린다', '소비자 수를 줄인다', '파티션 키를 하나로 통일한다'],
   ans: [0],
   exp: '프로비저닝 모드의 샤드 하나는 **쓰기 초당 1MB 또는 1,000레코드**, 읽기 초당 2MB를 처리한다. 입력량이 늘면 **샤드를 분할해 늘리거나 온디맨드 모드**로 바꿔 자동으로 확장되게 한다. 파티션 키를 하나로 통일하면 모든 데이터가 한 샤드로 몰리는 핫 샤드 문제가 생긴다.',
   tip: '쓰기 스로틀링 → 샤드 증가/On-Demand. 특정 샤드만 과부하 → 파티션 키 분산.',
@@ -378,7 +378,7 @@ QB.push(
 {
   id: 'ana-12', cat: 'analytics', domain: 'cost', svc: ['Glue 작업 북마크'],
   q: 'AWS Glue ETL 작업이 매시간 S3의 새 로그 파일을 처리하는데, 매번 이전에 처리한 파일까지 다시 읽어서 비용과 시간이 낭비되고 중복 데이터가 생긴다. 어떻게 개선해야 하는가?',
-  opts: ['Glue 작업 북마크(job bookmarks)를 켠다', 'Glue 크롤러를 더 자주 실행한다', '작업의 DPU를 늘린다', 'S3 버전 관리를 켠다'],
+  opts: ['Glue 작업 북마크를 켠다', 'Glue 크롤러를 더 자주 실행한다', '작업의 DPU를 늘린다', 'S3 버전 관리를 켠다'],
   ans: [0],
   exp: '**작업 북마크**는 이전 실행에서 처리한 데이터의 상태를 기억해서, 다음 실행 때 **새로 들어온 데이터만** 증분 처리한다. 중복 처리와 비용이 함께 줄어든다. DPU를 늘리면 처리 속도만 빨라질 뿐 중복은 그대로다.',
   tip: 'Glue 증분 처리 → Job Bookmarks.',
@@ -395,7 +395,7 @@ QB.push(
 {
   id: 'mgt-15', cat: 'management', domain: 'resilient', svc: ['Application Migration Service'],
   q: '회사가 온프레미스 VMware 서버 200대를 최소한의 다운타임으로 EC2에 **리호스트(lift-and-shift)**하려 한다. 서버 OS와 애플리케이션은 바꾸지 않고, 블록 수준으로 계속 복제하다가 짧은 시간 안에 전환하고 싶다. 어떤 서비스가 적합한가?',
-  opts: ['AWS Application Migration Service (MGN)', 'AWS DMS', 'AWS DataSync', 'AWS Snowball'],
+  opts: ['AWS Application Migration Service', 'AWS DMS', 'AWS DataSync', 'AWS Snowball'],
   ans: [0],
   exp: '**AWS MGN**은 원본 서버의 디스크를 **블록 수준으로 계속 복제**하다가, 테스트를 거쳐 짧은 다운타임으로 EC2로 **전환(cutover)**하는 리호스팅 서비스다. 물리 서버, VMware, Hyper-V, 다른 클라우드에서 옮길 때 모두 쓸 수 있다. DMS는 데이터베이스, DataSync는 파일 데이터를 옮기는 서비스다.',
   tip: '서버 lift-and-shift → MGN. DB → DMS. 파일 → DataSync. DR 복제 → Elastic Disaster Recovery.',
@@ -411,7 +411,7 @@ QB.push(
 {
   id: 'mgt-17', cat: 'management', domain: 'performance', svc: ['X-Ray'],
   q: 'API Gateway → Lambda → DynamoDB → 외부 API로 이어지는 마이크로서비스에서 일부 요청이 느리다. 요청 하나가 어느 구간에서 시간을 많이 쓰는지 추적하려면 어떤 서비스를 써야 하는가?',
-  opts: ['AWS X-Ray (또는 CloudWatch Application Signals)', 'AWS CloudTrail', 'VPC 흐름 로그', 'AWS Config'],
+  opts: ['AWS X-Ray', 'AWS CloudTrail', 'VPC 흐름 로그', 'AWS Config'],
   ans: [0],
   exp: '**X-Ray**는 분산 추적 서비스다. 요청 하나가 여러 서비스를 거치는 경로를 **트레이스와 서비스 맵**으로 보여 주고, 구간별 지연 시간과 오류를 파악하게 해 준다. API Gateway와 Lambda는 설정만으로 추적을 켤 수 있다. CloudTrail은 API 감사 기록이지 성능 추적 도구가 아니다.',
   tip: '"분산 추적/병목 구간/서비스 맵" → X-Ray.',
@@ -419,7 +419,7 @@ QB.push(
 {
   id: 'mgt-18', cat: 'management', domain: 'secure', svc: ['CloudFormation 드리프트 감지'],
   q: 'CloudFormation으로 배포한 인프라를 누군가 콘솔에서 수동으로 바꾼 것 같다(예: 보안 그룹 규칙 추가). 템플릿 정의와 실제 리소스 구성이 다른지 확인하려면?',
-  opts: ['CloudFormation 드리프트 감지(drift detection)를 실행한다', '스택을 삭제하고 다시 만든다', 'CloudTrail에서 모든 이벤트를 수동으로 검토한다', '변경 세트(change set)를 만든다'],
+  opts: ['CloudFormation 드리프트 감지를 실행한다', '스택을 삭제하고 다시 만든다', 'CloudTrail에서 모든 이벤트를 수동으로 검토한다', '변경 세트(change set)를 만든다'],
   ans: [0],
   exp: '**드리프트 감지**는 스택 리소스의 실제 구성과 템플릿에 정의된 구성을 비교해 **수정됨/삭제됨** 상태와 속성 차이를 보여 준다. **변경 세트**는 템플릿을 업데이트하기 **전에** 어떤 변경이 일어날지 미리 보는 기능이다.',
   tip: '"수동 변경 탐지" → Drift Detection. "업데이트 영향 미리보기" → Change Set.',
@@ -427,7 +427,7 @@ QB.push(
 {
   id: 'mgt-19', cat: 'management', domain: 'secure', svc: ['Systems Manager Patch Manager'],
   q: '여러 리전에 있는 Windows와 Linux EC2 인스턴스 500대에 매달 정해진 유지 관리 기간에 보안 패치를 자동으로 적용하고, 패치 규정 준수 현황을 보고해야 한다. 가장 적합한 방법은?',
-  opts: ['Systems Manager Patch Manager(패치 기준선 + 유지 관리 기간)', '인스턴스마다 cron 작업을 만든다', '매달 새 AMI로 모든 인스턴스를 교체한다', 'Amazon Inspector'],
+  opts: ['Systems Manager Patch Manager', '인스턴스마다 cron 작업을 만든다', '매달 새 AMI로 모든 인스턴스를 교체한다', 'Amazon Inspector'],
   ans: [0],
   exp: '**Patch Manager**는 **패치 기준선**(승인할 패치 규칙)과 **유지 관리 기간**으로 OS와 애플리케이션 패치를 자동으로 스캔하고 설치하며, 규정 준수 보고서를 제공한다. Inspector는 취약점을 **찾는** 서비스이고 패치를 적용하지 않는다.',
   tip: '패치 자동화 → SSM Patch Manager. 취약점 발견 → Inspector.',

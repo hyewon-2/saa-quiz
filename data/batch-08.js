@@ -30,7 +30,7 @@ QB.push(
 {
   id: 'b08-03', cat: 'compute', domain: 'cost', svc: ['스팟', 'CI/CD'],
   q: 'CI 파이프라인의 빌드·테스트 작업이 매일 수천 번 실행된다. 작업 하나는 10분 이내로 끝나고, 실패하면 자동으로 다시 실행된다. 빌드 러너 인프라 비용을 가장 많이 줄이는 방법은?',
-  opts: ['여러 인스턴스 유형을 쓰는 스팟 기반 Auto Scaling 그룹(또는 Fargate Spot)에서 빌드 러너를 실행한다', '3년 예약 인스턴스로 러너를 상시 운영한다', '전용 호스트를 쓴다', '가장 큰 온디맨드 인스턴스 하나로 처리한다'],
+  opts: ['여러 인스턴스 유형을 쓰는 스팟 기반 Auto Scaling 그룹에서 빌드 러너를 실행한다', '3년 예약 인스턴스로 러너를 상시 운영한다', '전용 호스트를 쓴다', '가장 큰 온디맨드 인스턴스 하나로 처리한다'],
   ans: [0],
   exp: '짧고 **재시도할 수 있는** 작업은 **스팟**에 딱 맞는다. 여러 인스턴스 유형을 쓰면 용량을 확보하기 쉬워지고 중단 위험도 줄어든다. 빌드 수요가 들쭉날쭉하므로 상시 예약하면 낭비가 생긴다.',
   tip: '짧은·재시도 가능·상태 없음 → 스팟.',
@@ -38,7 +38,7 @@ QB.push(
 {
   id: 'b08-04', cat: 'database', domain: 'cost', svc: ['Graviton', 'RDS'],
   q: 'RDS for PostgreSQL을 db.m5.2xlarge로 운영 중이다. 애플리케이션과 엔진 버전을 바꾸지 않고, 비슷하거나 더 좋은 성능으로 인스턴스 비용을 줄이는 가장 간단한 방법은?',
-  opts: ['같은 크기의 Graviton 기반 인스턴스 클래스(예: db.m7g.2xlarge)로 변경한다', 'db.t3.micro로 낮춘다', 'Multi-AZ를 끈다', 'EC2에 PostgreSQL을 직접 설치한다'],
+  opts: ['같은 크기의 Graviton 기반 인스턴스 클래스로 변경한다', 'db.t3.micro로 낮춘다', 'Multi-AZ를 끈다', 'EC2에 PostgreSQL을 직접 설치한다'],
   ans: [0],
   exp: 'RDS와 Aurora는 **Graviton(ARM) 인스턴스 클래스**를 지원하고, 같은 크기의 x86 대비 **가격 대비 성능이 더 좋다.** 관리형 엔진이라 애플리케이션 코드를 바꿀 필요가 없다. Multi-AZ를 끄면 비용은 줄지만 운영 DB의 가용성이 떨어진다.',
   tip: 'EC2·RDS·ElastiCache·Lambda·Fargate 모두 Graviton으로 비용 절감 가능.',
@@ -54,7 +54,7 @@ QB.push(
 {
   id: 'b08-06', cat: 'compute', domain: 'cost', svc: ['Lambda vs EC2'],
   q: '사내 관리용 API가 하루에 수백 건 정도만 호출되며, 요청 하나는 200ms 안에 끝난다. 지금은 t3.medium EC2 인스턴스 2대를 24시간 운영하고 있다. 가장 비용 효율적인 대안은?',
-  opts: ['API Gateway(HTTP API) + Lambda로 옮긴다', 'EC2 예약 인스턴스를 구매한다', 'EC2 인스턴스를 더 큰 크기로 바꾼다', 'EKS 클러스터로 옮긴다'],
+  opts: ['API Gateway + Lambda로 옮긴다', 'EC2 예약 인스턴스를 구매한다', 'EC2 인스턴스를 더 큰 크기로 바꾼다', 'EKS 클러스터로 옮긴다'],
   ans: [0],
   exp: '호출이 **적고 간헐적인** 워크로드는 **Lambda**처럼 요청 수와 실행 시간으로 과금되는 서버리스가 훨씬 저렴하다. 이 정도 사용량이면 프리 티어 안에 들어갈 수도 있다. 거의 놀고 있는 인스턴스를 24시간 운영하는 것은 낭비다. EKS는 컨트롤 플레인 요금만으로도 더 비싸다.',
   tip: '저빈도·간헐적 → 서버리스. 고빈도·상시 고부하 → EC2/Fargate + 약정.',
@@ -62,7 +62,7 @@ QB.push(
 {
   id: 'b08-07', cat: 'compute', domain: 'cost', svc: ['Lambda vs 컨테이너'],
   q: '실시간 추천 API가 하루 24시간 초당 수천 건의 요청을 일정하게 처리한다. 지금은 Lambda로 운영 중인데 월 비용이 매우 높다. 성능을 유지하며 비용을 줄이는 방법으로 가장 적절한 것은?',
-  opts: ['ECS on Fargate 또는 EC2(Graviton)로 옮기고 Compute Savings Plans를 적용한다', 'Lambda 메모리를 최소로 줄인다', 'Lambda 제한 시간을 늘린다', 'Lambda 예약된 동시성을 0으로 설정한다'],
+  opts: ['ECS on Fargate 또는 EC2로 옮기고 Compute Savings Plans를 적용한다', 'Lambda 메모리를 최소로 줄인다', 'Lambda 제한 시간을 늘린다', 'Lambda 예약된 동시성을 0으로 설정한다'],
   ans: [0],
   exp: '**상시 고부하** 워크로드는 Lambda의 요청당 과금보다 **항상 켜진 컨테이너나 인스턴스**가 더 저렴한 경우가 많다. **Compute Savings Plans**는 Fargate, EC2, Lambda에 모두 적용되어 할인을 더 받을 수 있다. 메모리를 무작정 줄이면 지연이 늘고, 예약된 동시성을 0으로 두면 서비스가 멈춘다.',
   tip: '서버리스가 항상 최저가는 아니다 — 꾸준한 고부하는 컨테이너/EC2 + 약정.',
@@ -70,7 +70,7 @@ QB.push(
 {
   id: 'b08-08', cat: 'networking', domain: 'cost', svc: ['CloudFront 가격 등급'],
   q: 'CloudFront로 배포하는 서비스의 사용자는 북미와 유럽에만 있다. 그런데 전 세계 모든 엣지 로케이션을 쓰는 기본 설정 때문에 일부 요청이 비싼 지역의 엣지에서 처리되고 있다. 비용을 줄이는 방법은?',
-  opts: ['CloudFront 가격 등급을 Price Class 100(북미·유럽)으로 바꾼다', 'CloudFront를 제거하고 S3에서 직접 제공한다', 'TTL을 0으로 설정한다', '원본을 다른 리전으로 옮긴다'],
+  opts: ['CloudFront 가격 등급을 Price Class 100으로 바꾼다', 'CloudFront를 제거하고 S3에서 직접 제공한다', 'TTL을 0으로 설정한다', '원본을 다른 리전으로 옮긴다'],
   ans: [0],
   exp: 'CloudFront **가격 등급**은 사용할 엣지 로케이션 범위를 제한한다. **Price Class 100**은 가장 저렴한 지역(북미, 유럽)만 쓴다. 다른 지역 사용자는 지연이 늘 수 있지만, 사용자가 해당 지역에만 있다면 비용만 줄어든다.',
   tip: '사용자 지역 한정 + CloudFront 비용 → Price Class.',
@@ -78,7 +78,7 @@ QB.push(
 {
   id: 'b08-09', cat: 'storage', domain: 'cost', svc: ['S3 Intelligent-Tiering 아카이브'],
   q: 'S3 Intelligent-Tiering을 쓰는 데이터 중 상당수가 6개월 넘게 전혀 접근되지 않는다. 이런 데이터를 조회할 때 몇 시간 기다려도 괜찮다면, 비용을 더 줄이기 위해 무엇을 할 수 있는가?',
-  opts: ['Intelligent-Tiering의 선택적 아카이브 액세스(90일+)와 딥 아카이브 액세스(180일+) 계층을 활성화한다', 'Standard로 다시 옮긴다', '버전 관리를 켠다', 'Transfer Acceleration을 켠다'],
+  opts: ['Intelligent-Tiering의 선택적 아카이브 액세스와 딥 아카이브 액세스 계층을 활성화한다', 'Standard로 다시 옮긴다', '버전 관리를 켠다', 'Transfer Acceleration을 켠다'],
   ans: [0],
   exp: 'Intelligent-Tiering은 자동으로 자주 쓰는 계층, 가끔 쓰는 계층(30일), 아카이브 즉시 액세스 계층(90일)을 오간다. 여기에 **선택적 아카이브 액세스**와 **딥 아카이브 액세스** 계층을 켜면, 오래 접근하지 않은 객체를 Glacier 수준의 가격으로 옮긴다. 대신 조회하려면 복원 시간이 필요하다.',
   tip: 'Intelligent-Tiering + 장기 미사용 → 선택적 Archive/Deep Archive 계층 활성화.',
@@ -87,8 +87,8 @@ QB.push(
   id: 'b08-10', cat: 'storage', domain: 'cost', svc: ['EBS 정리', 'Data Lifecycle Manager'],
   q: '비용 검토에서 인스턴스에 연결되지 않은 EBS 볼륨 수백 개와 몇 년 된 수동 스냅샷 수천 개가 발견되었다. 앞으로 이런 낭비를 자동으로 막으려면? (2개 선택)',
   opts: [
-    'Data Lifecycle Manager(또는 AWS Backup) 정책으로 스냅샷 보존 기간을 정해 오래된 스냅샷을 자동으로 삭제한다',
-    'EC2 시작 시 "종료 시 삭제(DeleteOnTermination)"를 켜고, Trusted Advisor·Config 규칙으로 연결되지 않은 볼륨을 탐지해 정리한다',
+    'Data Lifecycle Manager 정책으로 스냅샷 보존 기간을 정해 오래된 스냅샷을 자동으로 삭제한다',
+    'EC2 시작 시 "종료 시 삭제"를 켜고, Trusted Advisor·Config 규칙으로 연결되지 않은 볼륨을 탐지해 정리한다',
     '모든 볼륨을 io2로 바꾼다',
     '스냅샷을 매시간 만든다',
     'EBS 기본 암호화를 끈다',
@@ -108,7 +108,7 @@ QB.push(
 {
   id: 'b08-12', cat: 'networking', domain: 'cost', svc: ['탄력적 IP 요금'],
   q: '비용 보고서에 "사용하지 않는(유휴) 퍼블릭 IPv4 주소" 요금이 계속 나온다. 몇 달 전 종료한 인스턴스에 쓰던 탄력적 IP 수십 개가 계정에 남아 있다. 어떻게 해야 하는가?',
-  opts: ['필요 없는 탄력적 IP를 해제(release)한다', '탄력적 IP를 다른 리전으로 옮긴다', 'NAT 게이트웨이를 추가한다', '탄력적 IP는 무료이므로 그대로 둔다'],
+  opts: ['필요 없는 탄력적 IP를 해제한다', '탄력적 IP를 다른 리전으로 옮긴다', 'NAT 게이트웨이를 추가한다', '탄력적 IP는 무료이므로 그대로 둔다'],
   ans: [0],
   exp: '퍼블릭 IPv4 주소는 사용 여부와 관계없이 **시간당 요금**이 붙는다. 어떤 리소스에도 연결되지 않은 탄력적 IP도 마찬가지다. 필요 없는 탄력적 IP는 **해제**해야 한다. Public IP Insights나 Trusted Advisor로 찾아낼 수 있다.',
   tip: '퍼블릭 IPv4는 모두 유료 → 미사용 EIP 해제.',
@@ -116,7 +116,7 @@ QB.push(
 {
   id: 'b08-13', cat: 'analytics', domain: 'cost', svc: ['Athena vs EMR'],
   q: '보안팀이 한 달에 몇 번, S3에 저장된 VPC 흐름 로그를 SQL로 조회해 특정 IP의 접속 기록을 확인한다. 지금은 이 작업을 위해 EMR 클러스터를 24시간 운영하고 있다. 비용을 크게 줄이는 방법은?',
-  opts: ['EMR 클러스터를 없애고 Athena로 조회한다(파티셔닝과 Parquet 적용)', 'EMR 노드를 스팟으로 바꾼다', 'Redshift 클러스터로 옮긴다', '로그를 RDS에 적재한다'],
+  opts: ['EMR 클러스터를 없애고 Athena로 조회한다', 'EMR 노드를 스팟으로 바꾼다', 'Redshift 클러스터로 옮긴다', '로그를 RDS에 적재한다'],
   ans: [0],
   exp: '가끔 실행하는 애드혹 SQL 조회에는 **스캔한 데이터만큼만 비용을 내는 Athena**가 훨씬 저렴하다. VPC 흐름 로그는 S3로 보낼 때 **Parquet 형식과 시간 단위 파티션**을 고를 수 있어서 스캔량도 줄일 수 있다. 상시 운영하는 클러스터는 대부분의 시간을 놀게 된다.',
   tip: '가끔 쿼리 → Athena. 상시 대규모 처리 → EMR/Redshift.',
@@ -124,7 +124,7 @@ QB.push(
 {
   id: 'b08-14', cat: 'analytics', domain: 'cost', svc: ['Kinesis 용량 모드'],
   q: 'Kinesis Data Streams가 온디맨드 모드로 운영 중인데, 입력량이 1년 내내 초당 약 4MB로 거의 일정하다. 비용을 줄이려면?',
-  opts: ['프로비저닝 모드로 바꾸고 필요한 샤드 수(예: 4~5개)를 지정한다', '보존 기간을 365일로 늘린다', '향상된 팬아웃 소비자를 추가한다', 'Firehose로 바꾼다'],
+  opts: ['프로비저닝 모드로 바꾸고 필요한 샤드 수를 지정한다', '보존 기간을 365일로 늘린다', '향상된 팬아웃 소비자를 추가한다', 'Firehose로 바꾼다'],
   ans: [0],
   exp: '**온디맨드 모드**는 처리량에 따라 자동으로 확장되는 대신 단가가 높다. 처리량이 **일정하고 예측 가능**하면 **프로비저닝 모드**에서 필요한 샤드 수(샤드당 쓰기 1MB/s)만 지정하는 것이 더 저렴하다. 보존 기간을 늘리거나 향상된 팬아웃을 추가하면 비용이 늘어난다.',
   tip: 'Kinesis/DynamoDB 공통: 예측 가능 → 프로비저닝, 예측 불가 → 온디맨드.',
@@ -132,7 +132,7 @@ QB.push(
 {
   id: 'b08-15', cat: 'compute', domain: 'cost', svc: ['Lambda arm64'],
   q: 'Python으로 작성된 Lambda 함수 수백 개가 x86_64 아키텍처로 실행된다. 네이티브 바이너리 의존성은 없다. 코드를 바꾸지 않고 Lambda 비용을 줄이는 가장 간단한 방법은?',
-  opts: ['함수 아키텍처를 arm64(Graviton2)로 바꾼다', '메모리를 128MB로 고정한다', '프로비저닝된 동시성을 모든 함수에 설정한다', '함수를 하나로 합친다'],
+  opts: ['함수 아키텍처를 arm64로 바꾼다', '메모리를 128MB로 고정한다', '프로비저닝된 동시성을 모든 함수에 설정한다', '함수를 하나로 합친다'],
   ans: [0],
   exp: 'Lambda **arm64(Graviton2)** 아키텍처는 x86 대비 **GB-초당 가격이 약 20% 저렴**하고, 가격 대비 성능도 더 좋다. 순수 Python이나 Node.js 코드는 대부분 그대로 동작한다. 프로비저닝된 동시성은 추가 비용이 붙는다.',
   tip: 'Lambda 비용 절감: arm64, 메모리 튜닝, 불필요한 프로비저닝 동시성 제거.',
@@ -140,7 +140,7 @@ QB.push(
 {
   id: 'b08-16', cat: 'compute', domain: 'cost', svc: ['Fargate vs EC2'],
   q: 'ECS 서비스 50개가 Fargate에서 24시간 높은 사용률로 실행된다. 운영팀은 EC2 관리에 익숙하고, 컴퓨팅 비용을 최대한 줄이고 싶어 한다. 가장 적합한 방법은?',
-  opts: ['ECS EC2 용량 공급자(Auto Scaling 그룹)로 옮기고 Graviton과 Savings Plans를 적용해 작업을 촘촘하게 배치한다', 'Fargate 작업 수를 두 배로 늘린다', 'Lambda로 모두 다시 작성한다', '작업의 vCPU를 두 배로 늘린다'],
+  opts: ['ECS EC2 용량 공급자로 옮기고 Graviton과 Savings Plans를 적용해 작업을 촘촘하게 배치한다', 'Fargate 작업 수를 두 배로 늘린다', 'Lambda로 모두 다시 작성한다', '작업의 vCPU를 두 배로 늘린다'],
   ans: [0],
   exp: '**상시 고사용률** 컨테이너는 EC2 인스턴스에 작업을 **촘촘하게 배치(bin packing)**하고, Graviton과 약정 할인을 적용하면 Fargate보다 저렴해질 수 있다. 대신 인스턴스 관리 부담이 생긴다. 운영 부담을 최소화해야 한다면 **Fargate + Compute Savings Plans**도 대안이다.',
   tip: 'Fargate = 편의성, EC2 = 고사용률에서 비용 우위(관리 부담 ↑).',
@@ -172,7 +172,7 @@ QB.push(
 {
   id: 'b08-20', cat: 'management', domain: 'cost', svc: ['Budgets 작업'],
   q: '스타트업이 샌드박스 계정의 월 지출이 500달러를 넘으면, 사람이 대응하지 않아도 새 리소스 생성을 자동으로 막고 싶다. 가장 적합한 방법은?',
-  opts: ['AWS Budgets 예산 작업(budget action)으로 임계값을 넘으면 SCP 또는 IAM 거부 정책을 자동으로 적용한다', 'Cost Explorer에서 매일 비용을 확인한다', 'Trusted Advisor를 켠다', '결제 수단을 해지한다'],
+  opts: ['AWS Budgets 예산 작업으로 임계값을 넘으면 SCP 또는 IAM 거부 정책을 자동으로 적용한다', 'Cost Explorer에서 매일 비용을 확인한다', 'Trusted Advisor를 켠다', '결제 수단을 해지한다'],
   ans: [0],
   exp: '**Budgets 작업**은 예산 임계값에 도달하면 **IAM 정책, SCP를 자동으로 적용**하거나 특정 **EC2·RDS 인스턴스를 중지**할 수 있다(자동 실행 또는 승인 후 실행). 알림만 보내는 것보다 강력한 비용 가드레일이다.',
   tip: '예산 초과 시 자동 조치 → Budgets Actions.',
@@ -180,7 +180,7 @@ QB.push(
 {
   id: 'b08-21', cat: 'storage', domain: 'cost', svc: ['S3 스토리지 클래스 분석'],
   q: 'S3 버킷의 접근 패턴을 몰라서 수명 주기 규칙을 며칠 후로 설정해야 할지 정하지 못하고 있다. 데이터를 기반으로 Standard-IA로 전환할 적절한 시점을 찾으려면?',
-  opts: ['S3 스토리지 클래스 분석(Storage Class Analysis)을 켜서 접근 패턴을 관찰한다', 'S3 인벤토리만 켠다', 'CloudTrail 관리 이벤트를 분석한다', 'Transfer Acceleration을 켠다'],
+  opts: ['S3 스토리지 클래스 분석을 켜서 접근 패턴을 관찰한다', 'S3 인벤토리만 켠다', 'CloudTrail 관리 이벤트를 분석한다', 'Transfer Acceleration을 켠다'],
   ans: [0],
   exp: '**스토리지 클래스 분석**은 버킷(또는 접두사, 태그) 단위로 객체의 나이별 접근 빈도를 분석해서 **Standard-IA로 언제 전환하면 좋을지** 판단할 근거를 준다. 결과는 CSV로 내보내 QuickSight에서 시각화할 수 있다. 패턴이 계속 바뀐다면 Intelligent-Tiering이 대안이다.',
   tip: '수명 주기 전환 시점 결정 → Storage Class Analysis.',
@@ -188,7 +188,7 @@ QB.push(
 {
   id: 'b08-22', cat: 'analytics', domain: 'cost', svc: ['데이터 전송 비용', '리전'],
   q: '서울 리전 S3에 있는 수백 TB 데이터를 미국 동부 리전의 EMR 클러스터가 매일 읽어 처리하고 있어서 리전 간 데이터 전송 비용이 크게 나온다. 가장 효과적인 비용 절감 방법은?',
-  opts: ['처리용 EMR(컴퓨팅)을 데이터가 있는 서울 리전으로 옮긴다', 'S3 Transfer Acceleration을 켠다', '데이터를 매일 미국 리전으로 복제한다', 'EMR 노드 수를 늘린다'],
+  opts: ['처리용 EMR을 데이터가 있는 서울 리전으로 옮긴다', 'S3 Transfer Acceleration을 켠다', '데이터를 매일 미국 리전으로 복제한다', 'EMR 노드 수를 늘린다'],
   ans: [0],
   exp: '**리전 간 데이터 전송은 유료**다. 대용량 데이터를 반복해서 처리한다면 **컴퓨팅을 데이터가 있는 곳으로** 옮기는 것이 가장 효과적이다(데이터 지역성). 매일 복제하면 전송 비용과 저장 비용이 모두 든다. 같은 리전 안에서 S3와 EC2 사이의 전송은 무료다.',
   tip: '"데이터 가까이에서 처리" — 리전 간 전송 최소화.',
@@ -214,7 +214,7 @@ QB.push(
   q: '부서 공유용 FSx for Windows File Server에 10TB의 문서가 있고, 성능 요구는 높지 않다. 비슷한 파일이 많아 중복도 많다. 비용을 줄이는 방법은? (2개 선택)',
   opts: [
     '스토리지 유형으로 SSD 대신 HDD를 쓴다',
-    'FSx for Windows의 데이터 중복 제거(Data Deduplication)를 켠다',
+    'FSx for Windows의 데이터 중복 제거를 켠다',
     '처리 용량을 최대로 올린다',
     'Multi-AZ 대기 서버를 하나 더 추가한다',
     'FSx for Lustre로 바꾼다',
@@ -226,7 +226,7 @@ QB.push(
 {
   id: 'b08-26', cat: 'analytics', domain: 'cost', svc: ['SageMaker 관리형 스팟 학습'],
   q: '데이터 과학팀이 몇 시간 걸리는 딥러닝 모델 학습 작업을 자주 실행한다. 학습이 중단되어도 체크포인트에서 다시 시작할 수 있다. 학습 비용을 가장 많이 줄이는 방법은?',
-  opts: ['SageMaker 관리형 스팟 학습(Managed Spot Training)과 체크포인트를 쓴다', '온디맨드 GPU 인스턴스로 학습한다', '학습 인스턴스를 더 큰 것으로 바꾼다', '학습을 Lambda로 옮긴다'],
+  opts: ['SageMaker 관리형 스팟 학습과 체크포인트를 쓴다', '온디맨드 GPU 인스턴스로 학습한다', '학습 인스턴스를 더 큰 것으로 바꾼다', '학습을 Lambda로 옮긴다'],
   ans: [0],
   exp: '**관리형 스팟 학습**은 남는 EC2 용량으로 학습해서 온디맨드보다 **최대 90%** 저렴하다. 중단되면 SageMaker가 **S3에 저장된 체크포인트**에서 자동으로 재개한다. Lambda는 GPU가 없고 15분 제한이 있다.',
   tip: 'ML 학습 비용 → Managed Spot Training + 체크포인트.',
@@ -258,7 +258,7 @@ QB.push(
 {
   id: 'b08-30', cat: 'compute', domain: 'cost', svc: ['ECS 적정 크기'],
   q: 'ECS on Fargate 작업이 vCPU 4개와 메모리 16GB로 정의되어 있는데, Container Insights를 보면 실제로는 CPU 15%, 메모리 20% 정도만 쓴다. 비용을 줄이려면?',
-  opts: ['작업 정의의 CPU와 메모리를 실제 사용량에 맞게 줄이고(Compute Optimizer의 ECS 권장 참고), 서비스 Auto Scaling을 설정한다', '작업 수를 두 배로 늘린다', 'Fargate 플랫폼 버전을 바꾼다', '작업을 EC2로 옮기기만 한다'],
+  opts: ['작업 정의의 CPU와 메모리를 실제 사용량에 맞게 줄이고, 서비스 Auto Scaling을 설정한다', '작업 수를 두 배로 늘린다', 'Fargate 플랫폼 버전을 바꾼다', '작업을 EC2로 옮기기만 한다'],
   ans: [0],
   exp: 'Fargate는 작업 정의에 **요청한 vCPU와 메모리** 기준으로 과금된다. 실제 사용량에 맞게 **작업 크기를 줄이면** 비용이 바로 줄어든다. **Compute Optimizer**는 ECS on Fargate 서비스의 적정 크기 권장도 제공한다. 그다음 서비스 Auto Scaling으로 작업 수를 조정한다.',
   tip: 'Fargate 과금 = 요청 리소스 기준 → 적정 크기가 핵심.',
@@ -266,7 +266,7 @@ QB.push(
 {
   id: 'b08-31', cat: 'storage', domain: 'cost', svc: ['EFS 처리량 모드'],
   q: 'EFS를 쓰는 애플리케이션의 처리량이 하루 중 대부분은 낮다가 짧은 순간에만 급증한다. 기존에 높은 처리량을 위해 프로비저닝된 처리량 모드를 크게 설정해 두어 비용이 많이 든다. 어떻게 바꾸는 것이 좋은가?',
-  opts: ['탄력적(Elastic) 처리량 모드로 바꿔 사용한 만큼만 처리량 비용을 낸다', '프로비저닝된 처리량을 더 늘린다', 'EFS를 EBS로 바꾼다', 'Max I/O 성능 모드로 바꾼다'],
+  opts: ['탄력적 처리량 모드로 바꿔 사용한 만큼만 처리량 비용을 낸다', '프로비저닝된 처리량을 더 늘린다', 'EFS를 EBS로 바꾼다', 'Max I/O 성능 모드로 바꾼다'],
   ans: [0],
   exp: '**탄력적 처리량** 모드는 워크로드에 따라 처리량이 자동으로 늘고 줄며, **실제로 쓴 처리량만큼** 과금된다. 예측하기 어렵거나 들쭉날쭉한(spiky) 워크로드에 적합하다. 프로비저닝 모드는 일정하게 높은 처리량이 필요할 때 쓴다.',
   tip: 'EFS 처리량: Elastic(가변·권장) / Provisioned(일정 고처리량) / Bursting(용량 비례).',
@@ -283,7 +283,7 @@ QB.push(
   id: 'b08-33', cat: 'compute', domain: 'cost', svc: ['스팟', '상태 비저장 웹'],
   q: '상태 비저장 웹 애플리케이션이 ALB 뒤의 Auto Scaling 그룹에서 실행된다. 트래픽은 크게 변하고, 인스턴스 몇 대가 갑자기 사라져도 다른 인스턴스가 처리할 수 있다. 가용성을 유지하면서 비용을 크게 줄이는 방법은? (2개 선택)',
   opts: [
-    '기본 용량은 온디맨드(또는 Savings Plans)로 두고, 추가 용량은 여러 유형의 스팟으로 채우는 혼합 인스턴스 정책을 쓴다',
+    '기본 용량은 온디맨드로 두고, 추가 용량은 여러 유형의 스팟으로 채우는 혼합 인스턴스 정책을 쓴다',
     'ASG의 Capacity Rebalancing을 켜서 중단 위험이 높아진 스팟을 미리 교체한다',
     '모든 인스턴스를 한 가지 유형의 스팟으로만 운영한다',
     '전용 호스트로 바꾼다',
@@ -296,7 +296,7 @@ QB.push(
 {
   id: 'b08-34', cat: 'networking', domain: 'cost', svc: ['VPC 엔드포인트 비용'],
   q: 'VPC 30개가 각각 같은 10개 AWS 서비스(ECR, CloudWatch Logs, SSM 등)용 인터페이스 엔드포인트를 따로 만들어서 엔드포인트 시간당 요금이 크게 늘었다. 프라이빗 접근은 유지하면서 비용을 줄이는 방법은?',
-  opts: ['공유 서비스 VPC에 인터페이스 엔드포인트를 중앙 집중으로 두고, Transit Gateway와 Route 53 프라이빗 호스팅 영역(또는 Resolver)으로 다른 VPC가 공유하게 한다', '모든 VPC에서 엔드포인트를 지우고 퍼블릭 인터넷을 쓴다', 'VPC마다 엔드포인트를 두 배로 늘린다', 'VPC 피어링으로 대체한다'],
+  opts: ['공유 서비스 VPC에 인터페이스 엔드포인트를 중앙 집중으로 두고, Transit Gateway와 Route 53 프라이빗 호스팅 영역으로 다른 VPC가 공유하게 한다', '모든 VPC에서 엔드포인트를 지우고 퍼블릭 인터넷을 쓴다', 'VPC마다 엔드포인트를 두 배로 늘린다', 'VPC 피어링으로 대체한다'],
   ans: [0],
   exp: '인터페이스 엔드포인트는 **엔드포인트와 AZ마다 시간당 요금**이 붙는다. VPC가 많으면 **중앙 집중식 엔드포인트**(허브 VPC)를 두고 TGW로 연결하며, DNS(프라이빗 호스팅 영역 공유나 Resolver 규칙)로 다른 VPC에서도 그 엔드포인트를 쓰게 해 중복을 없앤다. TGW 데이터 처리 비용과 비교해 판단한다.',
   tip: '다수 VPC의 인터페이스 엔드포인트 → 중앙 집중(허브) 패턴.',
@@ -326,7 +326,7 @@ QB.push(
 {
   id: 'b08-37', cat: 'storage', domain: 'cost', svc: ['S3 압축'],
   q: '애플리케이션이 매일 JSON 로그 수 TB를 압축하지 않은 채 S3에 저장하고, 가끔 Athena로 분석한다. 저장 비용과 분석 비용을 함께 줄이는 가장 효과적인 방법은?',
-  opts: ['Firehose(또는 Glue)로 데이터를 Parquet 형식으로 변환·압축하고 날짜로 파티셔닝해 저장한다', '로그를 Standard-IA에 그대로 저장한다', '로그를 EBS에 저장한다', '로그를 DynamoDB에 저장한다'],
+  opts: ['Firehose로 데이터를 Parquet 형식으로 변환·압축하고 날짜로 파티셔닝해 저장한다', '로그를 Standard-IA에 그대로 저장한다', '로그를 EBS에 저장한다', '로그를 DynamoDB에 저장한다'],
   ans: [0],
   exp: '**Parquet 같은 컬럼 형식과 압축**은 저장 용량을 크게 줄이고, Athena가 필요한 컬럼만 읽게 해 **스캔 비용**도 줄인다. **파티셔닝**까지 하면 스캔 범위가 더 좁아진다. Standard-IA는 자주 분석하면 검색 비용이 붙는다.',
   tip: '저장+분석 비용 동시 절감 = 컬럼 형식 + 압축 + 파티션.',
@@ -342,7 +342,7 @@ QB.push(
 {
   id: 'b08-39', cat: 'analytics', domain: 'cost', svc: ['QuickSight 요금'],
   q: '회사가 수천 명의 직원에게 월 몇 번만 보는 대시보드를 QuickSight로 제공하려 한다. 사용자 수가 많지만 대부분 가끔만 접속한다. 비용을 고려한 적절한 선택은?',
-  opts: ['대시보드를 보기만 하는 사용자는 Author가 아닌 Reader(열람자)로 두어 저렴한 열람자 요금을 적용한다', '모든 직원에게 Author 라이선스를 준다', '대시보드를 EC2에 직접 구축한다', '각 직원에게 Athena 콘솔 권한을 준다'],
+  opts: ['대시보드를 보기만 하는 사용자는 Author가 아닌 Reader로 두어 저렴한 열람자 요금을 적용한다', '모든 직원에게 Author 라이선스를 준다', '대시보드를 EC2에 직접 구축한다', '각 직원에게 Athena 콘솔 권한을 준다'],
   ans: [0],
   exp: 'QuickSight는 대시보드를 만드는 **Author**와 보기만 하는 **Reader**의 요금이 다르고, Reader가 훨씬 저렴하다. 대시보드를 소비만 하는 대규모 사용자층은 Reader로 두는 것이 경제적이다. 모두에게 Author 라이선스를 주는 것은 낭비다. 대규모 열람자에게는 용량 기반 요금제도 검토할 수 있다.',
   tip: '많은 열람자 → Reader 요금(작성자만 Author).',
@@ -350,7 +350,7 @@ QB.push(
 {
   id: 'b08-40', cat: 'networking', domain: 'cost', svc: ['데이터 전송', 'AZ'],
   q: '다음 중 일반적으로 데이터 전송 요금이 **발생하지 않는** 경우는?',
-  opts: ['같은 리전에서 EC2가 S3 버킷의 데이터를 읽는 경우(게이트웨이 엔드포인트 또는 퍼블릭 엔드포인트)', '서로 다른 AZ의 EC2 인스턴스끼리 프라이빗 IP로 통신하는 경우', '서울 리전에서 도쿄 리전으로 데이터를 복제하는 경우', 'EC2에서 인터넷으로 데이터를 내보내는 경우'],
+  opts: ['같은 리전에서 EC2가 S3 버킷의 데이터를 읽는 경우', '서로 다른 AZ의 EC2 인스턴스끼리 프라이빗 IP로 통신하는 경우', '서울 리전에서 도쿄 리전으로 데이터를 복제하는 경우', 'EC2에서 인터넷으로 데이터를 내보내는 경우'],
   ans: [0],
   exp: '**같은 리전 안에서 EC2와 S3 사이의 전송은 무료**다(NAT 게이트웨이를 거치면 NAT 처리 요금은 별도). **AZ 간 전송**, **리전 간 전송**, **인터넷으로 나가는 전송**은 유료다. 인터넷에서 AWS로 들어오는 전송은 일반적으로 무료다.',
   tip: '무료: 인바운드, 같은 리전 S3↔EC2, 같은 AZ 프라이빗 IP. 유료: AZ 간·리전 간·아웃바운드.',
@@ -358,7 +358,7 @@ QB.push(
 {
   id: 'b08-41', cat: 'database', domain: 'cost', svc: ['DynamoDB 예약 용량'],
   q: 'DynamoDB 테이블을 프로비저닝 모드로 쓰며, 최소 쓰기 용량 5,000 WCU가 1년 내내 꾸준히 쓰이고, 그 위로 Auto Scaling이 변동을 처리한다. 비용을 더 줄이려면?',
-  opts: ['기본 사용량(5,000 WCU)만큼 1년 또는 3년 DynamoDB 예약 용량을 구매한다', 'Compute Savings Plans를 구매한다', '온디맨드 모드로 바꾼다', '글로벌 테이블로 바꾼다'],
+  opts: ['기본 사용량만큼 1년 또는 3년 DynamoDB 예약 용량을 구매한다', 'Compute Savings Plans를 구매한다', '온디맨드 모드로 바꾼다', '글로벌 테이블로 바꾼다'],
   ans: [0],
   exp: 'DynamoDB **예약 용량**은 프로비저닝된 RCU·WCU를 1년이나 3년 동안 약정하고 할인을 받는다. **항상 쓰는 기본 사용량**만큼만 예약하고 변동분은 Auto Scaling(온디맨드 단가의 프로비저닝)으로 처리하는 것이 일반적이다. Compute Savings Plans는 DynamoDB에 적용되지 않는다.',
   tip: '각 데이터 서비스의 할인 = 자체 예약 용량/노드.',
@@ -366,7 +366,7 @@ QB.push(
 {
   id: 'b08-42', cat: 'storage', domain: 'cost', svc: ['S3 요청 비용'],
   q: '애플리케이션이 1KB 크기의 작은 센서 데이터를 하루 수억 개의 S3 객체로 개별 PUT하고 있어서, 스토리지보다 PUT 요청 비용이 훨씬 크게 나온다. 가장 효과적인 개선 방법은?',
-  opts: ['Firehose 등으로 데이터를 버퍼링해 큰 파일로 묶어서(배치) 저장한다', 'S3 Standard-IA로 바꾼다', 'Transfer Acceleration을 켠다', '버전 관리를 켠다'],
+  opts: ['Firehose 등으로 데이터를 버퍼링해 큰 파일로 묶어서 저장한다', 'S3 Standard-IA로 바꾼다', 'Transfer Acceleration을 켠다', '버전 관리를 켠다'],
   ans: [0],
   exp: 'S3는 **요청 건수**마다 요금이 붙으므로, 아주 작은 객체를 대량으로 PUT하면 요청 비용이 커진다. **Firehose**처럼 일정 크기나 시간 단위로 버퍼링해 **큰 객체로 묶으면** 요청 수가 크게 줄고, Athena 같은 분석 성능도 좋아진다. Standard-IA는 객체당 최소 크기(128KB) 과금과 요청 단가 때문에 오히려 비싸진다.',
   tip: '작은 객체 대량 PUT → 버퍼링/배치로 묶기. 작은 객체는 IA 클래스 부적합.',
