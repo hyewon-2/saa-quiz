@@ -14,9 +14,9 @@ QB.push(
   opts: [
     '데이터를 Apache Parquet 같은 컬럼 기반 형식으로 변환하고 압축한다',
     '날짜 기준으로 S3 데이터를 파티셔닝한다',
-    'S3 스토리지 클래스를 Standard-IA로 바꾼다',
-    '모든 파일을 하나의 큰 CSV로 합친다',
-    'S3 Transfer Acceleration을 켠다',
+    'S3 스토리지 클래스를 Standard-IA로 바꿔 저장 단가와 쿼리 비용을 함께 낮춘다',
+    '작은 파일을 모두 하나의 큰 CSV로 합쳐 Athena가 읽을 파일 수를 줄인다',
+    'S3 Transfer Acceleration을 켜서 Athena가 데이터를 읽는 속도를 높인다',
   ],
   ans: [0, 1],
   exp: 'Athena는 **스캔한 바이트 수**로 요금을 매긴다. **컬럼 기반 형식(Parquet/ORC)**은 필요한 컬럼만 읽고 압축률도 높다. **파티셔닝**하면 쿼리 조건에 맞는 파티션만 스캔한다. 둘 다 스캔량을 크게 줄인다. Standard-IA는 검색 비용 때문에 오히려 비용이 늘 수 있다.',
@@ -34,10 +34,10 @@ QB.push(
   id: 'ana-04', cat: 'analytics', domain: 'cost', svc: ['EMR'],
   q: '데이터 엔지니어링 팀이 온프레미스에서 운영하는 Hadoop·Spark 작업을 코드 변경을 최소화하면서 AWS로 옮기려 한다. 작업은 매일 밤 몇 시간 동안 실행되며 비용을 줄이고 싶다. 가장 적합한 방법은?',
   opts: [
-    'EC2에 Hadoop을 직접 설치해 상시 운영한다',
+    'EC2에 Hadoop을 직접 설치해 온프레미스와 같은 구성으로 클러스터를 상시 운영한다',
     'Amazon EMR을 쓰고, 작업할 때만 클러스터를 띄운 뒤 태스크 노드에 스팟 인스턴스를 활용한다',
-    '모든 작업을 Lambda로 다시 작성한다',
-    'Amazon Redshift로 옮긴다',
+    '모든 작업을 Lambda로 다시 작성하고 EventBridge로 매일 밤 실행한다',
+    '데이터를 Amazon Redshift로 옮기고 기존 Spark 작업을 SQL로 대체한다',
   ],
   ans: [1],
   exp: '**EMR**은 Hadoop, Spark, Hive, Presto 같은 빅데이터 프레임워크를 관리형으로 실행한다. 기존 코드를 거의 그대로 쓸 수 있다. **일시적(transient) 클러스터**로 작업할 때만 띄우고, 데이터를 저장하지 않는 **태스크 노드는 스팟**으로 쓰면 비용이 크게 줄어든다(EMRFS로 S3에 데이터 저장). Lambda는 15분 제한이 있어 맞지 않는다.',
@@ -54,7 +54,7 @@ QB.push(
 {
   id: 'ana-06', cat: 'analytics', domain: 'secure', svc: ['Lake Formation'],
   q: 'S3 기반 데이터 레이크에서 분석가 그룹별로 접근 권한을 다르게 줘야 한다. 예를 들어 마케팅팀은 고객 테이블의 이름·이메일 열을 볼 수 없고, 한국 지사는 한국 고객 행만 볼 수 있어야 한다. Athena와 Redshift Spectrum 모두에 같은 권한이 적용되어야 한다. 가장 적합한 방법은?',
-  opts: ['S3 버킷 정책으로 접두사별 권한을 준다', 'AWS Lake Formation으로 테이블·열·행 수준 권한을 중앙에서 관리한다', '팀마다 데이터 사본을 별도 버킷에 만든다', 'IAM 정책으로 Athena 작업 그룹을 나눈다'],
+  opts: ['S3 버킷 정책으로 팀별 접두사 권한을 나누고 민감한 열은 별도 파일로 분리한다', 'AWS Lake Formation으로 테이블·열·행 수준 권한을 중앙에서 관리한다', '팀마다 열과 행을 걸러 낸 데이터 사본을 별도 버킷에 만들어 제공한다', 'IAM 정책으로 Athena 작업 그룹을 나누고 그룹별로 쿼리 결과 위치를 분리한다'],
   ans: [1],
   exp: '**Lake Formation**은 Glue 데이터 카탈로그 위에서 **데이터베이스·테이블·열·행·셀 수준**의 세분화된 권한을 중앙에서 관리하고, 이 권한을 Athena, Redshift Spectrum, EMR, Glue에 똑같이 적용한다. S3 버킷 정책은 객체 단위라서 열이나 행 수준으로 제어할 수 없다. 데이터를 복사하면 관리 부담과 불일치 위험이 커진다.',
   tip: '데이터 레이크 + 열/행 수준 보안 + 중앙 권한 → Lake Formation.',
@@ -70,7 +70,7 @@ QB.push(
 {
   id: 'ana-08', cat: 'analytics', domain: 'cost', svc: ['Redshift Spectrum'],
   q: 'Redshift 클러스터에는 최근 1년치 판매 데이터만 있고, 그 이전 5년치 데이터는 S3에 Parquet 파일로 보관되어 있다. 가끔 두 데이터를 조인해서 분석해야 하는데, 오래된 데이터를 Redshift에 적재해 스토리지 비용을 늘리고 싶지는 않다. 어떻게 해야 하는가?',
-  opts: ['오래된 데이터를 COPY 명령으로 Redshift에 적재한다', 'Redshift Spectrum으로 S3의 외부 테이블을 만들어 Redshift 테이블과 조인한다', '오래된 데이터를 DynamoDB로 옮긴다', 'Redshift 클러스터를 하나 더 만든다'],
+  opts: ['오래된 데이터를 COPY 명령으로 Redshift에 적재하고 노드를 추가해 용량을 늘린다', 'Redshift Spectrum으로 S3의 외부 테이블을 만들어 Redshift 테이블과 조인한다', '오래된 데이터를 DynamoDB로 옮기고 조인이 필요할 때 애플리케이션에서 합친다', '오래된 데이터 전용 Redshift 클러스터를 하나 더 만들어 함께 운영한다'],
   ans: [1],
   exp: '**Redshift Spectrum**은 데이터를 적재하지 않고 **S3에 있는 데이터를 외부 테이블로 바로 쿼리**하며, Redshift 내부 테이블과 조인할 수 있다. 자주 쓰는 데이터는 Redshift에, 오래된 데이터는 저렴한 S3에 두는 계층형 구조다. 적재하면 클러스터 스토리지 비용이 늘어난다.',
   tip: 'Redshift + "S3 데이터를 적재 없이 쿼리" → Redshift Spectrum.',
@@ -86,7 +86,7 @@ QB.push(
 {
   id: 'ana-10', cat: 'analytics', domain: 'performance', svc: ['Managed Service for Apache Flink'],
   q: 'Kinesis Data Streams로 들어오는 결제 이벤트를 실시간으로 분석해, 1분 슬라이딩 윈도 동안 카드 하나에서 결제 5건 이상이 발생하면 즉시 이상 거래로 표시해야 한다. 서버 관리 없이 상태를 유지하는 스트림 처리를 하려면?',
-  opts: ['Amazon Athena로 1분마다 쿼리한다', 'Amazon Managed Service for Apache Flink로 윈도 집계를 수행한다', 'AWS Glue 배치 작업을 1분마다 실행한다', 'Amazon QuickSight 알림을 설정한다'],
+  opts: ['Amazon Athena로 1분마다 쿼리해 결제 건수가 5건 이상인 카드를 찾는다', 'Amazon Managed Service for Apache Flink로 윈도 집계를 수행한다', 'AWS Glue 배치 작업을 1분마다 실행해 윈도별 결제 건수를 집계한다', 'Amazon QuickSight 대시보드에 임계값 알림을 설정해 이상 거래를 표시한다'],
   ans: [1],
   exp: '**Managed Service for Apache Flink**(구 Kinesis Data Analytics)는 스트리밍 데이터에 대해 **윈도 집계, 상태 저장 처리, 이벤트 시간 기반 연산**을 서버리스로 실행한다. Athena와 Glue는 배치·애드혹 처리라 실시간 탐지에 맞지 않는다.',
   tip: '실시간 스트림 집계/윈도/이상 탐지 → Managed Service for Apache Flink.',
