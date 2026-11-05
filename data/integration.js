@@ -4,9 +4,9 @@ QB.push(
   id: 'int-01', cat: 'integration', domain: 'resilient', svc: ['SQS', 'EC2 Auto Scaling'],
   q: '주문 웹 사이트가 주문을 받으면 바로 처리 서버를 호출하는데, 세일 기간에 처리 서버가 감당하지 못해 주문이 유실된다. 주문 유실 없이 트래픽 급증을 흡수하고, 처리 계층이 부하에 따라 확장되게 하려면?',
   opts: [
-    '웹 계층과 처리 계층 사이에 SQS 표준 대기열을 두고, 대기열의 메시지 수에 따라 처리 계층 Auto Scaling 그룹을 확장한다',
-    '처리 서버 인스턴스 크기를 늘린다',
-    'SNS 토픽으로 주문을 처리 서버에 푸시한다',
+    'SQS 대기열로 분리하고 대기열 깊이로 처리 계층을 확장한다',
+    '처리 서버 인스턴스 크기를 세일 기간에 맞춰 늘리고 재시도를 추가한다',
+    'SNS 토픽으로 주문을 처리 서버에 HTTP로 푸시해 웹 계층과 처리 계층을 분리한다',
     'ALB의 연결 드레이닝 시간을 늘린다',
   ],
   ans: [0],
@@ -16,7 +16,7 @@ QB.push(
 {
   id: 'int-02', cat: 'integration', domain: 'resilient', svc: ['SQS FIFO'],
   q: '주식 거래 시스템에서 같은 계좌의 주문은 들어온 **순서대로** 정확히 **한 번만** 처리되어야 한다. 처리량은 초당 수백 건 수준이다. 어떤 메시징 구성이 맞는가?',
-  opts: ['SQS 표준 대기열', '계좌 ID를 메시지 그룹 ID로 쓰는 SQS FIFO 대기열', 'SNS 표준 토픽', 'Kinesis Data Firehose'],
+  opts: ['SQS 표준 대기열과 소비자 측 타임스탬프 정렬', '계좌 ID를 메시지 그룹 ID로 쓰는 SQS FIFO 대기열', 'SNS 표준 토픽과 구독 필터 정책', 'Kinesis Data Firehose로 순서대로 적재'],
   ans: [1],
   exp: '**SQS FIFO**는 **메시지 그룹** 안에서 **순서를 보장**하고, 중복 제거 ID로 **정확히 한 번 처리**를 지원한다. 계좌 ID를 그룹 ID로 쓰면 계좌별로 순서를 지키면서 서로 다른 계좌는 병렬로 처리할 수 있다. 표준 대기열은 최소 한 번 전달하고 순서를 최선 노력으로만 지킨다.',
   tip: '"순서 보장", "중복 불가" → FIFO. 처리량: 기본 300 TPS(배치 3,000), 높은 처리량 모드면 훨씬 높음.',
@@ -61,7 +61,7 @@ QB.push(
 {
   id: 'int-07', cat: 'integration', domain: 'resilient', svc: ['SQS DLQ'],
   q: 'SQS 대기열의 일부 메시지에 형식 오류가 있어서 소비자가 계속 처리에 실패한다. 이 메시지들이 반복해서 다시 처리되면서 리소스를 낭비하고 정상 메시지 처리까지 늦어지고 있다. 어떻게 해결해야 하는가?',
-  opts: ['메시지 보존 기간을 1분으로 줄인다', '배달 못한 편지 대기열을 구성하고 maxReceiveCount를 설정한다', '대기열을 FIFO로 바꾼다', '가시성 제한 시간을 0으로 설정한다'],
+  opts: ['메시지 보존 기간을 1분으로 줄여 실패한 메시지가 빨리 사라지게 한다', '배달 못한 편지 대기열을 구성하고 maxReceiveCount를 설정한다', '대기열을 FIFO로 바꿔 실패한 메시지를 건너뛴다', '가시성 제한 시간을 0으로 설정한다'],
   ans: [1],
   exp: '**DLQ**와 리드라이브 정책(`maxReceiveCount`)을 설정하면, 지정한 횟수만큼 처리에 실패한 메시지를 별도의 대기열로 옮긴다. 정상 처리를 막지 않고 실패한 메시지를 따로 분석할 수 있고, 원인을 고친 뒤 원래 대기열로 다시 보낼 수도 있다. 보존 기간을 줄이면 정상 메시지까지 유실될 수 있다.',
   tip: '"계속 실패하는 메시지(poison message)" → DLQ.',
@@ -77,7 +77,7 @@ QB.push(
 {
   id: 'int-09', cat: 'integration', domain: 'performance', svc: ['API Gateway', 'Lambda'],
   q: '모바일 앱용 REST API를 서버리스로 만들려 한다. 클라이언트별 요청 할당량과 스로틀링, 응답 캐싱, API 키 관리가 필요하다. 가장 적합한 구성은?',
-  opts: ['ALB + EC2', 'Amazon API Gateway + AWS Lambda', 'CloudFront + S3', 'NLB + ECS'],
+  opts: ['ALB + EC2 Auto Scaling + Nginx 속도 제한', 'Amazon API Gateway + AWS Lambda', 'CloudFront + S3 정적 호스팅', 'NLB + ECS on Fargate'],
   ans: [1],
   exp: '**API Gateway REST API**는 **사용량 계획과 API 키**로 클라이언트별 할당량과 스로틀링을 관리하고, **응답 캐싱**, 요청 검증, 인증(Cognito, Lambda 권한 부여자, IAM)을 지원한다. Lambda와 함께 쓰면 서버를 관리할 필요가 없다. ALB에는 API 키나 사용량 계획 기능이 없다.',
   tip: '서버리스 API + 스로틀링/캐싱/API 키 → API Gateway(REST). 저렴·단순 → HTTP API. 실시간 양방향 → WebSocket API.',
@@ -93,7 +93,7 @@ QB.push(
 {
   id: 'int-11', cat: 'integration', domain: 'cost', svc: ['SQS 긴 폴링'],
   q: 'SQS 대기열은 대부분 비어 있는데, 소비자 애플리케이션이 계속 ReceiveMessage를 호출해서 빈 응답이 많이 생기고 API 요청 비용이 늘고 있다. 메시지 처리 지연을 늘리지 않고 비용을 줄이는 방법은?',
-  opts: ['ReceiveMessageWaitTimeSeconds를 1~20초로 설정해 긴 폴링을 켠다', '가시성 제한 시간을 늘린다', '지연 대기열을 설정한다', '대기열을 FIFO로 바꾼다'],
+  opts: ['WaitTimeSeconds를 1~20초로 설정해 긴 폴링을 켠다', '가시성 제한 시간을 늘려 소비자가 ReceiveMessage를 덜 호출하게 한다', '지연 대기열을 설정해 메시지가 모인 뒤 받게 한다', '대기열을 FIFO로 바꾼다'],
   ans: [0],
   exp: '**긴 폴링**은 메시지가 없을 때 최대 20초까지 기다렸다가, 그 사이에 메시지가 들어오면 바로 반환한다. **빈 응답과 API 호출 수가 크게 줄어** 비용이 줄고, 메시지가 도착하면 즉시 받으므로 처리 지연도 늘지 않는다. 짧은 폴링(기본값 0초)은 일부 서버만 샘플링해서 빈 응답이 자주 생긴다.',
   tip: '"빈 응답/폴링 비용 감소" → Long Polling(WaitTimeSeconds > 0, 최대 20).',

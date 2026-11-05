@@ -11,7 +11,7 @@ QB.push(
 {
   id: 'db-02', cat: 'database', domain: 'performance', svc: ['RDS 읽기 전용 복제본'],
   q: 'RDS for PostgreSQL 기본 인스턴스에서 매일 실행되는 무거운 보고서 쿼리 때문에 쓰기 트랜잭션이 느려지고 있다. 보고서 데이터는 몇 초 정도 지연되어도 괜찮다. 가장 적합한 해결책은?',
-  opts: ['Multi-AZ를 켜고 대기 인스턴스에서 보고서를 실행한다', '읽기 전용 복제본을 만들고 보고서 쿼리를 복제본 엔드포인트로 보낸다', '기본 인스턴스 크기를 두 배로 늘린다', 'ElastiCache로 쓰기를 캐싱한다'],
+  opts: ['Multi-AZ를 켜고 대기 인스턴스에서 보고서 쿼리를 실행하도록 엔드포인트를 나눈다', '읽기 전용 복제본을 만들고 보고서 쿼리를 복제본 엔드포인트로 보낸다', '기본 인스턴스 크기를 두 배로 늘린다', 'ElastiCache로 쓰기를 캐싱해 기본 인스턴스의 부하를 줄인다'],
   ans: [1],
   exp: '**읽기 전용 복제본**으로 읽기 부하를 분산하면 기본 인스턴스는 쓰기 처리에 집중할 수 있다. 비동기 복제라 약간 지연되지만 요건상 괜찮다. 일반 Multi-AZ **인스턴스** 배포의 대기 인스턴스는 읽기 트래픽을 받을 수 없다. 인스턴스를 키우는 방식은 비용이 많이 들고 근본적인 해결책이 아니다.',
   tip: 'Multi-AZ DB **클러스터**(읽기 가능한 대기 2개)와 Multi-AZ **인스턴스**(대기에서 읽기 불가)를 구분할 것.',
@@ -19,7 +19,7 @@ QB.push(
 {
   id: 'db-03', cat: 'database', domain: 'performance', svc: ['ElastiCache'],
   q: '쇼핑몰의 상품 상세 페이지가 같은 RDS 쿼리를 초당 수천 번 실행한다. 상품 정보는 자주 바뀌지 않는다. 데이터베이스 부하를 줄이고 응답 시간을 마이크로초~밀리초 수준으로 낮추려면?',
-  opts: ['RDS 인스턴스를 수직 확장한다', 'Amazon ElastiCache를 지연 로딩 캐시로 쓴다', 'RDS 스토리지를 io2로 바꾼다', 'DynamoDB로 마이그레이션한다'],
+  opts: ['RDS 인스턴스를 수직 확장하고 쿼리 캐시 파라미터를 늘린다', 'Amazon ElastiCache를 지연 로딩 캐시로 쓴다', 'RDS 스토리지를 io2로 바꿔 읽기 지연을 줄인다', '상품 데이터를 DynamoDB로 마이그레이션한다'],
   ans: [1],
   exp: '**ElastiCache**는 인메모리 캐시라서 **자주 읽고 잘 바뀌지 않는** 데이터를 캐싱하면 DB 부하가 크게 줄고 응답이 매우 빨라진다. 지연 로딩은 캐시에 없을 때만 DB에서 읽어 와 캐시에 넣는 전략이고, TTL을 같이 쓰면 오래된 데이터 문제도 줄일 수 있다. 수직 확장이나 스토리지 변경은 비용 대비 효과가 낮다.',
   tip: 'RDS 앞단 캐시 → ElastiCache. DynamoDB 앞단 캐시 → DAX. 세션 저장소도 ElastiCache.',
@@ -51,7 +51,7 @@ QB.push(
 {
   id: 'db-07', cat: 'database', domain: 'resilient', svc: ['Aurora Global Database'],
   q: 'Aurora MySQL로 운영하는 핵심 시스템의 재해 복구 요건은 RPO 1초, RTO 1분이다. 리전 전체에 장애가 나도 이 요건을 충족해야 한다. 가장 적합한 솔루션은?',
-  opts: ['Aurora 자동 백업을 다른 리전으로 복사한다', 'Aurora Global Database로 보조 리전을 구성한다', '같은 리전에 Aurora 복제본을 15개 만든다', 'AWS DMS로 다른 리전에 지속 복제한다'],
+  opts: ['Aurora 자동 백업을 다른 리전으로 복사하고 재해 때 복원한다', 'Aurora Global Database로 보조 리전을 구성한다', '같은 리전의 여러 AZ에 Aurora 복제본을 15개 만든다', 'AWS DMS 지속 복제로 다른 리전의 클러스터에 복제한다'],
   ans: [1],
   exp: '**Aurora Global Database**는 스토리지 계층에서 보조 리전으로 복제하며, 지연은 보통 **1초 미만**이다. 보조 리전을 **1분 안에** 승격할 수 있어서 RPO 1초와 RTO 1분 요건에 맞다. 백업 복사는 복원 시간이 오래 걸린다. 같은 리전의 복제본은 리전 장애를 막지 못한다. DMS는 Global Database보다 지연이 크고 운영 부담도 크다.',
   tip: 'Aurora + 리전 DR + 초 단위 RPO/분 단위 RTO → Aurora Global Database.',
@@ -59,7 +59,7 @@ QB.push(
 {
   id: 'db-08', cat: 'database', domain: 'performance', svc: ['RDS Proxy', 'Lambda'],
   q: '트래픽이 몰릴 때 Lambda 함수가 수천 개 동시에 실행되면서 RDS for MySQL에 연결을 맺는다. 그때마다 "Too many connections" 오류가 나고 DB의 CPU와 메모리가 급증한다. 애플리케이션을 최소한으로 바꾸고 해결하는 방법은?',
-  opts: ['RDS 인스턴스의 max_connections 값을 최대로 올린다', 'Amazon RDS Proxy를 만들고 Lambda가 프록시 엔드포인트로 연결하게 한다', 'Lambda 예약 동시성을 1로 설정한다', 'RDS 읽기 전용 복제본을 추가한다'],
+  opts: ['RDS 파라미터 그룹에서 max_connections 값을 최대로 올린다', 'Amazon RDS Proxy를 두고 프록시로 연결한다', 'Lambda 예약 동시성을 1로 설정해 연결을 하나로 제한한다', 'RDS 읽기 전용 복제본을 추가해 연결을 분산한다'],
   ans: [1],
   exp: '**RDS Proxy**는 DB 연결을 **풀링하고 공유**해서 Lambda처럼 짧은 연결이 폭증하는 패턴에서 DB 부하를 줄인다. Secrets Manager·IAM 인증과 통합되고, 장애 조치 시간도 단축해 준다. max_connections를 올려도 메모리 한계에 부딪힌다. 동시성을 1로 제한하면 처리량이 무너진다. 복제본은 쓰기 연결 문제를 해결하지 못한다.',
   tip: 'Lambda + RDS + 연결 고갈 → RDS Proxy.',
@@ -68,9 +68,9 @@ QB.push(
   id: 'db-09', cat: 'database', domain: 'resilient', svc: ['DMS', 'SCT'],
   q: '온프레미스 Oracle 데이터베이스를 Amazon Aurora PostgreSQL로 마이그레이션한다. 마이그레이션하는 동안 애플리케이션 다운타임을 최소화해야 한다. 어떤 조합이 맞는가?',
   opts: [
-    'AWS DMS만 써서 전체 로드를 한 번 실행한다',
-    'AWS SCT로 스키마와 코드를 변환하고, AWS DMS로 전체 로드와 지속적 복제를 실행한다',
-    'Oracle 덤프 파일을 S3에 올린 뒤 Aurora로 가져온다',
+    'AWS DMS만 써서 스키마와 데이터를 전체 로드로 한 번에 옮긴다',
+    'AWS SCT로 스키마를 변환하고 DMS로 CDC까지 복제한다',
+    'Oracle Data Pump 덤프 파일을 S3에 올린 뒤 Aurora PostgreSQL로 가져온다',
     'AWS DataSync로 데이터 파일을 복사한다',
   ],
   ans: [1],
@@ -89,9 +89,9 @@ QB.push(
   id: 'db-11', cat: 'database', domain: 'secure', svc: ['RDS 암호화', 'KMS'],
   q: '보안 감사에서 운영 중인 RDS for MySQL 인스턴스가 암호화되어 있지 않다는 지적을 받았다. 저장 데이터를 암호화하려면 어떻게 해야 하는가?',
   opts: [
-    'RDS 콘솔에서 기존 인스턴스의 암호화 옵션을 켠다',
-    '스냅샷을 만들고, KMS 키로 암호화를 지정해 스냅샷을 복사한 뒤, 암호화된 스냅샷에서 새 인스턴스를 복원한다',
-    '암호화된 읽기 전용 복제본을 만들어 승격한다',
+    'RDS 콘솔에서 인스턴스를 수정해 암호화 옵션을 켜고 재부팅한다',
+    '스냅샷을 암호화 복사한 뒤 새 인스턴스로 복원한다',
+    '암호화된 읽기 전용 복제본을 만들어 기본 인스턴스로 승격한다',
     'EBS 기본 암호화를 켠다',
   ],
   ans: [1],

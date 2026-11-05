@@ -46,10 +46,10 @@ QB.push(
   id: 'b18-06', cat: 'analytics', domain: 'resilient', svc: ['OpenSearch 전용 마스터'],
   q: '운영 OpenSearch Service 도메인이 데이터 노드 3개로만 구성되어 있는데, 대량 색인 중에 클러스터 상태가 불안정해지고 가끔 응답하지 않는다. 안정성을 높이는 구성은? (2개 선택)',
   opts: [
-    '전용 마스터 노드 3개를 추가해 클러스터 관리 작업을 데이터 노드와 분리한다',
-    '3개 AZ에 데이터 노드를 분산하고 복제본 샤드를 둔다',
-    '복제본 샤드를 0으로 줄인다',
-    '데이터 노드를 하나로 줄인다',
+    '전용 마스터 노드 3개를 추가한다',
+    '3개 AZ에 노드를 나누고 복제본 샤드를 둔다',
+    '복제본 샤드를 0으로 줄여 색인할 때 데이터 노드의 쓰기 부담을 절반으로 낮춘다',
+    '데이터 노드를 하나로 합쳐 더 크게 키운다',
     '스냅샷을 끈다',
   ],
   ans: [0, 1],
@@ -59,7 +59,7 @@ QB.push(
 {
   id: 'b18-07', cat: 'analytics', domain: 'performance', svc: ['Lambda 병렬화 계수'],
   q: 'Kinesis Data Streams(샤드 4개)를 처리하는 Lambda가 처리 속도를 따라가지 못해 IteratorAge가 계속 늘어난다. 레코드 처리 순서는 파티션 키 단위로만 지키면 된다. 샤드를 늘리지 않고 처리량을 높이려면?',
-  opts: ['이벤트 소스 매핑의 병렬화 계수를 늘려 샤드당 동시 Lambda 배치 수를 늘린다', 'Lambda 제한 시간을 줄인다', '보존 기간을 늘린다', '배치 크기를 1로 줄인다'],
+  opts: ['이벤트 소스 매핑의 병렬화 계수를 늘린다', 'Lambda 제한 시간을 줄여 느린 배치를 빨리 포기한다', '보존 기간을 늘려 처리 시간을 번다', '배치 크기를 1로 줄여 레코드를 하나씩 빠르게 처리한다'],
   ans: [0],
   exp: '**병렬화 계수**는 **샤드 하나당 동시에 처리하는 배치 수**를 최대 10까지 늘린다. 같은 파티션 키의 순서는 유지하면서 처리량이 늘어난다. 배치 크기와 배치 기간을 조정하거나 향상된 팬아웃을 쓰는 것도 도움이 된다. IteratorAge는 소비 지연을 보여 주는 핵심 지표다.',
   tip: 'Kinesis→Lambda 지연 → ParallelizationFactor (샤드당 최대 10).',
@@ -67,7 +67,7 @@ QB.push(
 {
   id: 'b18-08', cat: 'database', domain: 'performance', svc: ['ElastiCache 데이터 계층화'],
   q: '수 TB 규모의 캐시 데이터 중 일부만 자주 접근된다. 모든 데이터를 메모리에 두려면 노드가 너무 많이 필요하다. 성능 영향을 최소화하면서 노드 비용을 줄이려면?',
-  opts: ['데이터 계층화를 지원하는 노드 유형을 써서 자주 쓰지 않는 데이터를 로컬 SSD로 옮긴다', 'Memcached로 바꾼다', 'TTL을 모두 0으로 설정한다', '노드 수를 두 배로 늘린다'],
+  opts: ['데이터 계층화 노드로 덜 쓰는 데이터를 SSD로 옮긴다', 'Memcached로 바꿔 메모리 사용 효율을 높이고 노드를 줄인다', 'TTL을 모두 0으로 설정한다', '노드 수를 두 배로 늘린다'],
   ans: [0],
   exp: 'ElastiCache(Redis OSS/Valkey)의 **데이터 계층화**는 메모리와 **로컬 NVMe SSD**를 함께 써서 덜 쓰는 데이터를 SSD로 옮긴다. 자주 쓰는 데이터는 메모리에 남으므로 성능 영향이 작고, **같은 용량을 더 저렴하게** 운영할 수 있다(최대 약 60% 절감).',
   tip: '대용량 캐시 + 일부만 핫 → Data tiering(r6gd).',
@@ -75,7 +75,7 @@ QB.push(
 {
   id: 'b18-09', cat: 'integration', domain: 'performance', svc: ['API Gateway → SQS 직접 통합'],
   q: '이벤트 수집 API가 요청을 받아 그대로 SQS에 넣기만 하는데, 중간의 Lambda가 트래픽 급증 때 동시성 한도에 걸려 요청이 실패한다. 구조를 단순화하면서 급증을 흡수하려면?',
-  opts: ['API Gateway의 AWS 서비스 통합으로 SQS SendMessage를 직접 호출해 Lambda를 없앤다', 'Lambda 메모리를 늘린다', 'Lambda 예약된 동시성을 0으로 설정한다', 'SQS를 SNS로 바꾼다'],
+  opts: ['API Gateway 서비스 통합으로 SQS를 직접 호출한다', 'Lambda 메모리와 예약된 동시성을 늘려 급증 때도 함수가 스로틀링되지 않게 한다', 'Lambda 예약된 동시성을 0으로 설정한다', 'SQS를 SNS로 바꾼다'],
   ans: [0],
   exp: 'API Gateway(REST)는 **AWS 서비스 통합**으로 SQS, Kinesis, DynamoDB, Step Functions 같은 서비스 API를 **Lambda 없이 직접** 호출할 수 있다. 중간의 Lambda가 사라지면서 **동시성 병목과 비용, 지연**이 함께 사라지고, SQS가 급증을 흡수한다.',
   tip: '"그냥 전달만 하는 Lambda" 제거 → API Gateway 서비스 직접 통합.',
@@ -83,7 +83,7 @@ QB.push(
 {
   id: 'b18-10', cat: 'integration', domain: 'performance', svc: ['Step Functions SDK 통합'],
   q: 'Step Functions 워크플로의 여러 단계가 "DynamoDB에 항목 쓰기", "SNS 발행" 같은 단순 API 호출만 하는 Lambda 함수로 되어 있다. 지연과 비용, 관리할 코드를 줄이려면?',
-  opts: ['Step Functions의 AWS SDK 서비스 통합으로 DynamoDB PutItem, SNS Publish를 상태에서 직접 호출한다', 'Lambda 메모리를 늘린다', 'Express 워크플로로만 바꾼다', '모든 단계를 하나의 Lambda로 합친다'],
+  opts: ['SDK 서비스 통합으로 상태에서 직접 호출한다', '단순 호출 Lambda의 메모리를 늘려 단계별 지연을 줄인다', 'Express 워크플로로만 바꾼다', '모든 단계를 하나의 Lambda로 합친다'],
   ans: [0],
   exp: 'Step Functions는 **200개 이상의 AWS 서비스 API를 직접 호출**하는 SDK 통합과 최적화된 통합을 제공한다. 단순히 API를 호출하기만 하는 Lambda를 없애면 **콜드 스타트, 호출 비용, 유지 관리할 코드**가 줄어든다. 입력과 출력 변환은 JSONata나 JSONPath로 처리한다.',
   tip: 'Step Functions 접착 Lambda 제거 → SDK 서비스 통합.',
@@ -91,7 +91,7 @@ QB.push(
 {
   id: 'b18-11', cat: 'integration', domain: 'performance', svc: ['EventBridge Scheduler'],
   q: 'SaaS 앱이 사용자마다 "구독 만료 1일 전 알림" 같은 일회성 예약 작업을 수백만 개 만들어야 한다. 지금은 cron으로 DB를 매분 스캔해 부하가 크다. 확장 가능한 관리형 방법은?',
-  opts: ['EventBridge Scheduler로 사용자별 일회성 일정을 만들어 지정 시각에 Lambda나 SQS 같은 대상을 직접 호출한다', 'EventBridge 규칙을 수백만 개 만든다', 'EC2 cron을 더 큰 인스턴스로 바꾼다', 'SQS 지연 대기열(최대 15분)로 처리한다'],
+  opts: ['EventBridge Scheduler로 사용자별 일회성 일정을 만든다', '사용자마다 EventBridge 규칙을 cron 표현식으로 만들고 실행되면 Lambda가 그 규칙을 지우게 한다', 'EC2 cron을 더 큰 인스턴스로 바꾼다', 'SQS 지연 대기열로 처리한다'],
   ans: [0],
   exp: '**EventBridge Scheduler**는 계정당 **수백만 개의 일정**을 지원하고, 일회성(at)과 반복(cron, rate) 일정, 시간대, 유연한 시간 창, 재시도, DLQ를 제공한다. 270개 이상의 AWS 서비스를 대상으로 직접 호출한다. EventBridge 규칙은 수가 제한되어 있고, SQS 지연은 최대 15분이다.',
   tip: '대량 개별 예약 작업 → EventBridge Scheduler.',
@@ -99,7 +99,7 @@ QB.push(
 {
   id: 'b18-12', cat: 'management', domain: 'performance', svc: ['Managed Prometheus/Grafana'],
   q: 'EKS 워크로드가 Prometheus 형식 지표를 내보내고, 팀은 기존 Grafana 대시보드를 그대로 쓰고 싶어 한다. Prometheus 서버의 확장, 고가용성, 장기 보관을 직접 관리하지 않으려면?',
-  opts: ['Amazon Managed Service for Prometheus와 Amazon Managed Grafana를 쓴다', 'EC2에 Prometheus를 직접 설치한다', 'CloudTrail로 지표를 수집한다', 'X-Ray만 쓴다'],
+  opts: ['Managed Service for Prometheus와 Managed Grafana를 쓴다', 'EC2 Auto Scaling 그룹에 Prometheus와 Grafana를 직접 설치하고 EBS 스냅샷으로 장기 보관한다', 'CloudTrail로 지표를 수집한다', 'X-Ray만 쓴다'],
   ans: [0],
   exp: '**Amazon Managed Service for Prometheus**는 Prometheus 호환 지표를 수집, 저장, 쿼리(PromQL)하는 서버리스 서비스로, 확장과 고가용성을 AWS가 관리한다. **Amazon Managed Grafana**는 관리형 Grafana로 기존 대시보드를 옮겨 쓸 수 있다. 오픈 소스 도구를 운영 부담 없이 쓰고 싶을 때 적합하다.',
   tip: 'Prometheus/Grafana 관리형 → AMP + AMG.',
@@ -107,7 +107,7 @@ QB.push(
 {
   id: 'b18-13', cat: 'analytics', domain: 'performance', svc: ['Redshift 분산 스타일'],
   q: 'Redshift에서 대형 팩트 테이블(orders)과 고객 테이블(customers)을 customer_id로 자주 조인하는데, 조인할 때 노드 간 데이터 재분배가 많아 느리다. 테이블 설계를 어떻게 바꿔야 하는가?',
-  opts: ['두 테이블 모두 customer_id를 분산 키로 지정해 같은 키의 행이 같은 노드에 놓이게 한다', '두 테이블 모두 DISTSTYLE EVEN으로 바꾼다', '정렬 키를 모두 지운다', '테이블을 S3로 내린다'],
+  opts: ['두 테이블의 분산 키를 customer_id로 지정한다', '두 테이블 모두 DISTSTYLE EVEN으로 바꿔 데이터를 노드에 고르게 나누고 조인 부하를 분산한다', '정렬 키를 모두 지운다', '테이블을 S3로 내린다'],
   ans: [0],
   exp: '조인 키를 **분산 키**로 쓰면 같은 키 값을 가진 행이 **같은 슬라이스(노드)**에 저장되어, 조인할 때 **데이터 재분배(브로드캐스트·셔플)가 없다.** 작은 차원 테이블은 **DISTSTYLE ALL**로 모든 노드에 복제하는 방법도 있다. 요즘은 AUTO 분산과 Redshift Advisor 권장도 활용한다.',
   tip: 'Redshift 조인 성능 → 조인 키 = 분산 키 (작은 테이블은 ALL).',
@@ -115,7 +115,7 @@ QB.push(
 {
   id: 'b18-14', cat: 'networking', domain: 'performance', svc: ['Global Accelerator + ALB'],
   q: '전 세계 모바일 앱 사용자가 서울 리전의 ALB로 API를 호출하는데, 해외에서 TCP·TLS 연결 수립이 느리고 패킷 손실 때문에 응답이 들쭉날쭉하다. 응답은 개인화되어 캐싱할 수 없다. 개선 방법은?',
-  opts: ['ALB 앞에 Global Accelerator를 두어 사용자 가까운 엣지에서 연결을 받고 AWS 백본망으로 전달한다', 'ALB를 더 큰 것으로 바꾼다', 'Route 53 TTL을 늘린다', 'S3 Transfer Acceleration을 켠다'],
+  opts: ['ALB 앞에 Global Accelerator를 둔다', 'ALB를 더 큰 용량으로 사전 확장하고 교차 영역 로드 밸런싱을 켠다', 'Route 53 TTL을 늘린다', 'S3 Transfer Acceleration을 켠다'],
   ans: [0],
   exp: '**Global Accelerator**는 가까운 엣지에서 TCP 연결을 종료하고, 혼잡한 공용 인터넷 대신 **AWS 글로벌 네트워크**로 트래픽을 보내 **지연과 지터, 패킷 손실**을 줄인다. 캐싱이 없어도 효과가 있고, 고정 IP와 빠른 리전 장애 조치도 제공한다. CloudFront 동적 가속도 대안이다.',
   tip: '캐싱 불가 + 글로벌 네트워크 품질 → Global Accelerator.',
@@ -123,7 +123,7 @@ QB.push(
 {
   id: 'b18-15', cat: 'database', domain: 'performance', svc: ['DynamoDB 쓰기 샤딩 계산'],
   q: '투표 앱의 DynamoDB 테이블에서 인기 후보 하나(파티션 키 "candidate#1")에 초당 5,000건의 쓰기가 몰린다. 파티션 하나는 초당 약 1,000 WCU까지만 처리한다. 가장 적절한 설계는?',
-  opts: ['파티션 키에 0~9 같은 무작위 접미사를 붙여 10개 파티션으로 쓰기를 분산하고, 집계할 때 10개를 합산한다', 'WCU를 10만으로 늘린다', '모든 투표를 하나의 항목에 원자적 카운터로 쓴다', 'LSI를 추가한다'],
+  opts: ['무작위 접미사로 쓰기를 분산하고 집계할 때 합산한다', 'WCU를 10만으로 늘려 인기 후보 파티션 하나가 초당 5,000건의 쓰기를 받을 수 있게 한다', '모든 투표를 하나의 항목에 원자적 카운터로 쓴다', 'LSI를 추가한다'],
   ans: [0],
   exp: 'DynamoDB **파티션 하나의 처리량은 초당 약 1,000 WCU/3,000 RCU**로 제한된다. 한 키에 쓰기가 몰리면 테이블 용량을 늘려도 해결되지 않는다. **쓰기 샤딩**(접미사)으로 여러 파티션에 나눠 쓰고, 읽을 때 합산한다. 주기적인 집계 결과를 따로 저장해 두면 읽기도 효율적이다.',
   tip: '핫 키 쓰기 → write sharding(접미사) + 집계.',
@@ -131,7 +131,7 @@ QB.push(
 {
   id: 'b18-16', cat: 'compute', domain: 'performance', svc: ['EC2 Auto Scaling 사용자 지정 상태'],
   q: '애플리케이션은 내부적으로 의존 서비스 연결 실패나 메모리 누수를 감지할 수 있지만, ELB 상태 확인으로는 이를 잡아내지 못한다. 애플리케이션이 스스로 비정상이라고 판단하면 ASG가 인스턴스를 교체하게 하려면?',
-  opts: ['애플리케이션이 SetInstanceHealth API로 해당 인스턴스를 Unhealthy로 표시한다', '인스턴스를 수동으로 재부팅한다', '상태 확인 유예 기간을 늘린다', '최대 용량을 늘린다'],
+  opts: ['SetInstanceHealth API로 Unhealthy로 표시한다', '운영자가 알림을 받으면 문제가 있는 인스턴스를 콘솔에서 수동으로 재부팅한다', '상태 확인 유예 기간을 늘린다', '최대 용량을 늘린다'],
   ans: [0],
   exp: 'Auto Scaling의 **SetInstanceHealth API**로 인스턴스 상태를 **Unhealthy**로 표시하면 ASG가 해당 인스턴스를 **종료하고 교체**한다. 애플리케이션 고유의 상태 판단을 자동 복구에 연결하는 방법이다. ELB 상태 확인 경로를 더 의미 있게 바꾸는 방법과 함께 쓸 수 있다.',
   tip: '앱 자체 판단으로 교체 → SetInstanceHealth.',
@@ -139,7 +139,7 @@ QB.push(
 {
   id: 'b18-17', cat: 'storage', domain: 'performance', svc: ['S3 + CloudFront 정적 자산 분리'],
   q: '웹 서버(EC2)가 동적 페이지와 이미지, CSS, JavaScript 같은 정적 자산을 함께 제공해서 CPU와 네트워크 사용량이 높다. 웹 서버 부하를 줄이고 응답 속도를 높이는 가장 효과적인 방법은?',
-  opts: ['정적 자산을 S3로 옮기고 CloudFront로 제공하며, 웹 서버는 동적 요청만 처리하게 한다', '웹 서버 인스턴스를 두 배로 늘린다', '정적 자산을 EBS io2에 저장한다', 'ALB 유휴 제한 시간을 늘린다'],
+  opts: ['정적 자산을 S3와 CloudFront로 분리한다', '웹 서버 인스턴스를 두 배로 늘리고 정적 파일은 각 서버의 인스턴스 스토어에 캐싱한다', '정적 자산을 EBS io2에 저장한다', 'ALB 유휴 제한 시간을 늘린다'],
   ans: [0],
   exp: '정적 자산을 **S3 + CloudFront**로 옮기면 웹 서버는 **동적 요청만** 처리하므로 부하가 크게 줄고, 사용자는 가까운 엣지에서 정적 파일을 빠르게 받는다. 인스턴스 수가 줄어 비용도 줄어든다.',
   tip: '정적/동적 분리 = S3+CloudFront / 앱 서버.',
@@ -147,7 +147,7 @@ QB.push(
 {
   id: 'b18-18', cat: 'database', domain: 'performance', svc: ['DynamoDB 글로벌 테이블 지연 모니터링'],
   q: 'DynamoDB 글로벌 테이블의 리전 간 복제가 얼마나 늦어지는지 모니터링하고, 지연이 커지면 알림을 받고 싶다. 어떤 지표를 써야 하는가?',
-  opts: ['CloudWatch의 ReplicationLatency 지표에 알람을 설정한다', 'ConsumedWriteCapacityUnits만 본다', 'ThrottledRequests만 본다', 'CloudTrail 이벤트 수를 센다'],
+  opts: ['CloudWatch의 ReplicationLatency 지표에 알람을 설정한다', 'ConsumedWriteCapacityUnits를 리전별로 비교해 복제 지연을 추정한다', 'ThrottledRequests 지표에만 알람을 건다', 'CloudTrail 이벤트 수를 센다'],
   ans: [0],
   exp: '글로벌 테이블은 리전 쌍마다 **ReplicationLatency** 지표를 CloudWatch에 게시한다. 이 지표에 알람을 걸면 복제 지연이 늘어나는 것을 감지할 수 있다. 쓰기 스로틀링(복제본 리전의 용량 부족)도 복제 지연의 원인이 될 수 있으므로 함께 모니터링한다.',
   tip: 'Global Tables 지연 → ReplicationLatency.',
@@ -163,7 +163,7 @@ QB.push(
 {
   id: 'b18-20', cat: 'compute', domain: 'performance', svc: ['ALB vs API Gateway 대용량'],
   q: '내부용 Lambda API가 초당 수만 건의 요청을 처리하는데, API 키, 사용량 계획, 요청 변환 같은 API Gateway 기능은 쓰지 않는다. 지연과 요청당 비용을 낮추는 대안으로 적절한 것은?',
-  opts: ['ALB의 Lambda 대상 그룹으로 Lambda를 호출한다', 'API Gateway REST API의 캐싱을 켠다', 'CloudFront를 제거한다', 'Lambda를 VPC에 연결한다'],
+  opts: ['ALB의 Lambda 대상 그룹으로 Lambda를 호출한다', 'API Gateway REST API 캐싱을 켜서 요청당 비용을 낮춘다', '앞단의 CloudFront를 제거한다', 'Lambda를 VPC에 연결한다'],
   ans: [0],
   exp: '**ALB는 Lambda를 대상**으로 등록할 수 있고, 요청량이 매우 많을 때는 **시간당 요금과 LCU 기반**인 ALB가 요청당 과금되는 API Gateway보다 **저렴한 경우가 많다.** 경로 기반 라우팅과 인증(OIDC/Cognito) 같은 기본 기능도 쓸 수 있다. API 관리 기능이 필요하면 API Gateway를 쓴다.',
   tip: '초대량 단순 Lambda API → ALB + Lambda 대상 고려.',
@@ -172,7 +172,7 @@ QB.push(
 {
   id: 'b18-21', cat: 'management', domain: 'cost', svc: ['CloudTrail 비용'],
   q: '여러 팀이 각자 같은 계정에 관리 이벤트를 기록하는 트레일을 하나씩 만들어서 트레일이 5개가 되었고, CloudTrail 요금이 계속 청구된다. 비용을 줄이는 방법은?',
-  opts: ['관리 이벤트의 첫 번째 사본만 무료이므로 중복 트레일을 정리해 조직 트레일 하나로 통합하고, 필요한 데이터 이벤트만 선택적으로 기록한다', '트레일을 더 만든다', '데이터 이벤트를 모든 버킷에 켠다', 'CloudTrail Insights를 모든 트레일에 켠다'],
+  opts: ['중복 트레일을 조직 트레일 하나로 합치고 데이터 이벤트를 선별한다', '트레일을 팀별로 유지하되 멀티 리전 옵션을 끄고 단일 리전 트레일로 바꿔 기록되는 이벤트 수를 줄인다', '데이터 이벤트를 모든 버킷에 켠다', 'CloudTrail Insights를 모든 트레일에 켠다'],
   ans: [0],
   exp: 'CloudTrail은 **관리 이벤트의 첫 번째 사본**(트레일 하나)은 무료지만, **추가 사본**(중복 트레일)과 **데이터 이벤트**, **Insights**는 유료다. 중복 트레일을 **조직 트레일 하나**로 합치고, 데이터 이벤트는 고급 이벤트 선택기로 **필요한 리소스만** 기록한다.',
   tip: 'CloudTrail 비용 = 중복 트레일 제거 + 데이터 이벤트 선별.',
@@ -180,7 +180,7 @@ QB.push(
 {
   id: 'b18-22', cat: 'networking', domain: 'cost', svc: ['IPv6 송신 전용 IGW'],
   q: '대규모 크롤러 플릿이 프라이빗 서브넷에서 인터넷으로 아웃바운드 트래픽을 많이 보내 NAT 게이트웨이 데이터 처리 비용이 크다. 대상 사이트 대부분이 IPv6를 지원한다. NAT 비용을 줄이는 방법은?',
-  opts: ['서브넷에 IPv6를 활성화하고 IPv6 트래픽은 송신 전용 인터넷 게이트웨이로 보낸다', 'NAT 게이트웨이를 하나 더 만든다', '모든 인스턴스에 퍼블릭 IPv4를 붙인다', 'Transit Gateway로 보낸다'],
+  opts: ['IPv6를 켜고 송신 전용 인터넷 게이트웨이로 보낸다', 'NAT 게이트웨이를 하나 더 만들어 트래픽을 나눠 처리 요금 구간을 낮춘다', '모든 인스턴스에 퍼블릭 IPv4를 붙인다', 'Transit Gateway로 보낸다'],
   ans: [0],
   exp: '**송신 전용 인터넷 게이트웨이**는 IPv6 아웃바운드 트래픽을 처리하며 **NAT 같은 데이터 처리 요금이 없다**(일반 데이터 전송 요금은 있음). IPv6를 지원하는 대상과는 NAT를 우회해 비용을 줄이고, IPv4 전용 대상만 NAT를 쓰게 한다. 퍼블릭 IPv4에는 시간당 요금이 붙는다.',
   tip: 'NAT 처리 비용 회피 → IPv6 + Egress-only IGW.',
@@ -188,7 +188,7 @@ QB.push(
 {
   id: 'b18-23', cat: 'analytics', domain: 'cost', svc: ['Kinesis 향상된 팬아웃 비용'],
   q: 'Kinesis Data Streams 소비자 2개가 모두 향상된 팬아웃으로 등록되어 있다. 두 소비자 모두 지연에 민감하지 않고, 샤드당 2MB/s를 나눠 써도 충분하다. 비용을 줄이려면?',
-  opts: ['향상된 팬아웃 등록을 해제하고 공유 처리량 소비자로 바꾼다', '샤드를 두 배로 늘린다', '보존 기간을 늘린다', '온디맨드 모드로 바꾼다'],
+  opts: ['향상된 팬아웃 등록을 해제하고 공유 처리량 소비자로 바꾼다', '샤드를 두 배로 늘려 소비자당 요금을 낮춘다', '보존 기간을 늘려 소비자가 천천히 읽게 한다', '온디맨드 모드로 바꿔 소비자 요금을 없앤다'],
   ans: [0],
   exp: '**향상된 팬아웃**은 소비자와 샤드마다 시간당 요금과 GB당 데이터 검색 요금이 **추가**된다. 소비자 수가 적고 지연 요구가 낮으면 **공유 처리량** 소비자로 충분하고 더 저렴하다. 소비자가 많거나 70ms 수준의 저지연이 필요할 때 향상된 팬아웃을 쓴다.',
   tip: '향상된 팬아웃은 필요할 때만(유료).',
@@ -199,8 +199,8 @@ QB.push(
   opts: [
     'Graviton 기반 인스턴스로 바꾼다',
     'OpenSearch Service 예약 인스턴스를 구매한다',
-    'Compute Savings Plans를 구매한다',
-    '데이터 노드를 스팟으로 바꾼다',
+    'Compute Savings Plans를 구매해 데이터 노드 요금을 할인받는다',
+    '데이터 노드를 스팟으로 바꾸고 복제본 샤드로 중단에 대비한다',
     '복제본 샤드를 늘린다',
   ],
   ans: [0, 1],
@@ -210,7 +210,7 @@ QB.push(
 {
   id: 'b18-25', cat: 'compute', domain: 'cost', svc: ['Savings Plans 약정 수준'],
   q: '회사의 EC2·Fargate 사용량이 시간당 최소 100달러, 평균 150달러, 피크 300달러 수준이다. Compute Savings Plans 약정 금액을 정할 때 가장 합리적인 접근은?',
-  opts: ['항상 쓰는 최소 사용량 근처로 약정해 활용률을 높이고, 나머지는 온디맨드·스팟으로 처리한다', '피크인 시간당 300달러로 약정한다', '평균의 두 배로 약정한다', '약정하지 않는다'],
+  opts: ['항상 쓰는 최소 사용량 근처로 약정한다', '피크인 시간당 300달러로 약정해 어떤 시간대에도 온디맨드 요금이 나오지 않게 한다', '평균의 두 배로 약정한다', '약정하지 않는다'],
   ans: [0],
   exp: 'Savings Plans는 **약정 금액을 쓰지 않아도 비용을 내야** 하므로, 피크 기준으로 약정하면 평소에 **활용되지 않는 약정**이 생긴다. **항상 쓰는 기준선**에 맞춰 약정하고 변동분은 온디맨드나 스팟으로 처리하는 것이 일반적이다. Cost Explorer 권장과 활용률 보고서를 참고한다.',
   tip: '약정 = 기준선(최소 상시 사용량) 수준.',
@@ -226,7 +226,7 @@ QB.push(
 {
   id: 'b18-27', cat: 'integration', domain: 'cost', svc: ['API Gateway → SQS 비용'],
   q: '웹훅 수집 API가 API Gateway → Lambda(메시지를 SQS에 넣기만 함) → SQS 구조라서, 하루 수억 건의 요청마다 Lambda 호출 비용이 나온다. 비용을 줄이려면?',
-  opts: ['API Gateway에서 SQS로 직접 통합해 Lambda 호출을 없앤다', 'Lambda 메모리를 늘린다', 'SQS 대신 DynamoDB를 쓴다', 'Lambda 프로비저닝된 동시성을 켠다'],
+  opts: ['API Gateway에서 SQS로 직접 통합해 Lambda 호출을 없앤다', 'Lambda 메모리를 늘려 호출당 실행 시간을 줄인다', 'SQS 대신 DynamoDB에 먼저 쓴다', 'Lambda 프로비저닝된 동시성을 켜서 호출 단가를 낮춘다'],
   ans: [0],
   exp: '단순히 전달만 하는 Lambda를 없애고 **API Gateway → SQS 직접 통합**을 쓰면 **Lambda 호출과 실행 시간 비용**이 사라진다. 매핑 템플릿으로 요청을 SQS 메시지 형식으로 바꾼다. 처리 로직은 SQS 소비자 쪽에서 배치로 처리하면 효율적이다.',
   tip: '전달용 Lambda 제거 = 비용·지연 ↓.',
@@ -242,7 +242,7 @@ QB.push(
 {
   id: 'b18-29', cat: 'database', domain: 'cost', svc: ['Valkey 엔진'],
   q: 'ElastiCache for Redis OSS 클러스터를 운영 중이다. 애플리케이션 코드를 바꾸지 않고 캐시 노드 비용을 줄이는 방법으로 가장 간단한 것은?',
-  opts: ['엔진을 Redis OSS와 호환되는 Valkey로 업그레이드한다', 'Memcached로 바꾼다', '노드 수를 늘린다', 'Multi-AZ를 끈다'],
+  opts: ['엔진을 Redis OSS 호환 Valkey로 업그레이드한다', 'Memcached로 바꿔 복제 비용을 없앤다', '노드 수를 늘려 노드당 단가를 낮춘다', 'Multi-AZ를 끈다'],
   ans: [0],
   exp: 'ElastiCache for **Valkey**는 Redis OSS의 오픈 소스 포크로 **API가 호환**되며, 노드 기반 클러스터와 서버리스 모두 **Redis OSS보다 낮은 요금**이 적용된다. 클라이언트 코드는 그대로 쓰고 엔진만 바꾸면 된다. Memcached로 바꾸면 기능(복제, 자료 구조)을 잃는다.',
   tip: 'ElastiCache 손쉬운 절감 → Valkey 엔진.',
@@ -250,7 +250,7 @@ QB.push(
 {
   id: 'b18-30', cat: 'compute', domain: 'cost', svc: ['Lambda 로그 비용'],
   q: '수천만 건 호출되는 Lambda 함수가 요청마다 큰 디버그 로그를 남겨, Lambda 비용보다 CloudWatch Logs 수집 비용이 더 크게 나온다. 비용을 줄이는 방법은?',
-  opts: ['Lambda 고급 로깅 제어로 애플리케이션 로그 수준을 INFO/WARN 이상으로 올리고, 필요하면 로그 그룹에 IA 로그 클래스를 쓴다', 'Lambda 메모리를 줄인다', 'Lambda 제한 시간을 줄인다', '로그 그룹 이름을 바꾼다'],
+  opts: ['고급 로깅 제어로 로그 수준을 올리고 IA 로그 클래스를 쓴다', 'Lambda 메모리를 줄여 로그를 쓰는 속도를 늦추고 함수 실행 요금까지 함께 낮춘다', 'Lambda 제한 시간을 줄인다', '로그 그룹 이름을 바꾼다'],
   ans: [0],
   exp: 'Lambda의 **고급 로깅 제어**로 애플리케이션과 시스템 **로그 수준**, 로그 형식(JSON), 대상 로그 그룹을 코드 변경 없이 설정할 수 있다. 수집하는 로그 양을 줄이는 것이 가장 효과적이다. 자주 조회하지 않는 로그는 Infrequent Access 로그 클래스와 보존 기간 설정으로 비용을 더 줄인다.',
   tip: 'Lambda 로그 비용 → 로그 수준 조정 + IA 클래스 + 보존 기간.',
@@ -258,7 +258,7 @@ QB.push(
 {
   id: 'b18-31', cat: 'storage', domain: 'cost', svc: ['S3 Express One Zone 비용 판단'],
   q: '팀이 모든 데이터를 S3 Express One Zone에 저장하자고 제안했다. 데이터 대부분은 거의 접근하지 않는 장기 보관 데이터다. 이 제안에 대한 올바른 평가는?',
-  opts: ['Express One Zone은 저지연·고빈도 접근용으로 GB당 저장 비용이 높고 단일 AZ다', 'Express One Zone이 가장 저렴하므로 좋은 제안이다', 'Express One Zone은 내구성이 가장 높다', '스토리지 클래스는 비용에 영향이 없다'],
+  opts: ['고빈도·저지연용이고 저장 단가가 높으며 단일 AZ라 맞지 않다', 'Express One Zone이 S3에서 GB당 가장 저렴하므로 장기 보관 데이터까지 옮기면 좋은 제안이다', 'Express One Zone은 내구성이 가장 높다', '스토리지 클래스는 비용에 영향이 없다'],
   ans: [0],
   exp: '**Express One Zone**은 **요청 단가는 낮지만 저장 단가가 높은** 고성능 클래스로, 같은 AZ의 컴퓨팅이 **자주 접근하는 데이터**에 적합하다. 단일 AZ이므로 장기 보관에도 맞지 않는다. 거의 접근하지 않는 데이터는 IA나 Glacier 계열로 보내야 비용이 낮다.',
   tip: '스토리지 클래스 = 접근 패턴에 맞게(고성능 ≠ 저렴).',
@@ -274,7 +274,7 @@ QB.push(
 {
   id: 'b18-33', cat: 'compute', domain: 'cost', svc: ['스팟 vs 예약 판단'],
   q: '다음 워크로드 중 **스팟 인스턴스**를 쓰기에 가장 **적합하지 않은** 것은?',
-  opts: ['단일 인스턴스에서 실행되며 중단되면 안 되는 운영 데이터베이스', '체크포인트를 지원하는 대규모 렌더링 작업', '여러 레플리카로 운영하는 상태 비저장 웹 서버의 추가 용량', 'CI 빌드 러너'],
+  opts: ['중단되면 안 되는 단일 인스턴스 운영 데이터베이스', '체크포인트를 지원하고 재시작할 수 있는 대규모 영상 렌더링 작업', '여러 레플리카로 운영하는 상태 비저장 웹 서버의 추가 용량', '실패하면 자동으로 다시 실행되는 CI 빌드 러너'],
   ans: [0],
   exp: '스팟은 **2분 경고 후 회수될 수 있으므로**, **중단되면 안 되는 상태 저장 단일 인스턴스**(운영 DB 등)에는 맞지 않는다. 체크포인트가 있는 배치, 여러 레플리카가 있는 무상태 계층, CI 작업처럼 **중단을 견딜 수 있는** 워크로드에 적합하다.',
   tip: '스팟 부적합 = 중단 불가·상태 저장·단일 인스턴스.',
@@ -290,7 +290,7 @@ QB.push(
 {
   id: 'b18-35', cat: 'storage', domain: 'cost', svc: ['S3 Transfer Acceleration 비용'],
   q: '같은 리전(서울)의 EC2에서 서울 리전 S3 버킷으로 업로드하는데, 누군가 버킷에 Transfer Acceleration을 켜고 가속 엔드포인트를 쓰게 해서 추가 요금이 나온다. 올바른 판단은?',
-  opts: ['같은 리전 안의 전송은 가속 효과가 거의 없고 추가 요금만 든다', '가속 엔드포인트는 항상 저렴하다', '같은 리전 전송에도 가속이 필수다', 'Transfer Acceleration은 무료다'],
+  opts: ['같은 리전 안의 전송은 가속 효과가 거의 없고 추가 요금만 든다', '가속 엔드포인트는 같은 리전에서도 일반 엔드포인트보다 항상 저렴하므로 유지하는 것이 좋다', '같은 리전 전송에도 가속이 필수다', 'Transfer Acceleration은 무료다'],
   ans: [0],
   exp: '**Transfer Acceleration**은 **원거리 클라이언트**의 업로드와 다운로드를 엣지와 백본망으로 가속하는 기능이고, **GB당 추가 요금**이 붙는다(가속 효과가 없으면 청구되지 않는 경우도 있다). 같은 리전의 EC2라면 **일반 엔드포인트나 게이트웨이 엔드포인트**가 빠르고 무료다.',
   tip: '같은 리전 S3 접근 = 일반/게이트웨이 엔드포인트.',
@@ -299,9 +299,9 @@ QB.push(
   id: 'b18-36', cat: 'management', domain: 'cost', svc: ['비용 할당 태그 강제'],
   q: '재무팀이 매달 비용을 프로젝트별로 나누는데, 태그가 없는 리소스가 많아서 "미분류" 비용이 40%나 된다. 앞으로 태그 누락을 줄이고 분류율을 높이려면? (2개 선택)',
   opts: [
-    'Organizations 태그 정책으로 Project 태그의 키와 허용 값을 표준화하고 규정 준수를 보고한다',
-    'SCP나 IAM 조건으로 Project 태그 없는 리소스 생성을 거부하고, 비용 할당 태그로 활성화한다',
-    'Cost Explorer에서 "미분류"를 숨긴다',
+    '태그 정책으로 Project 태그를 표준화한다',
+    '태그 없는 리소스 생성을 거부하고 비용 할당 태그로 활성화한다',
+    'Cost Explorer에서 "미분류"를 숨기고 나머지 비용을 프로젝트별 비율로 나눠 보고서에 반영한다',
     '모든 리소스를 한 계정으로 합친다',
     '태그 대신 리소스 이름에 프로젝트를 적는다',
   ],
@@ -313,9 +313,9 @@ QB.push(
   id: 'b18-37', cat: 'analytics', domain: 'cost', svc: ['Glue 크롤러 비용'],
   q: '새 데이터가 하루 한 번만 들어오는 S3 데이터 레이크에서 Glue 크롤러가 10분마다 전체 버킷을 스캔하도록 설정되어 비용이 크다. 개선 방법은? (2개 선택)',
   opts: [
-    '크롤러 일정을 데이터 도착 주기에 맞추거나 S3 이벤트 기반 크롤링으로 바뀐 폴더만 스캔한다',
-    '증분 크롤링을 쓰거나 파티션 프로젝션으로 크롤러 자체를 줄인다',
-    '크롤러 DPU를 늘린다',
+    '일정을 도착 주기에 맞추거나 이벤트 기반 크롤링을 쓴다',
+    '증분 크롤링이나 파티션 프로젝션으로 크롤러를 줄인다',
+    '크롤러 DPU를 늘려 실행 시간을 줄이고 10분 일정을 그대로 유지해 최신 상태를 보장한다',
     '크롤러를 매분 실행한다',
     '모든 파일을 하나로 합친다',
   ],
@@ -326,7 +326,7 @@ QB.push(
 {
   id: 'b18-38', cat: 'compute', domain: 'cost', svc: ['App 계층 오버 프로비저닝'],
   q: 'ECS on Fargate 서비스의 원하는 작업 수가 피크에 맞춰 20개로 고정되어 있는데, 평소 트래픽은 피크의 20%다. 비용을 줄이면서 피크에도 대응하려면?',
-  opts: ['서비스 Auto Scaling으로 최소 작업 수를 낮추고 피크 때 자동으로 늘린다', '작업 수를 40개로 늘린다', '작업 크기를 두 배로 키운다', 'Fargate를 EC2 전용 호스트로 옮긴다'],
+  opts: ['서비스 Auto Scaling으로 필요할 때만 늘린다', '작업 수를 줄이는 대신 작업 크기를 두 배로 키워 평소의 남는 용량을 작업 안에서 흡수한다', '작업 수를 40개로 늘린다', 'Fargate를 전용 호스트로 옮긴다'],
   ans: [0],
   exp: '고정 용량은 평소 80%의 용량을 낭비한다. **서비스 Auto Scaling**으로 사용량에 맞춰 작업 수를 늘리고 줄이면 비용이 크게 줄어든다. 출근 시간처럼 예측할 수 있는 피크에는 **예약된 조정**을 함께 써서 미리 확장한다. 남는 상시 사용량에는 Compute Savings Plans를 적용한다.',
   tip: '고정 피크 용량 → Auto Scaling + 예약 조정.',
@@ -334,7 +334,7 @@ QB.push(
 {
   id: 'b18-39', cat: 'storage', domain: 'cost', svc: ['EBS 볼륨 크기 최적화'],
   q: '수백 대의 EC2 인스턴스가 각각 500GB gp3 루트 볼륨을 쓰는데, 실제 사용량은 20GB 정도다. EBS는 할당한 용량 기준으로 과금된다. 비용을 줄이는 방법은?',
-  opts: ['시작 템플릿과 AMI의 루트 볼륨 크기를 실제 필요에 맞게 줄이고, 기존 인스턴스는 교체 시 적용한다', 'EBS 볼륨은 사용한 만큼만 과금되므로 문제없다', '볼륨을 io2로 바꾼다', '스냅샷을 매시간 만든다'],
+  opts: ['시작 템플릿의 볼륨 크기를 줄여 교체 때 적용한다', 'EBS 볼륨은 실제 사용한 블록만큼만 과금되므로 할당 용량이 커도 비용에는 문제가 없다', '볼륨을 io2로 바꾼다', '스냅샷을 매시간 만든다'],
   ans: [0],
   exp: 'EBS는 **실제 사용량이 아니라 프로비저닝한 용량(GB)**으로 과금된다. 루트 볼륨을 과하게 잡으면 인스턴스 수만큼 낭비가 늘어난다. EBS 볼륨은 **줄일 수 없으므로**, 시작 템플릿과 AMI를 작은 크기로 바꾸고 인스턴스 교체(인스턴스 새로 고침) 때 적용한다. Compute Optimizer의 EBS 권장도 참고한다.',
   tip: 'EBS = 할당 용량 과금, 축소 불가 → 처음부터 적정 크기.',
@@ -343,7 +343,7 @@ QB.push(
 {
   id: 'b18-40', cat: 'integration', domain: 'resilient', svc: ['SQS 오래된 메시지 감시'],
   q: '주문 처리 소비자가 조용히 멈춰도(오류 없이 처리만 중단) 운영팀이 알아차리지 못하는 일이 있었다. 소비자 정지를 가장 빠르게 감지하는 CloudWatch 지표는?',
-  opts: ['SQS ApproximateAgeOfOldestMessage에 알람을 건다', 'NumberOfMessagesSent만 본다', 'SentMessageSize를 본다', 'CloudTrail 이벤트 수를 본다'],
+  opts: ['SQS ApproximateAgeOfOldestMessage에 알람을 건다', 'NumberOfMessagesSent가 줄어드는지 알람을 건다', 'SentMessageSize 추이를 본다', 'CloudTrail 이벤트 수를 본다'],
   ans: [0],
   exp: '**ApproximateAgeOfOldestMessage**는 대기열에서 가장 오래 기다린 메시지의 나이로, 소비자가 멈추거나 느려지면 **계속 증가**한다. 정상 처리 시간보다 크게 늘어나면 알람을 보내도록 설정한다. 메시지 수(ApproximateNumberOfMessagesVisible)도 함께 보면 백로그를 파악할 수 있다.',
   tip: '소비자 정지 감지 → AgeOfOldestMessage 알람.',
@@ -351,7 +351,7 @@ QB.push(
 {
   id: 'b18-41', cat: 'integration', domain: 'resilient', svc: ['Step Functions 하트비트'],
   q: 'Step Functions가 콜백 패턴(.waitForTaskToken)으로 외부 워커에게 작업을 맡긴다. 워커가 작업 도중 죽으면 워크플로가 최대 1년까지 계속 기다리게 된다. 워커 장애를 빨리 감지하려면?',
-  opts: ['Task 상태에 HeartbeatSeconds를 설정하고, 워커가 주기적으로 SendTaskHeartbeat를 보내게 해서 하트비트가 끊기면 실패로 처리한다', '워크플로를 Express로 바꾼다', 'TimeoutSeconds를 1년으로 늘린다', '워커 수를 늘린다'],
+  opts: ['HeartbeatSeconds와 SendTaskHeartbeat로 끊김을 감지한다', '워크플로를 Express로 바꿔 최대 대기 시간을 5분으로 제한하고 긴 작업은 워커에서 나눠 처리한다', 'TimeoutSeconds를 1년으로 늘린다', '워커 수를 늘린다'],
   ans: [0],
   exp: '**HeartbeatSeconds**를 설정하면 워커가 그 간격 안에 **SendTaskHeartbeat**를 보내야 한다. 하트비트가 오지 않으면 `States.Timeout` 오류로 상태가 실패하고, **Retry나 Catch**로 다른 워커에 다시 맡기거나 보상 작업을 실행할 수 있다. 전체 시간 제한은 TimeoutSeconds로 따로 설정한다.',
   tip: '장기 작업 생존 확인 → Heartbeat.',
@@ -359,7 +359,7 @@ QB.push(
 {
   id: 'b18-42', cat: 'integration', domain: 'resilient', svc: ['API Gateway → SQS 급증 흡수'],
   q: '마케팅 이벤트 때 주문 접수 API에 평소의 50배 트래픽이 몇 분 동안 몰린다. 백엔드 주문 처리 시스템은 초당 처리량이 제한되어 있지만, 접수만 확실하면 처리는 몇 분 늦어도 된다. 가장 복원력 있는 설계는?',
-  opts: ['API Gateway가 요청을 SQS에 바로 넣고 즉시 202를 응답하며, 백엔드 워커는 감당할 수 있는 속도로 대기열을 처리한다', '백엔드 서버를 피크의 50배로 상시 운영한다', 'API Gateway 스로틀링으로 초과 요청을 모두 거부한다', '클라이언트에 재시도를 금지한다'],
+  opts: ['요청을 SQS에 넣고 202를 응답한 뒤 워커가 처리한다', '백엔드 서버를 피크의 50배로 상시 운영하고 이벤트가 끝나면 수동으로 줄여 비용을 조정한다', 'API Gateway 스로틀링으로 초과 요청을 거부한다', '클라이언트에 재시도를 금지한다'],
   ans: [0],
   exp: '**대기열 기반 부하 평준화**(queue-based load leveling) 패턴이다. 들어오는 요청을 **SQS가 흡수**하고 백엔드는 **일정한 속도**로 처리하므로 급증에도 접수가 실패하지 않는다. 상시로 과하게 프로비저닝하면 비용이 크고, 거부하면 주문을 잃는다.',
   tip: '급증 흡수 = Queue-based load leveling(SQS).',
@@ -367,7 +367,7 @@ QB.push(
 {
   id: 'b18-43', cat: 'storage', domain: 'resilient', svc: ['S3 복제 모니터링'],
   q: '교차 리전 복제가 일부 객체에서 실패(예: KMS 권한 문제)해도 운영팀이 모르고 있었다. 복제 실패를 감지해 알림을 받으려면?',
-  opts: ['복제 지표와 S3 이벤트 알림의 복제 실패 이벤트를 EventBridge/SNS로 받는다', 'S3 인벤토리를 연 1회 확인한다', 'CloudTrail 관리 이벤트만 본다', '복제 규칙을 매일 다시 만든다'],
+  opts: ['복제 지표와 복제 실패 이벤트를 알림으로 받는다', 'S3 인벤토리의 복제 상태 필드를 연 1회 확인해 실패한 객체 목록을 수동으로 정리한다', 'CloudTrail 관리 이벤트만 본다', '복제 규칙을 매일 다시 만든다'],
   ans: [0],
   exp: 'S3 복제는 **복제 지표**(대기 바이트, 대기 작업, 복제 지연, 실패 작업 수)를 CloudWatch로 제공하고, **복제 실패 이벤트**를 이벤트 알림이나 EventBridge로 보낼 수 있다. 알람을 걸어 실패를 빨리 감지하고, 실패한 객체는 Batch Replication으로 다시 복제한다. S3 인벤토리의 복제 상태 필드로 점검할 수도 있다.',
   tip: '복제 실패 감지 → Replication metrics + 실패 이벤트.',
@@ -383,7 +383,7 @@ QB.push(
 {
   id: 'b18-45', cat: 'compute', domain: 'resilient', svc: ['ASG 상태 확인 + ELB'],
   q: 'NLB 뒤의 Auto Scaling 그룹이 TCP 상태 확인만 쓰는데, 애플리케이션이 TCP 연결은 받지만 HTTP 요청에 500 오류를 내는 상태를 감지하지 못한다. 개선 방법은?',
-  opts: ['NLB 대상 그룹 상태 확인 프로토콜을 HTTP로 바꿔 상태 확인 경로를 지정하고, ASG에서 ELB 상태 확인을 켠다', 'NLB를 Classic Load Balancer로 바꾼다', '상태 확인 간격을 5분으로 늘린다', '최소 용량을 0으로 설정한다'],
+  opts: ['상태 확인을 HTTP로 바꾸고 ASG의 ELB 상태 확인을 켠다', 'NLB를 Classic Load Balancer로 바꿔 TCP 연결 이후의 HTTP 응답까지 자동으로 검사하게 한다', '상태 확인 간격을 5분으로 늘린다', '최소 용량을 0으로 설정한다'],
   ans: [0],
   exp: 'NLB도 대상 그룹 상태 확인 프로토콜로 **HTTP/HTTPS**를 쓸 수 있고, 경로와 성공 코드를 지정할 수 있다. TCP 확인은 포트가 열려 있는지만 본다. ASG에서 **ELB 상태 확인**을 켜야 비정상 대상이 교체된다.',
   tip: 'NLB도 HTTP 상태 확인 가능 → 앱 수준 감지.',
@@ -395,7 +395,7 @@ QB.push(
     '스택의 종료 방지를 켠다',
     '데이터베이스 리소스에 DeletionPolicy: Retain을 지정한다',
     '스택 이름을 길게 바꾼다',
-    '드리프트 감지를 끈다',
+    '드리프트 감지를 꺼서 삭제 작업이 일어나지 않게 한다',
     '스택을 여러 리전에 복제한다',
   ],
   ans: [0, 1],
@@ -405,7 +405,7 @@ QB.push(
 {
   id: 'b18-47', cat: 'networking', domain: 'resilient', svc: ['Global Accelerator 리전 장애 조치'],
   q: '게임 서버가 두 리전의 NLB 뒤에서 실행되고 Global Accelerator로 연결되어 있다. 한 리전의 NLB 대상이 모두 비정상이 되면 어떻게 되는가?',
-  opts: ['Global Accelerator가 상태 확인으로 감지해 정상 리전의 엔드포인트로 트래픽을 보낸다', '클라이언트가 DNS TTL이 만료될 때까지 실패한다', 'Global Accelerator는 장애 조치 기능이 없다', '모든 트래픽이 차단된다'],
+  opts: ['상태 확인으로 감지해 정상 리전으로 트래픽을 보낸다', '클라이언트는 Anycast IP의 DNS TTL이 만료되어 새 주소를 받을 때까지 연결에 실패한다', 'Global Accelerator는 장애 조치 기능이 없다', '모든 트래픽이 차단된다'],
   ans: [0],
   exp: 'Global Accelerator는 엔드포인트 **상태 확인**을 계속 수행하고, 비정상 엔드포인트를 빼고 **정상 리전으로 즉시 트래픽을 보낸다.** 클라이언트는 같은 **고정 Anycast IP**를 계속 쓰므로 DNS 캐시와 상관없이 몇 초 안에 장애 조치된다.',
   tip: 'GA 장애 조치 = 상태 확인 기반, DNS 무관, 빠름.',
@@ -416,7 +416,7 @@ QB.push(
   opts: [
     'RDS 인스턴스의 삭제 방지를 켠다',
     '삭제할 때 최종 스냅샷을 만들고, 자동 백업 보존 옵션을 쓴다',
-    'Multi-AZ를 끈다',
+    'Multi-AZ를 꺼서 삭제 시 대기 인스턴스가 남지 않게 한다',
     '자동 백업 보존 기간을 0으로 설정한다',
     '파라미터 그룹을 기본값으로 바꾼다',
   ],
@@ -428,7 +428,7 @@ QB.push(
 {
   id: 'b18-49', cat: 'management', domain: 'secure', svc: ['CloudTrail 로그 KMS 암호화'],
   q: '조직 트레일의 로그 파일을 S3 기본 암호화(SSE-S3) 대신 회사가 통제하는 키로 암호화하고, 보안팀만 로그를 복호화해 읽을 수 있게 하려 한다. 어떻게 구성하는가?',
-  opts: ['트레일에 SSE-KMS 고객 관리형 키를 지정하고, 키 정책에서 CloudTrail의 암호화 사용과 보안팀 역할의 복호화만 허용한다', '로그 버킷을 퍼블릭으로 만든다', 'CloudTrail은 KMS 암호화를 지원하지 않는다', '로그를 Base64로 인코딩한다'],
+  opts: ['트레일에 SSE-KMS 키를 지정하고 복호화는 보안팀만 허용한다', '로그 버킷을 퍼블릭으로 만들고 객체마다 임의의 키 이름을 붙여 보안팀만 위치를 알게 한다', 'CloudTrail은 KMS 암호화를 지원하지 않는다', '로그를 Base64로 인코딩한다'],
   ans: [0],
   exp: 'CloudTrail은 로그 파일을 **SSE-KMS(고객 관리형 키)**로 암호화할 수 있다. **키 정책**에서 CloudTrail 서비스 주체가 GenerateDataKey로 암호화하는 것을 허용하고, **복호화는 보안팀 역할에만** 허용하면, S3 읽기 권한이 있어도 키 권한이 없는 사람은 로그를 읽을 수 없다. 로그 파일 무결성 검증과 함께 쓴다.',
   tip: 'CloudTrail 로그 기밀성 = SSE-KMS + 키 정책으로 복호화 제한.',
