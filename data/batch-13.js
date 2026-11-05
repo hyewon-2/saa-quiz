@@ -36,7 +36,7 @@ QB.push(
 {
   id: 'b13-05', cat: 'management', domain: 'secure', svc: ['CloudWatch Logs 암호화'],
   q: '애플리케이션 로그에 개인 정보가 일부 포함될 수 있어, CloudWatch Logs 로그 그룹을 회사가 통제하는 키로 암호화하고 키 사용을 감사해야 한다. 어떻게 해야 하는가?',
-  opts: ['로그 그룹에 KMS 키를 연결하고 키 정책에서 Logs를 허용한다', 'CloudWatch Logs는 고객 키를 지원하지 않으므로 로그를 S3로 내보내 SSE-KMS로 저장해야 한다', '로그를 Base64로 인코딩한다', '로그 보존 기간을 1일로 줄인다'],
+  opts: ['로그 그룹에 고객 관리형 KMS 키를 연결하고, 키 정책에서 CloudWatch Logs 서비스 주체의 사용을 허용한다', 'CloudWatch Logs는 고객 키를 지원하지 않으므로 로그를 S3로 내보내 SSE-KMS로 저장해야 한다', '로그를 Base64로 인코딩한다', '로그 보존 기간을 1일로 줄인다'],
   ans: [0],
   exp: 'CloudWatch Logs는 기본으로 저장 시 암호화되며, **로그 그룹에 KMS 고객 관리형 키를 연결**하면 키 정책으로 통제하고 CloudTrail로 감사할 수 있다. 키 정책에서 `logs.<리전>.amazonaws.com` 서비스 주체를 허용해야 한다. 민감 데이터를 가리려면 로그 데이터 보호(마스킹) 정책도 쓸 수 있다.',
   tip: 'CloudWatch Logs 암호화 = 로그 그룹 KMS 키 (+데이터 보호 마스킹).',
@@ -52,7 +52,7 @@ QB.push(
 {
   id: 'b13-07', cat: 'security', domain: 'secure', svc: ['SCP 조직 이탈 방지'],
   q: '멤버 계정 관리자가 계정을 조직에서 탈퇴시켜 SCP 가드레일을 우회할 수 있다는 우려가 제기되었다. 이를 막으려면?',
-  opts: ['organizations:LeaveOrganization을 거부하는 SCP를 적용한다', '멤버 계정의 루트 암호를 관리 계정에서 재설정해 중앙에서 보관하고 사용 내역을 감시한다', 'CloudTrail을 켠다', '계정마다 IAM 권한 경계를 설정한다'],
+  opts: ['organizations:LeaveOrganization 작업을 거부하는 SCP를 모든 OU에 적용한다', '멤버 계정의 루트 암호를 관리 계정에서 재설정해 중앙에서 보관하고 사용 내역을 감시한다', 'CloudTrail을 켠다', '계정마다 IAM 권한 경계를 설정한다'],
   ans: [0],
   exp: '멤버 계정이 조직을 떠나면 SCP 같은 조직 정책이 더 이상 적용되지 않는다. **organizations:LeaveOrganization을 거부하는 SCP**로 탈퇴를 막는 것이 일반적인 가드레일이다. 같은 방식으로 GuardDuty, Config, CloudTrail 비활성화도 막을 수 있다.',
   tip: '대표 SCP 가드레일: 조직 탈퇴 금지, 보안 서비스 비활성화 금지, 리전 제한.',
@@ -82,7 +82,7 @@ QB.push(
 {
   id: 'b13-10', cat: 'compute', domain: 'secure', svc: ['ALB 보안 정책'],
   q: 'PCI 규정상 ALB HTTPS 리스너에서 오래된 프로토콜(TLS 1.0/1.1)과 약한 암호 스위트를 막고, 가능하면 양자 내성(PQ) 알고리즘도 지원해야 한다. 어떻게 해야 하는가?',
-  opts: ['HTTPS 리스너 보안 정책을 TLS 1.2 이상 정책으로 설정한다', '보안 그룹에서 TLS 1.0과 1.1이 쓰는 포트를 막고 443만 허용한다', '대상 그룹 프로토콜을 HTTP로 바꿔 TLS를 쓰지 않게 한다', 'WAF SQL 인젝션 규칙을 추가한다'],
+  opts: ['HTTPS 리스너 보안 정책을 TLS 1.2 이상 정책으로 설정한다', '보안 그룹에서 TLS 1.0과 1.1이 쓰는 포트를 막고 443만 허용한다', '대상 그룹 프로토콜을 HTTP로 바꿔 ALB와 백엔드 사이에 TLS를 쓰지 않게 한다', 'WAF SQL 인젝션 규칙을 추가한다'],
   ans: [0],
   exp: 'ALB는 **사전 정의된 보안 정책**으로 허용할 TLS 버전과 암호 스위트를 정한다. TLS 1.3과 1.2만 허용하는 정책(FIPS, PQ 변형 포함)을 고르면 규정 요건을 맞출 수 있다. 보안 그룹은 포트 수준만 제어한다.',
   tip: 'ELB TLS 버전/암호 제어 = 리스너 보안 정책.',
@@ -122,7 +122,7 @@ QB.push(
 {
   id: 'b13-15', cat: 'storage', domain: 'secure', svc: ['미리 서명된 URL 만료'],
   q: '애플리케이션이 7일 유효한 S3 미리 서명된 URL을 만들었는데, 몇 시간 만에 접근이 거부된다. URL은 EC2 인스턴스 역할의 자격 증명으로 서명했다. 원인은?',
-  opts: ['서명한 임시 자격 증명이 먼저 만료되면 URL도 무효가 된다', 'S3가 지원하는 미리 서명된 URL의 최대 기간은 12시간이므로 7일로 설정해도 12시간에 만료된다', '버킷이 퍼블릭이 아니라서 URL이 거부된다', 'URL은 한 번만 쓸 수 있다'],
+  opts: ['URL에 서명한 임시 자격 증명(역할 세션)이 먼저 만료되면, URL의 만료 시각과 관계없이 URL도 무효가 된다', 'S3가 지원하는 미리 서명된 URL의 최대 기간은 12시간이므로 7일로 설정해도 12시간에 만료된다', '버킷이 퍼블릭이 아니라서 URL이 거부된다', 'URL은 한 번만 쓸 수 있다'],
   ans: [0],
   exp: '미리 서명된 URL의 실제 유효 기간은 **설정한 만료 시간과 서명에 쓴 자격 증명의 만료 중 더 이른 쪽**이다. 인스턴스 역할 같은 **임시 자격 증명**은 몇 시간 안에 만료되므로 URL도 함께 무효가 된다. SigV4 미리 서명된 URL의 최대 기간은 7일이며, 장기 URL이 꼭 필요하다면 CloudFront 서명된 URL 같은 다른 방법을 검토한다.',
   tip: 'Presigned URL 유효기간 = min(설정 만료, 서명 자격 증명 만료).',
@@ -146,7 +146,7 @@ QB.push(
 {
   id: 'b13-18', cat: 'security', domain: 'secure', svc: ['GuardDuty 조직 관리'],
   q: '보안팀이 조직의 모든 기존 계정과 앞으로 만들 계정에 GuardDuty를 자동으로 켜고, 결과를 보안 계정 한 곳에서 보고 싶다. 가장 적합한 방법은?',
-  opts: ['위임 관리자를 지정하고 자동 활성화를 설정한다', '계정이 생길 때마다 Lambda가 그 계정의 역할을 맡아 GuardDuty를 켜고 결과를 메일로 보내게 한다', 'CloudTrail 결과를 메일로 받는다', '각 계정의 루트 사용자가 켜게 한다'],
+  opts: ['위임 관리자를 지정하고 자동 활성화를 설정한다', '계정이 생길 때마다 Lambda가 그 계정의 역할을 맡아 GuardDuty를 켜고 결과를 메일로 보내게 한다', 'CloudTrail 결과를 메일로 받아 위협을 찾는다', '각 계정의 루트 사용자가 켜게 한다'],
   ans: [0],
   exp: 'GuardDuty, Security Hub, Macie, Inspector 같은 보안 서비스는 Organizations와 통합된다. **위임 관리자** 계정에서 **자동 활성화**를 설정하면 새 계정에도 자동으로 켜지고, 결과가 관리자 계정에 모인다. SCP로 비활성화를 막으면 더 확실하다.',
   tip: '보안 서비스 조직 전체 = 위임 관리자 + Auto-enable.',
@@ -162,7 +162,7 @@ QB.push(
 {
   id: 'b13-20', cat: 'database', domain: 'secure', svc: ['DynamoDB 엔드포인트 정책'],
   q: '프라이빗 서브넷의 애플리케이션이 DynamoDB 게이트웨이 엔드포인트를 통해 `Orders` 테이블에만 접근해야 한다. 같은 계정의 다른 테이블에는 이 VPC에서 접근하지 못하게 하려면?',
-  opts: ['게이트웨이 엔드포인트 정책에서 Orders ARN만 허용한다', '인스턴스 보안 그룹에서 다른 테이블로 가는 DynamoDB IP 대역을 막는다', 'NACL로 다른 DynamoDB 테이블 IP를 막는다', '다른 테이블의 DynamoDB Streams를 끈다'],
+  opts: ['게이트웨이 엔드포인트 정책에서 Orders ARN만 허용한다', '인스턴스 보안 그룹에서 다른 테이블로 가는 DynamoDB IP 대역을 막는다', 'NACL로 다른 DynamoDB 테이블의 IP 대역을 막아 경로를 제한한다', '다른 테이블의 DynamoDB Streams를 끈다'],
   ans: [0],
   exp: '**게이트웨이 엔드포인트 정책**은 엔드포인트를 통해 접근할 수 있는 **리소스와 작업**을 제한한다. Orders 테이블만 허용하면 이 VPC에서는 다른 테이블에 접근할 수 없다. 인스턴스 역할의 IAM 정책도 최소 권한으로 함께 설정한다.',
   tip: '엔드포인트 정책 = VPC에서 접근 가능한 리소스 제한.',
@@ -226,7 +226,7 @@ QB.push(
 {
   id: 'b13-28', cat: 'security', domain: 'secure', svc: ['보안 이벤트 알림 아키텍처'],
   q: 'IAM 정책 변경, 보안 그룹 0.0.0.0/0 개방, CloudTrail 중지 같은 위험한 변경이 일어나면 즉시 보안 채널에 알림을 보내고 싶다. 서버리스로 가장 간단히 구현하려면?',
-  opts: ['CloudTrail 이벤트를 EventBridge 규칙으로 잡아 SNS로 보낸다', 'EC2에서 S3에 저장된 CloudTrail 로그를 매분 폴링해 위험한 API 이름을 찾고 채팅으로 알린다', 'Trusted Advisor 보고서를 매주 확인한다', 'S3 인벤토리를 쓴다'],
+  opts: ['CloudTrail 이벤트를 매칭하는 EventBridge 규칙(이벤트 패턴)을 만들어 SNS나 Lambda(채팅 연동)로 보낸다', 'EC2에서 S3에 저장된 CloudTrail 로그를 매분 폴링해 위험한 API 이름을 찾고 채팅으로 알린다', 'Trusted Advisor 보고서를 매주 확인한다', 'S3 인벤토리를 쓴다'],
   ans: [0],
   exp: 'CloudTrail에 기록되는 API 호출은 **EventBridge 이벤트**로도 전달된다. 특정 API(예: AuthorizeSecurityGroupIngress, StopLogging, PutUserPolicy)에 맞는 **이벤트 패턴 규칙**을 만들어 SNS나 Lambda, Amazon Q Developer(채팅 앱 연동)로 보내면 **거의 실시간 알림**이 된다.',
   tip: '위험 API 실시간 알림 = CloudTrail → EventBridge 규칙 → SNS.',
@@ -291,7 +291,7 @@ QB.push(
 {
   id: 'b13-36', cat: 'storage', domain: 'performance', svc: ['DataSync vs Snowball 판단'],
   q: '데이터센터에서 AWS로 20TB를 옮겨야 한다. 회사는 1Gbps 전용 회선을 가지고 있고 그중 80%를 이전에 쓸 수 있다. 일주일 안에 끝내야 한다면 가장 적합한 방법은?',
-  opts: ['DataSync로 온라인 전송한다', 'Snowball Edge를 주문한다', '외장 하드를 택배로 보낸다', 'S3 콘솔에서 수동 업로드한다'],
+  opts: ['DataSync로 온라인 전송한다(약 2~3일 소요 예상)', 'Snowball Edge를 주문한다', '외장 하드를 택배로 보낸다', 'S3 콘솔에서 수동 업로드한다'],
   ans: [0],
   exp: '1Gbps의 80%는 약 800Mbps이고, 하루에 약 **8.6TB**를 보낼 수 있다. 20TB면 **약 2.5일**이 걸려서 일주일 안에 충분히 끝난다. **DataSync**는 병렬 전송, 증분, 검증을 지원한다. Snowball은 주문, 배송, 적재, 반송에 보통 1주 이상 걸려서 이 경우에는 오히려 느리다.',
   tip: '대역폭 계산: 1Gbps ≈ 하루 10.8TB(100%). 충분하면 DataSync.',
@@ -307,7 +307,7 @@ QB.push(
 {
   id: 'b13-38', cat: 'compute', domain: 'performance', svc: ['Lambda 메모리와 CPU'],
   q: '이미지를 처리하는 Lambda 함수가 1,024MB 메모리로 실행되는데, 메모리 사용률은 30%뿐이지만 CPU 집약적인 작업 때문에 실행 시간이 길다. 성능을 높이는 방법은?',
-  opts: ['메모리를 늘려 함께 할당되는 vCPU를 늘린다', '메모리 사용률이 낮으니 메모리를 512MB로 줄인다', '제한 시간을 늘린다', '예약된 동시성을 설정한다'],
+  opts: ['메모리를 늘려 함께 할당되는 vCPU(최대 6개)를 늘린다', '메모리 사용률이 낮으니 메모리를 512MB로 줄인다', '제한 시간을 늘린다', '예약된 동시성을 설정한다'],
   ans: [0],
   exp: 'Lambda는 **메모리 설정에 비례해 CPU 성능을 할당**한다(1,769MB에서 1 vCPU, 10,240MB에서 최대 6 vCPU). CPU 집약적인 함수는 메모리를 쓰지 않더라도 **메모리를 늘리면 빨라진다.** 실행 시간이 줄어 총비용이 비슷하거나 줄어드는 경우가 많다. 멀티스레드로 여러 vCPU를 활용할 수도 있다.',
   tip: 'Lambda CPU 부족 → 메모리 증가.',

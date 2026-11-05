@@ -20,7 +20,7 @@ QB.push(
 {
   id: 'cmp-17', cat: 'compute', domain: 'performance', svc: ['ALB 고정 세션'],
   q: '레거시 웹 애플리케이션이 사용자 세션을 각 EC2 인스턴스의 메모리에 저장한다. ALB 뒤에서 요청이 다른 인스턴스로 가면 사용자가 로그아웃된다. 코드를 바꾸지 않고 **당장** 문제를 해결하는 방법은?',
-  opts: ['ALB 대상 그룹에서 고정 세션을 켠다', 'NLB로 바꾼다', '교차 영역 로드 밸런싱을 끈다', 'Auto Scaling 그룹의 최대 용량을 1로 설정한다'],
+  opts: ['ALB 대상 그룹에서 고정 세션(sticky sessions)을 켠다', 'NLB로 바꾼다', '교차 영역 로드 밸런싱을 끈다', 'Auto Scaling 그룹의 최대 용량을 1로 설정한다'],
   ans: [0],
   exp: '**고정 세션**(쿠키 기반 세션 어피니티)은 같은 사용자의 요청을 같은 대상 인스턴스로 보낸다. 다만 인스턴스가 종료되면 세션이 사라지고 부하가 고르게 분산되지 않을 수 있다. 장기적으로는 세션을 **ElastiCache나 DynamoDB**에 저장해 인스턴스를 무상태로 만드는 것이 모범 사례다.',
   tip: '"코드 변경 없이 즉시" → Sticky Session. "확장성·내결함성" → 세션 외부화(ElastiCache/DynamoDB).',
@@ -44,7 +44,7 @@ QB.push(
 {
   id: 'cmp-20', cat: 'compute', domain: 'performance', svc: ['EC2 인스턴스 스토어'],
   q: '분산 캐시 애플리케이션은 데이터를 여러 노드에 복제해 두기 때문에, 노드 하나가 데이터를 잃어도 괜찮다. 대신 블록 스토리지의 I/O 지연 시간이 가능한 한 낮고 IOPS가 매우 높아야 한다. 어떤 스토리지가 가장 적합한가?',
-  opts: ['EBS io2 Block Express', 'EC2 인스턴스 스토어', 'Amazon EFS', 'Amazon S3'],
+  opts: ['EBS io2 Block Express', 'EC2 인스턴스 스토어(NVMe SSD)', 'Amazon EFS', 'Amazon S3'],
   ans: [1],
   exp: '**인스턴스 스토어**는 호스트에 물리적으로 붙어 있는 디스크라서 **가장 낮은 지연 시간과 매우 높은 IOPS**를 제공한다. 대신 인스턴스가 중지되거나 종료되면, 또는 하드웨어에 장애가 나면 데이터가 **사라진다(휘발성).** 애플리케이션 수준에서 데이터를 복제하는 캐시, 버퍼, 임시 데이터에 적합하다. EBS는 네트워크를 거치는 스토리지라 지연이 조금 더 있다.',
   tip: '"임시 데이터/복제됨/최고 I/O 성능" → 인스턴스 스토어. "영구 보존 필요" → 인스턴스 스토어는 오답.',
@@ -125,7 +125,7 @@ QB.push(
 {
   id: 'sto-24', cat: 'storage', domain: 'resilient', svc: ['EBS 스냅샷'],
   q: '데이터베이스 서버의 EBS 볼륨을 다른 리전에서도 복구할 수 있도록 매일 백업하고, 백업은 30일 동안 보관해야 한다. 가장 간단한 자동화 방법은?',
-  opts: ['Data Lifecycle Manager로 일별 스냅샷과 교차 리전 복사를 설정한다', '매일 운영자가 콘솔에서 스냅샷을 만들고 다른 리전으로 복사한 뒤 30일이 지난 스냅샷을 지운다', 'EBS 볼륨을 다른 리전의 대기 인스턴스에 직접 연결하고 데이터를 동기화한다', 'RAID 1로 볼륨 2개를 미러링해 하나가 손상되어도 복구할 수 있게 구성한다'],
+  opts: ['Data Lifecycle Manager로 일별 스냅샷과 교차 리전 복사를 설정한다', '매일 운영자가 콘솔에서 스냅샷을 만들고 다른 리전으로 복사한 뒤 30일이 지난 스냅샷을 지운다', 'EBS 볼륨을 다른 리전의 대기 인스턴스에 직접 연결하고 데이터를 동기화한다', 'RAID 1로 볼륨 2개를 미러링해 하나가 손상되어도 복구할 수 있게 구성하고 매일 점검한다'],
   ans: [0],
   exp: 'EBS 스냅샷은 S3에 **증분 방식**으로 저장되고, 다른 리전으로 **복사**할 수 있다. **Data Lifecycle Manager**나 **AWS Backup** 정책으로 스냅샷 생성, 교차 리전 복사, 보존 기간을 자동화한다. EBS 볼륨은 같은 AZ의 인스턴스에만 연결할 수 있다. RAID 1은 같은 AZ 안의 이중화일 뿐이다.',
   tip: 'EBS 볼륨은 AZ 리소스. 다른 AZ/리전으로 이동 = 스냅샷 → 복원/복사.',
@@ -199,7 +199,7 @@ QB.push(
 {
   id: 'net-15', cat: 'networking', domain: 'secure', svc: ['CloudFront 서명된 URL/쿠키'],
   q: '온라인 강의 사이트가 유료 회원에게만 CloudFront를 통해 수백 개의 강의 동영상 파일을 제공하려 한다. 회원이 로그인하면 여러 파일에 한꺼번에 접근할 수 있어야 하고, URL은 바꾸지 않아야 한다. 가장 적합한 방법은?',
-  opts: ['CloudFront 서명된 쿠키', 'CloudFront 서명된 URL(signed URLs)', 'S3 미리 서명된 URL', 'CloudFront 지리적 제한'],
+  opts: ['CloudFront 서명된 쿠키(signed cookies)', 'CloudFront 서명된 URL(signed URLs)', 'S3 미리 서명된 URL', 'CloudFront 지리적 제한'],
   ans: [0],
   exp: '**서명된 쿠키**는 쿠키 하나로 **여러 파일**(예: `/courses/*`)에 대한 접근을 허용하고, 기존 URL을 바꾸지 않아도 된다. **서명된 URL**은 **개별 파일**에 대한 접근을 줄 때 적합하다(파일 하나 다운로드, 쿠키를 지원하지 않는 클라이언트). S3 미리 서명된 URL은 CloudFront를 거치지 않는다.',
   tip: '파일 하나 → Signed URL. 여러 파일/URL 유지 → Signed Cookies.',
@@ -239,7 +239,7 @@ QB.push(
 {
   id: 'net-20', cat: 'networking', domain: 'cost', svc: ['VPC 공유 (RAM)'],
   q: '여러 애플리케이션 팀이 각자 AWS 계정을 쓰지만, 네트워크팀이 VPC와 서브넷을 중앙에서 관리하고 싶어 한다. 팀마다 VPC를 따로 만들고 피어링하는 대신, 하나의 VPC 서브넷에 각 계정이 리소스를 직접 만들 수 있게 하려면?',
-  opts: ['AWS Resource Access Manager로 서브넷을 다른 계정과 공유한다', '모든 팀이 같은 계정의 같은 IAM 사용자를 써서 하나의 VPC에 리소스를 만든다', '팀마다 VPC를 만들고 Transit Gateway로 연결해 네트워크팀이 라우팅을 관리한다', 'VPC 엔드포인트를 팀 계정들과 공유해 각 계정이 서브넷에 리소스를 만들게 한다'],
+  opts: ['AWS Resource Access Manager로 서브넷을 다른 계정과 공유한다', '모든 팀이 같은 계정의 같은 IAM 사용자를 써서 하나의 VPC에 각자 리소스를 직접 만든다', '팀마다 VPC를 만들고 Transit Gateway로 연결해 네트워크팀이 라우팅을 관리한다', 'VPC 엔드포인트를 팀 계정들과 공유해 각 계정이 서브넷에 리소스를 만들게 한다'],
   ans: [0],
   exp: '**VPC 공유**는 AWS RAM으로 소유자 계정의 **서브넷을 같은 조직의 다른 계정과 공유**한다. 참여 계정은 공유된 서브넷에 EC2, RDS 같은 자기 리소스를 만들 수 있다. 네트워크는 중앙에서 관리하고, VPC 수, 피어링, NAT 게이트웨이 중복을 줄여 비용과 복잡도를 낮춘다. 각 계정은 자기 리소스만 관리할 수 있다.',
   tip: '"중앙 네트워크 관리 + 여러 계정이 같은 VPC 사용" → VPC Sharing(RAM).',
@@ -264,7 +264,7 @@ QB.push(
 {
   id: 'sec-16', cat: 'security', domain: 'secure', svc: ['IAM Identity Center'],
   q: '회사가 AWS 계정 30개를 Organizations로 관리한다. 직원들이 기존 사내 IdP(Okta, Entra ID 등) 계정으로 한 번 로그인하면 권한이 있는 여러 AWS 계정과 콘솔에 접근할 수 있게 하고 싶다. 가장 적합한 서비스는?',
-  opts: ['AWS IAM Identity Center', '계정마다 IAM 사용자를 만든다', 'Amazon Cognito 사용자 풀', 'AWS Directory Service Simple AD'],
+  opts: ['AWS IAM Identity Center (구 AWS SSO)', '계정마다 IAM 사용자를 만든다', 'Amazon Cognito 사용자 풀', 'AWS Directory Service Simple AD'],
   ans: [0],
   exp: '**IAM Identity Center**는 Organizations와 통합되어, **외부 IdP(SAML 2.0/SCIM)**나 AD와 연동한 사용자에게 **여러 계정에 대한 SSO**와 **권한 세트**를 중앙에서 할당한다. Cognito는 고객용(앱 최종 사용자) 인증 서비스다. 계정마다 IAM 사용자를 만들면 관리가 불가능해진다.',
   tip: '직원(workforce) 다중 계정 SSO → IAM Identity Center. 앱 고객 로그인 → Cognito.',
@@ -272,7 +272,7 @@ QB.push(
 {
   id: 'sec-17', cat: 'security', domain: 'secure', svc: ['IAM 권한 경계'],
   q: '개발자들이 자기 Lambda 함수용 IAM 역할을 직접 만들 수 있게 하되, 그 역할이 개발자 자신보다 더 큰 권한(예: IAM 관리, 결제 접근)을 갖지는 못하게 하려 한다. 가장 적합한 방법은?',
-  opts: ['IAM 권한 경계를 쓰고, 역할을 만들 때 해당 경계를 반드시 붙이게 하는 조건을 건다', '개발자에게 AdministratorAccess를 주고 CloudTrail로 사후에 사용 내역을 검토한다', 'SCP로 모든 IAM 작업을 거부해 개발자가 역할을 만들지 못하게 막는다', '역할은 관리자만 만들도록 하고 개발자는 티켓으로 요청해 승인을 받는다'],
+  opts: ['IAM 권한 경계를 쓰고, 역할을 만들 때 해당 경계를 반드시 붙이게 하는 조건을 건다', '개발자에게 AdministratorAccess를 주고 CloudTrail로 사후에 사용 내역을 검토한다', 'SCP로 모든 IAM 작업을 거부해 개발자가 역할을 만들지 못하게 막고 관리자만 예외로 둔다', '역할은 관리자만 만들도록 하고 개발자는 티켓으로 요청해 승인을 받는다'],
   ans: [0],
   exp: '**권한 경계**는 IAM 사용자나 역할이 가질 수 있는 **최대 권한**을 정한다. 개발자에게 `iam:CreateRole`을 허용하면서 `iam:PermissionsBoundary` 조건으로 특정 경계 정책을 붙이도록 강제하면, 개발자가 만든 역할은 그 경계를 넘을 수 없다(권한 상승 방지). SCP는 계정 전체에 적용되는 가드레일이라 이런 위임 시나리오에는 지나치게 넓다.',
   tip: '"권한 위임 + 권한 상승 방지" → Permissions Boundary.',
@@ -312,7 +312,7 @@ QB.push(
 {
   id: 'sec-22', cat: 'security', domain: 'cost', svc: ['S3 버킷 키'],
   q: 'S3 버킷이 SSE-KMS로 암호화되어 있는데, 하루 수억 건의 객체 요청 때문에 KMS 요청 비용이 크게 늘고 KMS 요청 한도에 가까워지고 있다. 보안 수준을 유지하면서 KMS 호출을 줄이는 방법은?',
-  opts: ['S3 버킷 키를 켠다', 'SSE-C로 바꾼다', '암호화를 끈다', 'KMS 키를 매일 교체한다'],
+  opts: ['S3 버킷 키(Bucket Keys)를 켠다', 'SSE-C로 바꾼다', '암호화를 끈다', 'KMS 키를 매일 교체한다'],
   ans: [0],
   exp: '**S3 버킷 키**를 켜면 S3가 KMS 키로 버킷 수준의 데이터 키를 만들어 일정 기간 재사용하므로, 객체마다 KMS를 호출하지 않아도 된다. **KMS 요청 비용이 최대 99%** 줄어든다. 고객 관리형 키와 CloudTrail 감사는 그대로 유지된다.',
   tip: 'SSE-KMS 비용/스로틀링 → S3 Bucket Key.',
@@ -378,7 +378,7 @@ QB.push(
 {
   id: 'ana-12', cat: 'analytics', domain: 'cost', svc: ['Glue 작업 북마크'],
   q: 'AWS Glue ETL 작업이 매시간 S3의 새 로그 파일을 처리하는데, 매번 이전에 처리한 파일까지 다시 읽어서 비용과 시간이 낭비되고 중복 데이터가 생긴다. 어떻게 개선해야 하는가?',
-  opts: ['Glue 작업 북마크를 켠다', 'Glue 크롤러를 더 자주 실행한다', '작업의 DPU를 늘린다', 'S3 버전 관리를 켠다'],
+  opts: ['Glue 작업 북마크(job bookmarks)를 켠다', 'Glue 크롤러를 더 자주 실행한다', '작업의 DPU를 늘린다', 'S3 버전 관리를 켠다'],
   ans: [0],
   exp: '**작업 북마크**는 이전 실행에서 처리한 데이터의 상태를 기억해서, 다음 실행 때 **새로 들어온 데이터만** 증분 처리한다. 중복 처리와 비용이 함께 줄어든다. DPU를 늘리면 처리 속도만 빨라질 뿐 중복은 그대로다.',
   tip: 'Glue 증분 처리 → Job Bookmarks.',
@@ -403,7 +403,7 @@ QB.push(
 {
   id: 'mgt-16', cat: 'management', domain: 'resilient', svc: ['Service Quotas'],
   q: '대규모 이벤트를 앞두고 Auto Scaling이 인스턴스를 늘리려 했지만 "You have requested more vCPU capacity than your current vCPU limit" 오류로 실패했다. 다음 이벤트에서 이 문제를 막으려면 어떻게 해야 하는가?',
-  opts: ['Service Quotas로 vCPU 할당량 증가를 미리 요청하고 사용량에 알람을 건다', '시작 템플릿의 인스턴스 유형을 더 작게 바꿔 같은 한도 안에서 더 많이 띄운다', '이벤트 때만 쓸 다른 AWS 계정을 만들고 그 계정에서 인스턴스를 추가로 띄워 ALB에 교차 계정으로 등록한다', 'Auto Scaling 쿨다운을 늘려 vCPU 요청이 한 번에 몰리지 않게 분산한다'],
+  opts: ['Service Quotas로 vCPU 할당량 증가를 미리 요청하고 사용량에 알람을 건다', '시작 템플릿의 인스턴스 유형을 더 작게 바꿔 같은 한도 안에서 더 많이 띄운다', '이벤트 때만 쓸 다른 AWS 계정을 만들고 그 계정에서 인스턴스를 추가로 띄워 ALB에 교차 계정으로 등록한다', 'Auto Scaling 쿨다운을 늘려 vCPU 요청이 한 번에 몰리지 않게 시간을 두고 분산한다'],
   ans: [0],
   exp: 'AWS 계정에는 리전별 **서비스 할당량(한도)**이 있다. **Service Quotas** 콘솔에서 증가를 미리 요청하고, 할당량 사용률에 **CloudWatch 알람**을 걸어 한도에 가까워지는 것을 감지해야 한다. 할당량은 보통 리전마다 따로 적용된다는 점을 기억하자.',
   tip: '"limit exceeded" → Service Quotas 증가 요청(사전에).',

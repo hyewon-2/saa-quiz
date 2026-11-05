@@ -4,7 +4,7 @@ QB.push(
 {
   id: 'b11-01', cat: 'networking', domain: 'secure', svc: ['CloudFront 필드 수준 암호화'],
   q: '결제 폼에서 전송되는 신용카드 번호는 CloudFront와 웹 서버를 거치더라도 **결제 처리 마이크로서비스만** 복호화할 수 있어야 한다. 다른 계층에서는 평문을 볼 수 없어야 한다. 어떤 기능을 써야 하는가?',
-  opts: ['CloudFront 필드 수준 암호화로 해당 필드를 암호화한다', 'HTTPS로 전송하고 웹 서버의 애플리케이션 로그에 카드 번호가 남지 않게 마스킹한다', '카드 번호를 S3에 SSE-KMS로 저장해 참조만 전달한다', 'WAF SQL 인젝션 규칙을 적용한다'],
+  opts: ['CloudFront 필드 수준 암호화로 해당 필드를 암호화한다', 'HTTPS로 전송하고 웹 서버의 애플리케이션 로그에 카드 번호가 남지 않게 마스킹한다', '카드 번호를 S3에 SSE-KMS로 저장하고 웹 서버에는 참조만 전달한다', 'WAF SQL 인젝션 규칙을 적용한다'],
   ans: [0],
   exp: '**필드 수준 암호화**는 엣지에서 지정한 양식 필드를 **공개 키로 암호화**하므로, 개인 키를 가진 애플리케이션만 복호화할 수 있다. HTTPS는 전송 구간만 보호하고, 웹 서버에서 TLS가 종료되면 평문을 볼 수 있다.',
   tip: '특정 필드만 특정 서비스가 복호화 → CloudFront Field-level Encryption.',
@@ -28,7 +28,7 @@ QB.push(
 {
   id: 'b11-04', cat: 'security', domain: 'secure', svc: ['KMS 봉투 암호화'],
   q: '애플리케이션이 수 GB 크기의 파일을 KMS로 암호화하려 했는데, KMS Encrypt API가 4KB 넘는 데이터를 받지 않아 실패했다. 올바른 방법은?',
-  opts: ['GenerateDataKey로 봉투 암호화를 쓴다', '파일을 4KB 조각으로 나눠 조각마다 Encrypt API를 호출하고 암호문을 이어 붙여 저장한다', 'KMS 키를 내보내 로컬에서 쓴다', 'Base64로 인코딩해 크기 제한을 피한다'],
+  opts: ['GenerateDataKey로 봉투 암호화를 쓴다', '파일을 4KB 조각으로 나눠 조각마다 Encrypt API를 호출하고 암호문을 이어 붙여 저장한다', 'KMS 키를 내보내 로컬에서 쓴다', '파일을 Base64로 인코딩해 크기 제한을 피한다'],
   ans: [0],
   exp: 'KMS Encrypt는 **최대 4KB**까지만 직접 암호화한다. 큰 데이터는 **봉투 암호화**를 쓴다. KMS에서 **데이터 키**(평문과 암호화된 사본)를 받아 평문 키로 로컬에서 암호화하고, 평문 키는 메모리에서 지우며, **암호화된 데이터 키**만 함께 저장한다. AWS Encryption SDK가 이 과정을 처리해 준다. KMS 키는 내보낼 수 없다.',
   tip: 'KMS 직접 암호화 4KB 한도 → Envelope Encryption(GenerateDataKey).',
@@ -36,7 +36,7 @@ QB.push(
 {
   id: 'b11-05', cat: 'security', domain: 'secure', svc: ['AssumeRole MFA 조건'],
   q: '운영 계정의 관리자 역할은 MFA 인증을 마친 사용자만 맡을(assume) 수 있어야 한다. 어디에 어떤 조건을 넣어야 하는가?',
-  opts: ['역할의 신뢰 정책에 aws:MultiFactorAuthPresent 조건을 넣는다', '역할의 권한 정책 각 문에 MFA 조건을 넣어 역할을 맡은 뒤에 인증을 확인한다', 'SCP로 모든 AssumeRole을 거부한다', '콘솔 로그인 정책에서 MFA 장치를 필수로 지정해 모든 역할 전환에 자동으로 적용되게 한다'],
+  opts: ['역할의 신뢰 정책에 aws:MultiFactorAuthPresent 조건을 넣는다', '역할의 권한 정책 각 문에 MFA 조건을 넣어 역할을 맡은 뒤에 작업마다 인증을 확인한다', 'SCP로 모든 AssumeRole을 거부한다', '콘솔 로그인 정책에서 MFA 장치를 필수로 지정해 모든 역할 전환에 자동으로 적용되게 한다'],
   ans: [0],
   exp: '역할을 **누가 어떤 조건에서 맡을 수 있는지**는 **신뢰 정책**이 정한다. 신뢰 정책에 `aws:MultiFactorAuthPresent` 조건을 걸면, MFA로 받은 세션 자격 증명으로만 역할을 맡을 수 있다. 권한 정책은 역할을 맡은 **뒤에** 무엇을 할 수 있는지를 정한다.',
   tip: '역할 맡기 조건 = 신뢰 정책 / 맡은 후 권한 = 권한 정책.',
@@ -112,7 +112,7 @@ QB.push(
 {
   id: 'b11-13', cat: 'networking', domain: 'secure', svc: ['VPC 흐름 로그', 'Athena'],
   q: '보안팀이 특정 의심 IP가 지난 30일 동안 VPC 안의 어떤 인스턴스와 어떤 포트로 통신했는지 SQL로 조사해야 한다. 흐름 로그는 이미 S3에 Parquet 형식으로 저장되고 있다. 가장 빠른 방법은?',
-  opts: ['Athena로 흐름 로그 테이블을 만들어 SQL로 조회한다', 'CloudTrail 콘솔에서 이벤트를 검색해 해당 IP의 접속 기록을 찾는다', 'Config 고급 쿼리로 인스턴스별 연결 기록을 조회한다', '모든 인스턴스에 SSH로 접속해 로그를 확인한다'],
+  opts: ['Athena로 흐름 로그 테이블을 만들어 SQL로 조회한다', 'CloudTrail 콘솔에서 이벤트를 검색해 해당 IP의 접속 기록을 찾는다', 'Config 고급 쿼리로 인스턴스별 네트워크 연결 기록을 조회한다', '모든 인스턴스에 SSH로 접속해 로그를 확인한다'],
   ans: [0],
   exp: 'S3에 있는 **VPC 흐름 로그**는 **Athena**로 바로 SQL 분석할 수 있다(Parquet와 시간 파티션을 쓰면 빠르고 저렴하다). CloudTrail은 API 호출 기록이라 네트워크 연결 정보가 없다. Detective의 VPC 흐름 시각화도 대안이다.',
   tip: '네트워크 트래픽 조사 = VPC Flow Logs + Athena.',
@@ -144,7 +144,7 @@ QB.push(
 {
   id: 'b11-17', cat: 'security', domain: 'secure', svc: ['미사용 자격 증명 탐지'],
   q: '보안 감사에서 90일 넘게 쓰지 않은 IAM 사용자, 액세스 키, 역할을 찾아 정리하라는 요구가 나왔다. 조직의 여러 계정에서 지속적으로 찾아내려면 어떤 기능이 가장 적합한가?',
-  opts: ['IAM Access Analyzer의 미사용 액세스 분석기', 'AWS Budgets로 사용자별 비용이 0인 계정 찾기', 'VPC 흐름 로그를 Athena로 분석해 액세스 키별 호출 기록 찾기', 'Amazon Macie의 자격 증명 사용 분석'],
+  opts: ['IAM Access Analyzer의 미사용 액세스 분석기', 'AWS Budgets로 사용자별 비용이 0인 계정을 찾아 정리', 'VPC 흐름 로그를 Athena로 분석해 액세스 키별 호출 기록 찾기', 'Amazon Macie의 자격 증명 사용 분석'],
   ans: [0],
   exp: '**Access Analyzer 미사용 액세스 분석기**는 조직이나 계정의 **사용하지 않는 역할, 액세스 키, 암호, 서비스·작업 수준 권한**을 지속적으로 찾아 결과로 보여 준다. 단일 계정이라면 **IAM 자격 증명 보고서**(credential report)로 키의 마지막 사용일을 확인할 수도 있다.',
   tip: '미사용 자격 증명/권한 → Access Analyzer unused access (또는 Credential Report).',
@@ -166,7 +166,7 @@ QB.push(
 {
   id: 'b11-19', cat: 'security', domain: 'secure', svc: ['계정 분리'],
   q: '스타트업이 개발, 스테이징, 운영 환경을 하나의 AWS 계정에서 태그로만 구분해 운영하다가, 개발자의 실수로 운영 리소스가 삭제되는 사고가 났다. 가장 근본적인 개선 방법은?',
-  opts: ['Organizations로 환경별 계정을 나누고 SCP를 적용한다', '운영 리소스에 태그를 하나 더 붙이고 태그 조건 IAM 정책으로 개발자의 삭제를 막아 한 계정에서 계속 운영한다', '개발자 IAM 사용자의 암호를 바꾼다', '운영 리소스 이름 앞에 "prod-"를 붙인다'],
+  opts: ['AWS Organizations로 환경별로 계정을 분리하고, 운영 계정에는 접근을 제한하며 SCP 가드레일을 적용한다', '운영 리소스에 태그를 하나 더 붙이고 태그 조건 IAM 정책으로 개발자의 삭제를 막아 한 계정에서 계속 운영한다', '개발자 IAM 사용자의 암호를 바꾼다', '운영 리소스 이름 앞에 "prod-"를 붙인다'],
   ans: [0],
   exp: '**계정은 가장 강력한 격리 경계**다. 환경별로 계정을 나누면 권한, 할당량, 비용, 장애 영향이 분리된다. Organizations와 SCP로 운영 계정에 가드레일을 걸고, Identity Center로 접근을 통제한다. 태그나 이름 규칙은 실수를 막지 못한다.',
   tip: '환경 격리 = 다중 계정(멀티 어카운트 전략).',
@@ -182,7 +182,7 @@ QB.push(
 {
   id: 'b11-21', cat: 'networking', domain: 'secure', svc: ['WAF 속도 기반 규칙'],
   q: '로그인 API(`/login`)에 무차별 대입(brute force) 공격이 들어오고 있다. 정상 페이지 트래픽에는 영향을 주지 않고, IP당 5분에 100회를 넘는 로그인 요청만 차단하고 싶다. 가장 적합한 방법은?',
-  opts: ['/login으로 범위를 좁힌 WAF 속도 기반 규칙을 추가한다', '모든 경로에 IP당 5분 100회 속도 제한을 걸어 로그인 공격과 일반 크롤링을 함께 막는다', 'NACL로 모든 해외 IP를 차단한다', 'ALB 유휴 제한 시간을 줄인다'],
+  opts: ['WAF 속도 기반 규칙에 URI 경로가 /login인 요청으로 범위를 좁히는 scope-down 문을 추가한다', '모든 경로에 IP당 5분 100회 속도 제한을 걸어 로그인 공격과 일반 크롤링을 함께 막는다', 'NACL로 모든 해외 IP를 차단한다', 'ALB 유휴 제한 시간을 줄인다'],
   ans: [0],
   exp: 'WAF **속도 기반 규칙**에 **scope-down 문**을 넣으면 특정 경로나 조건에 맞는 요청만 세서 제한한다. 그래서 일반 페이지는 영향을 받지 않는다. 집계 키로 IP 외에 헤더나 쿠키도 쓸 수 있다. Cognito를 쓴다면 위협 보호 기능도 함께 쓸 수 있다.',
   tip: '특정 경로 속도 제한 → Rate-based rule + scope-down.',
@@ -246,7 +246,7 @@ QB.push(
 {
   id: 'b11-29', cat: 'security', domain: 'secure', svc: ['Inspector Lambda 스캔'],
   q: '서버리스 팀이 Lambda 함수의 패키지 의존성(npm, pip)과 코드 자체에 알려진 취약점이나 하드코딩된 비밀이 있는지 지속적으로 점검하고 싶다. 가장 적합한 서비스는?',
-  opts: ['Amazon Inspector의 Lambda 표준 스캔과 코드 스캔', 'Amazon Macie 코드 스캔', 'AWS Shield Advanced의 애플리케이션 보호', 'AWS Config 규칙과 사용자 지정 Lambda 평가로 함수의 패키지를 점검'],
+  opts: ['Amazon Inspector의 Lambda 표준 스캔과 코드 스캔', 'Amazon Macie 코드 스캔', 'AWS Shield Advanced의 애플리케이션 보호로 함수 취약점을 찾는다', 'AWS Config 규칙과 사용자 지정 Lambda 평가로 함수의 패키지를 점검'],
   ans: [0],
   exp: '**Inspector**는 Lambda 함수의 **패키지 취약점(표준 스캔)**과 **코드 취약점·하드코딩된 비밀(코드 스캔)**을 배포할 때와 새 CVE가 공개될 때 **자동으로** 점검한다. EC2와 ECR 이미지도 같은 콘솔에서 관리한다.',
   tip: 'Lambda 취약점·코드 스캔 → Inspector.',
@@ -292,7 +292,7 @@ QB.push(
 {
   id: 'b11-34', cat: 'security', domain: 'secure', svc: ['SCP 서비스 차단'],
   q: '규정상 조직의 어떤 계정도 승인되지 않은 특정 서비스(예: 미승인 AI 서비스)를 쓰면 안 된다. 계정 관리자가 IAM으로 권한을 줘도 쓰지 못하게 하려면?',
-  opts: ['해당 서비스를 Deny하는 SCP를 루트나 OU에 붙인다', '각 계정의 IAM 사용자·역할 정책을 분기마다 점검해 해당 서비스 권한이 발견되면 제거한다', 'AWS Budgets로 사용량을 감시한다', 'CloudTrail에서 사용 기록을 매일 확인한다'],
+  opts: ['해당 서비스를 Deny하는 SCP를 루트나 OU에 붙인다', '각 계정의 IAM 사용자·역할 정책을 분기마다 점검해 해당 서비스 권한이 발견되면 제거한다', 'AWS Budgets로 사용량을 감시한다', 'CloudTrail에서 사용 기록을 매일 확인해 담당자에게 경고한다'],
   ans: [0],
   exp: '**SCP**는 계정 안의 IAM 권한과 관계없이 **허용되는 작업의 상한**을 정한다. 특정 서비스를 **Deny**하거나 승인된 서비스만 허용하는 **허용 목록** 전략으로 사용을 원천 차단한다. 예산 감시나 로그 확인은 사후 탐지일 뿐이다.',
   tip: '조직 차원 서비스 사용 금지 → SCP.',

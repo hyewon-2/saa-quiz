@@ -4,7 +4,7 @@ QB.push(
 {
   id: 'sto-44', cat: 'storage', domain: 'secure', svc: ['S3 정적 웹 호스팅'],
   q: 'S3 정적 웹 사이트 호스팅 엔드포인트로 회사 소개 사이트를 운영 중이다. 보안 정책상 HTTPS가 필요해졌다. 가장 간단한 방법은?',
-  opts: ['CloudFront 배포를 앞에 두고 ACM 인증서로 HTTPS를 제공한다', 'S3 웹 사이트 엔드포인트에 ACM 인증서를 직접 연결해 HTTPS를 켠다', 'S3 버킷 속성에서 TLS 정책을 설정해 웹 사이트 엔드포인트를 HTTPS로 바꾼다', 'ALB를 앞에 두고 대상 그룹에 S3 버킷을 등록해 HTTPS를 종료한다'],
+  opts: ['CloudFront 배포를 앞에 두고 ACM 인증서로 HTTPS를 제공한다', 'S3 웹 사이트 엔드포인트에 ACM 인증서를 직접 연결해 HTTPS를 켜고 도메인을 맞춘다', 'S3 버킷 속성에서 TLS 정책을 설정해 웹 사이트 엔드포인트를 HTTPS로 바꾼다', 'ALB를 앞에 두고 대상 그룹에 S3 버킷을 등록해 HTTPS를 종료한다'],
   ans: [0],
   exp: 'S3 **웹 사이트 엔드포인트는 HTTP만** 지원한다. HTTPS와 사용자 지정 도메인을 쓰려면 **CloudFront**를 앞에 두고 **ACM 인증서**(us-east-1)를 연결한다. ALB는 S3를 대상 그룹으로 등록할 수 없다.',
   tip: 'S3 웹 사이트 엔드포인트 = HTTP 전용 → HTTPS는 CloudFront.',
@@ -28,7 +28,7 @@ QB.push(
 {
   id: 'sto-47', cat: 'storage', domain: 'performance', svc: ['S3 이벤트 → EventBridge'],
   q: 'S3 버킷에 객체가 생성되면 객체 크기와 접두사 조건에 따라 Lambda, Step Functions, 다른 계정의 이벤트 버스 등 여러 대상으로 이벤트를 보내야 한다. 가장 유연한 방법은?',
-  opts: ['버킷의 EventBridge 알림을 켜고 규칙으로 필터링해 라우팅한다', 'S3 이벤트 알림으로 Lambda 하나만 호출하고 그 안에서 크기와 접두사를 검사해 각 대상으로 분기한다', 'S3 인벤토리를 매일 확인해 새 객체를 찾아 처리한다', 'CloudTrail 로그를 Athena로 조회해 새 객체를 찾는다'],
+  opts: ['버킷의 EventBridge 알림을 켜고 규칙으로 필터링해 라우팅한다', 'S3 이벤트 알림으로 Lambda 하나만 호출하고 그 안에서 크기와 접두사를 검사해 각 대상으로 분기한다', 'S3 인벤토리를 매일 확인해 새 객체를 찾아 처리한다', 'CloudTrail 로그를 Athena로 주기적으로 조회해 새 객체를 찾아 처리한다'],
   ans: [0],
   exp: 'S3의 **EventBridge 통합**을 켜면 모든 S3 이벤트가 EventBridge로 전달되고, **콘텐츠 기반 필터링**(크기, 키 접두사·접미사 등), **여러 대상**, **교차 계정 전송**, 아카이브와 재생을 쓸 수 있다. S3 기본 이벤트 알림은 대상 종류(SNS, SQS, Lambda)와 필터가 제한적이다.',
   tip: 'S3 이벤트 + 고급 필터/여러 대상 → EventBridge 통합.',
@@ -117,7 +117,7 @@ QB.push(
 {
   id: 'cmp-53', cat: 'compute', domain: 'performance', svc: ['골든 AMI', 'EC2 Image Builder'],
   q: 'Auto Scaling으로 새 인스턴스가 뜰 때 사용자 데이터 스크립트로 패키지를 설치하고 설정하느라 15분이 걸려 확장이 느리다. 부팅 시간을 크게 줄이려면?',
-  opts: ['소프트웨어를 미리 설치한 골든 AMI를 시작 템플릿에 지정한다', '인스턴스 유형을 늘려 패키지 설치 시간을 줄인다', '사용자 데이터 스크립트를 병렬로 나눠 실행하고 설치 패키지를 S3에서 받아 부팅 시간을 줄인다', '쿨다운 시간을 늘려 초기화가 끝날 때까지 다음 확장을 기다린다'],
+  opts: ['소프트웨어를 미리 설치한 골든 AMI를 시작 템플릿에 지정한다', '인스턴스 유형을 늘려 패키지 설치 시간을 줄인다', '사용자 데이터 스크립트를 병렬로 나눠 실행하고 설치 패키지를 S3에서 받아 부팅 시간을 줄인다', '쿨다운 시간을 늘려 초기화가 모두 끝날 때까지 다음 확장을 기다리게 조정한다'],
   ans: [0],
   exp: '**골든 AMI**에 소프트웨어를 미리 구워 두면(pre-bake) 부팅할 때 설치 과정이 없어 시작 시간이 크게 줄어든다. **EC2 Image Builder**로 AMI 생성, 패치, 테스트, 배포를 자동화할 수 있다. 사용자 데이터에는 환경별 설정처럼 동적인 부분만 남긴다.',
   tip: '느린 부트스트랩 → Golden AMI(Image Builder). 동적 설정만 User Data.',
@@ -158,7 +158,7 @@ QB.push(
 {
   id: 'net-43', cat: 'networking', domain: 'secure', svc: ['인터페이스 엔드포인트'],
   q: '프라이빗 서브넷의 애플리케이션이 SQS, KMS, Secrets Manager API를 호출해야 한다. 보안 정책상 인터넷이나 NAT 게이트웨이를 거치면 안 되고, 애플리케이션 코드의 엔드포인트 URL도 바꾸지 않아야 한다. 어떻게 해야 하는가?',
-  opts: ['각 서비스의 인터페이스 VPC 엔드포인트를 만들고 프라이빗 DNS를 켠다', 'S3 게이트웨이 엔드포인트를 만들어 다른 서비스 API도 라우팅한다', 'AWS 서비스 VPC와 피어링을 맺는다', '인터넷 게이트웨이를 붙이고 보안 그룹으로 AWS 서비스 IP 대역만 허용해 인터넷 노출을 제한한다'],
+  opts: ['각 서비스의 인터페이스 VPC 엔드포인트를 만들고 프라이빗 DNS를 켠다', 'S3 게이트웨이 엔드포인트를 만들어 SQS, KMS 같은 다른 서비스 API도 함께 라우팅한다', 'AWS 서비스 VPC와 피어링을 맺는다', '인터넷 게이트웨이를 붙이고 보안 그룹으로 AWS 서비스 IP 대역만 허용해 인터넷 노출을 제한한다'],
   ans: [0],
   exp: '**인터페이스 엔드포인트**는 서브넷에 ENI(프라이빗 IP)를 만들어 AWS 서비스 API에 **프라이빗하게** 접근하게 한다. **프라이빗 DNS**를 켜면 기본 서비스 도메인(예: sqs.ap-northeast-2.amazonaws.com)이 엔드포인트 IP로 풀리므로 코드를 바꿀 필요가 없다. 게이트웨이 엔드포인트는 S3와 DynamoDB만 지원한다.',
   tip: 'S3/DynamoDB 외 AWS API 프라이빗 접근 → Interface Endpoint + Private DNS.',
@@ -166,7 +166,7 @@ QB.push(
 {
   id: 'net-44', cat: 'networking', domain: 'secure', svc: ['Direct Connect 암호화'],
   q: '회사가 Direct Connect로 AWS와 연결되어 있는데, 감사에서 "전송 중 데이터가 암호화되지 않는다"는 지적을 받았다. Direct Connect의 일관된 성능은 유지하면서 암호화하려면?',
-  opts: ['DX 위에 Site-to-Site VPN을 구성하거나 MACsec을 켠다', 'Direct Connect를 해지하고 인터넷 VPN만 써서 전송 구간을 암호화하되 성능 저하를 받아들인다', '온프레미스와 VPC 피어링을 맺어 암호화한다', 'S3 기본 암호화와 RDS 암호화를 켠다'],
+  opts: ['Direct Connect 위에 Site-to-Site VPN(IPsec)을 구성하거나, 지원되는 연결에서 MACsec을 켠다', 'Direct Connect를 해지하고 인터넷 VPN만 써서 전송 구간을 암호화하되 성능 저하를 받아들인다', '온프레미스와 VPC 피어링을 맺어 암호화한다', 'S3 기본 암호화와 RDS 암호화를 켠다'],
   ans: [0],
   exp: 'Direct Connect는 전용 회선이지만 **기본으로 암호화되지 않는다.** **DX 위에 IPsec VPN**(퍼블릭 VIF나 전송 VIF를 통한 프라이빗 IP VPN)을 구성하거나, 10/100Gbps 전용 연결에서 **MACsec**(L2 암호화)을 켜면 성능을 유지하면서 암호화할 수 있다.',
   tip: 'DX는 암호화 X → VPN over DX 또는 MACsec.',
@@ -175,7 +175,7 @@ QB.push(
 {
   id: 'db-38', cat: 'database', domain: 'resilient', svc: ['DynamoDB 트랜잭션'],
   q: '계좌 이체 기능에서 DynamoDB의 두 계좌 항목을 동시에 갱신해야 한다. 한쪽 갱신만 성공하는 상황이 절대 생기면 안 된다. 어떻게 구현해야 하는가?',
-  opts: ['TransactWriteItems로 두 갱신을 원자적으로 실행한다', 'BatchWriteItem으로 두 항목을 묶어 쓴다', '두 번의 UpdateItem을 연속으로 호출하고 두 번째가 실패하면 첫 번째를 되돌리는 코드를 작성한다', 'DynamoDB Streams로 불일치를 찾아 보정한다'],
+  opts: ['TransactWriteItems로 두 갱신을 원자적으로 실행한다', 'BatchWriteItem으로 두 항목을 묶어 쓴다', '두 번의 UpdateItem을 연속으로 호출하고 두 번째가 실패하면 첫 번째를 되돌리는 코드를 작성한다', 'DynamoDB Streams로 불일치를 찾아 Lambda가 보정한다'],
   ans: [0],
   exp: '**DynamoDB 트랜잭션**(TransactWriteItems, TransactGetItems)은 여러 항목(여러 테이블 포함)에 대한 작업을 **전부 성공 또는 전부 실패(ACID)**로 처리한다. **BatchWriteItem**은 원자성을 보장하지 않아 일부만 성공할 수 있다.',
   tip: 'DynamoDB 원자적 다중 항목 갱신 → Transactions. Batch ≠ 트랜잭션.',
@@ -191,7 +191,7 @@ QB.push(
 {
   id: 'db-40', cat: 'database', domain: 'cost', svc: ['DynamoDB S3 내보내기'],
   q: '분석팀이 운영 중인 DynamoDB 테이블(수 TB) 전체를 매일 Athena로 분석하려 한다. 테이블을 Scan하면 운영 트래픽에 영향을 주고 읽기 용량도 많이 소모한다. 가장 적합한 방법은?',
-  opts: ['PITR을 켜고 "S3로 내보내기"한 뒤 Athena로 쿼리한다', '매일 밤 병렬 Scan을 실행해 결과를 S3에 저장하고 Athena로 쿼리하며 읽기 용량을 잠시 늘린다', 'DAX로 캐싱한 뒤 캐시에서 읽어 내보낸다', '글로벌 테이블 복제본을 하나 더 만들어 분석한다'],
+  opts: ['PITR을 켜고 DynamoDB의 "S3로 내보내기(Export to S3)" 기능으로 내보낸 뒤 Athena로 쿼리한다', '매일 밤 병렬 Scan을 실행해 결과를 S3에 저장하고 Athena로 쿼리하며 읽기 용량을 잠시 늘린다', 'DAX로 캐싱한 뒤 캐시에서 읽어 내보낸다', '글로벌 테이블 복제본을 하나 더 만들어 분석한다'],
   ans: [0],
   exp: '**Export to S3**는 PITR 백업 데이터를 바탕으로 내보내기 때문에 테이블의 **읽기 용량을 전혀 소모하지 않고** 운영 성능에도 영향이 없다. 결과는 DynamoDB JSON이나 Ion 형식으로 S3에 저장되고, Athena나 Glue로 분석할 수 있다. 증분 내보내기도 지원한다.',
   tip: 'DynamoDB 분석 → Export to S3(RCU 소모 X) + Athena. (반대 방향: Import from S3)',
@@ -208,7 +208,7 @@ QB.push(
 {
   id: 'sec-34', cat: 'security', domain: 'secure', svc: ['IAM MFA 조건'],
   q: '관리자가 EC2 인스턴스를 종료하거나 S3 버킷을 삭제하는 것 같은 위험한 작업은 MFA로 인증한 세션에서만 할 수 있게 하고 싶다. IAM 정책에 어떤 조건을 써야 하는가?',
-  opts: ['aws:MultiFactorAuthPresent가 true일 때만 허용하는 조건', 'aws:SecureTransport가 true일 때만 허용하는 조건', 'aws:SourceIp가 관리자 사무실 대역에 포함될 때만 해당 작업을 허용하는 조건', 'aws:RequestedRegion이 승인된 리전일 때만 허용하는 조건'],
+  opts: ['aws:MultiFactorAuthPresent가 true일 때만 허용하는 조건', 'aws:SecureTransport가 true일 때만 허용하는 조건', 'aws:SourceIp가 관리자 사무실 대역에 포함될 때만 해당 작업을 허용하는 조건', 'aws:RequestedRegion이 승인된 리전일 때만 해당 작업을 허용하는 조건'],
   ans: [0],
   exp: '**aws:MultiFactorAuthPresent** 조건 키를 쓰면 MFA로 인증한 자격 증명에서만 특정 작업을 허용할 수 있다. 보통 `BoolIfExists`와 Deny를 함께 써서 MFA가 없으면 거부한다. 필요하면 `aws:MultiFactorAuthAge`로 MFA 인증 후 경과 시간도 제한할 수 있다.',
   tip: '"MFA 있을 때만 위험 작업" → aws:MultiFactorAuthPresent.',
@@ -224,7 +224,7 @@ QB.push(
 {
   id: 'sec-36', cat: 'security', domain: 'secure', svc: ['KMS 키 교체'],
   q: '보안 정책상 데이터 암호화에 쓰는 KMS 고객 관리형 키를 매년 교체해야 한다. 이미 암호화한 데이터는 다시 암호화하지 않고 계속 복호화할 수 있어야 하며, 애플리케이션의 키 ID도 바뀌지 않아야 한다. 가장 간단한 방법은?',
-  opts: ['KMS 키의 자동 키 교체를 켠다', '매년 새 키를 만들고 모든 데이터를 다시 암호화한다', '키를 삭제하고 다시 만든다', 'SSE-S3로 바꾼다'],
+  opts: ['KMS 키의 자동 키 교체를 켠다(교체 주기 설정 가능, 기본 1년)', '매년 새 키를 만들고 모든 데이터를 다시 암호화한다', '키를 삭제하고 다시 만든다', 'SSE-S3로 바꾼다'],
   ans: [0],
   exp: 'KMS **자동 키 교체**는 새 키 자료(backing key)를 만들면서 **이전 키 자료를 보관**한다. 그래서 기존 암호문은 그대로 복호화되고, 새 암호화에는 새 키 자료가 쓰인다. **키 ID와 ARN은 바뀌지 않는다.** 단, **가져온 키 자료(BYOK)**나 비대칭 키는 자동 교체를 지원하지 않아 수동으로 교체해야 한다(별칭 변경).',
   tip: 'KMS 자동 교체 = 같은 키 ID, 옛 키 자료 보존. 가져온 키 자료는 수동 교체.',
@@ -265,7 +265,7 @@ QB.push(
 {
   id: 'int-36', cat: 'integration', domain: 'performance', svc: ['API Gateway 캐싱'],
   q: 'API Gateway REST API의 GET /products 엔드포인트가 같은 결과를 반복해서 돌려주는데, 매번 Lambda와 DynamoDB를 호출해 지연과 비용이 늘고 있다. 상품 데이터는 5분 정도 지연되어도 괜찮다. 가장 간단한 개선 방법은?',
-  opts: ['해당 스테이지에서 API 캐싱을 켜고 TTL을 300초로 설정한다', 'Lambda 메모리를 늘려 실행 시간과 호출 비용을 함께 줄인다', 'DynamoDB 용량을 늘리고 DAX를 추가해 Lambda에서 읽는 지연을 줄인다', '사용량 계획을 만들어 호출 수를 제한한다'],
+  opts: ['해당 스테이지에서 API 캐싱을 켜고 TTL을 300초로 설정한다', 'Lambda 메모리를 늘려 실행 시간과 호출당 비용을 함께 줄인다', 'DynamoDB 용량을 늘리고 DAX를 추가해 Lambda에서 읽는 지연을 줄인다', '사용량 계획을 만들어 호출 수를 제한한다'],
   ans: [0],
   exp: 'API Gateway **스테이지 캐시**를 켜면 TTL 동안 응답을 캐싱해서 **백엔드 호출 없이** 응답하므로 지연과 비용이 줄어든다(캐시 크기별 시간당 요금). 메서드별로 캐시 키(쿼리 문자열, 헤더)와 TTL(기본 300초, 최대 3600초)을 설정한다.',
   tip: 'API Gateway 반복 응답 → Stage Cache(기본 TTL 300초).',

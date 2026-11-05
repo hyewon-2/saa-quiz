@@ -60,7 +60,7 @@ QB.push(
     'S3 버킷을 퍼블릭으로 설정하고 CloudFront 지리적 제한을 켠다',
     '원본 액세스 제어(OAC)를 설정하고 버킷 정책에서 해당 배포만 허용한다',
     'S3 정적 웹 사이트 엔드포인트를 원본으로 쓰고 버킷에 보안 그룹을 연결한다',
-    'S3 버킷에 CloudFront IP 대역만 허용하는 NACL을 적용한다',
+    'S3 버킷에 CloudFront IP 대역만 허용하는 NACL을 적용해 직접 접근을 막는다',
   ],
   ans: [1],
   exp: '**OAC(Origin Access Control)**를 쓰면 CloudFront가 서명된 요청으로 S3에 접근하고, 버킷 정책에서 **해당 배포(SourceArn)**만 허용할 수 있다. 버킷은 비공개로 유지된다. OAC는 이전 방식인 OAI를 대체하는 권장 방식이다. S3에는 보안 그룹이나 NACL을 붙일 수 없다.',
@@ -69,7 +69,7 @@ QB.push(
 {
   id: 'net-08', cat: 'networking', domain: 'performance', svc: ['Global Accelerator'],
   q: 'UDP 기반 VoIP 애플리케이션이 두 리전의 NLB 뒤에서 실행된다. 전 세계 사용자에게 고정 IP 주소 2개를 제공하고, AWS 글로벌 네트워크로 지연 시간을 줄이며, 한 리전에 장애가 나면 몇 초 안에 다른 리전으로 넘어가야 한다. 어떤 서비스가 적합한가?',
-  opts: ['Amazon CloudFront', 'AWS Global Accelerator', 'Route 53 지연 시간 기반 라우팅', 'Transit Gateway 리전 간 피어링'],
+  opts: ['Amazon CloudFront', 'AWS Global Accelerator', 'Route 53 지연 시간 기반 라우팅과 짧은 TTL', 'Transit Gateway 리전 간 피어링'],
   ans: [1],
   exp: '**Global Accelerator**는 **고정 Anycast IP 2개**를 제공하고, 사용자 트래픽을 가장 가까운 엣지에서 AWS 백본망으로 실어 보낸다. **TCP/UDP**를 지원하고, 상태 확인 기반으로 리전 간 장애 조치가 빠르다(DNS 캐시 영향이 없다). CloudFront는 HTTP(S) 콘텐츠 캐싱용이다. Route 53은 DNS TTL 때문에 장애 조치가 늦어질 수 있고 고정 IP도 주지 않는다.',
   tip: 'CloudFront = HTTP 캐싱. Global Accelerator = 비HTTP(TCP/UDP)·고정 IP·빠른 리전 failover.',
@@ -77,7 +77,7 @@ QB.push(
 {
   id: 'net-09', cat: 'networking', domain: 'secure', svc: ['PrivateLink'],
   q: 'SaaS 공급자가 자기 VPC의 서비스를 수백 개의 고객 VPC에 프라이빗하게 제공하려 한다. 고객 VPC와 CIDR이 겹칠 수 있고, 트래픽이 인터넷을 거치면 안 되며, 고객이 공급자 VPC의 다른 리소스에는 접근할 수 없어야 한다. 가장 적합한 방법은?',
-  opts: ['고객 VPC마다 VPC 피어링을 맺고 라우팅으로 서비스 서브넷만 알린다', 'NLB 뒤에 엔드포인트 서비스를 만들어 고객이 연결하게 한다', 'Transit Gateway로 모든 고객 VPC를 연결한다', '퍼블릭 ALB를 만들고 WAF로 고객 IP만 허용한다'],
+  opts: ['고객 VPC마다 VPC 피어링을 맺고 라우팅으로 서비스 서브넷만 알린다', 'NLB 뒤에 엔드포인트 서비스를 만들어 고객이 연결하게 한다', 'Transit Gateway로 모든 고객 VPC를 연결하고 라우팅으로 제한한다', '퍼블릭 ALB를 만들고 WAF로 고객 IP만 허용한다'],
   ans: [1],
   exp: '**PrivateLink**는 서비스 하나만 **단방향으로** 노출한다. 고객 VPC에 인터페이스 엔드포인트(ENI)가 생기므로 **CIDR이 겹쳐도** 문제없고, 공급자 VPC의 나머지 리소스는 보이지 않는다. 피어링과 TGW는 CIDR이 겹치면 연결할 수 없고, 네트워크 전체가 연결된다. 퍼블릭 ALB는 인터넷을 거친다.',
   tip: '"서비스 노출", "CIDR 중복", "단방향", "SaaS" → PrivateLink (NLB 또는 GWLB 필요).',
@@ -96,7 +96,7 @@ QB.push(
   opts: [
     '보안 그룹이 기본으로 다른 VPC의 트래픽을 막기 때문이다. 양쪽 보안 그룹을 수정한다',
     '피어링은 전이 라우팅을 지원하지 않는다. A와 C를 직접 연결한다',
-    'VPC B에 NAT 게이트웨이가 없기 때문이다. 추가하면 전달된다',
+    'VPC B에 NAT 게이트웨이가 없기 때문이다. 추가하면 C로 전달된다',
     'VPC C의 인터넷 게이트웨이가 없기 때문이다. IGW를 연결한다',
   ],
   ans: [1],

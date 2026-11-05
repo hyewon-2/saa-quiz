@@ -85,7 +85,7 @@ QB.push(
 {
   id: 'cmp-41', cat: 'compute', domain: 'performance', svc: ['Snowball Edge 컴퓨팅'],
   q: '네트워크가 거의 없는 해상 석유 시추선에서 센서 데이터를 현장에서 전처리(EC2 인스턴스, Lambda 유사 처리)하고, 몇 주 뒤 디바이스째 AWS로 보내 S3에 적재하려 한다. 가장 적합한 솔루션은?',
-  opts: ['AWS Snowball Edge Compute Optimized 디바이스', 'AWS Direct Connect를 위성 회선으로 연결해 데이터를 리전으로 보낸다', 'AWS Outposts 랙을 시추선에 설치해 현장에서 EC2를 실행한다', 'S3 Transfer Acceleration으로 센서 데이터를 업로드한다'],
+  opts: ['AWS Snowball Edge Compute Optimized 디바이스', 'AWS Direct Connect를 위성 회선으로 연결해 데이터를 리전으로 보낸다', 'AWS Outposts 랙을 시추선에 설치해 현장에서 EC2를 실행한다', 'S3 Transfer Acceleration으로 센서 데이터를 가까운 엣지에 먼저 업로드한다'],
   ans: [0],
   exp: '**Snowball Edge Compute Optimized**는 **연결이 끊긴 엣지 환경**에서 EC2 호환 인스턴스로 데이터를 수집하고 처리한 뒤, 디바이스를 반송해 S3로 데이터를 가져올 수 있다. Outposts는 상시 네트워크 연결과 데이터센터 환경이 필요하다. 네트워크가 없으므로 DX와 Transfer Acceleration은 쓸 수 없다.',
   tip: '오프라인 엣지 컴퓨팅 + 데이터 반입 → Snowball Edge.',
@@ -155,7 +155,7 @@ QB.push(
     'Multi-AZ ALB + 다중 AZ Auto Scaling + RDS Multi-AZ',
     '더 큰 EC2 인스턴스 하나로 수직 확장 + 매일 EBS 스냅샷으로 백업',
     '두 AZ에 EC2를 하나씩 두고 각각 MySQL을 설치해 스크립트로 데이터를 맞추며 Route 53으로 분산',
-    'Route 53 단순 라우팅 + 단일 EC2 + 탄력적 IP로 장애 시 교체',
+    'Route 53 단순 라우팅 + 단일 EC2 + 탄력적 IP로 장애 시 수동 교체',
   ],
   ans: [0],
   exp: '웹 계층은 **ALB와 Multi-AZ ASG**로 **무상태 수평 확장**을 하고, 데이터 계층은 **관리형 RDS Multi-AZ**로 분리하는 것이 표준 3계층 설계다. 세션은 ElastiCache나 DynamoDB에 저장한다. 인스턴스마다 DB를 따로 설치하면 데이터 동기화와 운영이 어렵다.',
@@ -180,7 +180,7 @@ QB.push(
   opts: [
     'Cognito 사용자 풀 + API Gateway + Lambda + DynamoDB',
     'EC2 Auto Scaling + ALB + RDS for MySQL + Cognito',
-    'ECS on EC2 + ElastiCache + Aurora 프로비저닝 클러스터',
+    'ECS on EC2 + ElastiCache + Aurora 프로비저닝 클러스터 + Cognito',
     'EMR 클러스터 + Redshift + API Gateway 프록시',
   ],
   ans: [0],
@@ -240,7 +240,7 @@ QB.push(
 {
   id: 'net-37', cat: 'networking', domain: 'secure', svc: ['보안 그룹 참조'],
   q: '웹 계층(ALB 뒤 EC2)과 앱 계층(EC2), DB 계층(RDS)이 있다. 앱 계층 인스턴스는 Auto Scaling으로 IP가 계속 바뀐다. DB가 앱 계층에서 오는 3306 포트 트래픽만 받게 하는 가장 좋은 방법은?',
-  opts: ['DB 보안 그룹의 인바운드 규칙 원본으로 앱 계층 보안 그룹 ID를 지정한다', '앱 계층 인스턴스 IP를 Lambda가 감지해 DB 보안 그룹에 하나씩 등록한다', 'DB 보안 그룹에서 VPC CIDR 전체의 3306 포트를 허용한다', 'NACL에 앱 서브넷 CIDR만 허용하고 DB 보안 그룹은 모두 연다'],
+  opts: ['DB 보안 그룹의 인바운드 규칙 원본으로 앱 계층 보안 그룹 ID를 지정한다', '앱 계층 인스턴스 IP를 Lambda가 감지해 DB 보안 그룹에 하나씩 등록한다', 'DB 보안 그룹에서 VPC CIDR 전체의 3306 포트를 허용한다', 'NACL에 앱 서브넷 CIDR만 허용하고 DB 보안 그룹은 3306을 모두 연다'],
   ans: [0],
   exp: '보안 그룹 규칙은 **다른 보안 그룹을 원본으로 참조**할 수 있다. 앱 계층 보안 그룹이 붙은 인스턴스라면 IP가 바뀌어도 자동으로 허용된다. 계층마다 보안 그룹을 체인처럼 연결하면(ALB SG → 웹 SG → 앱 SG → DB SG) 최소 권한 네트워크가 된다. VPC CIDR 전체를 허용하면 지나치게 넓다.',
   tip: '동적 IP 계층 간 허용 → 보안 그룹 ID 참조.',

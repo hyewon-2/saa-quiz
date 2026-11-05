@@ -11,7 +11,7 @@ QB.push(
 {
   id: 'mgt-02', cat: 'management', domain: 'performance', svc: ['CloudWatch Agent'],
   q: 'EC2 인스턴스의 **메모리 사용률**과 **디스크 사용률**이 80%를 넘으면 알람을 받고 싶다. 그런데 CloudWatch 기본 지표에는 이 값이 없다. 어떻게 해야 하는가?',
-  opts: ['상세 모니터링(1분 간격)을 켠다', 'CloudWatch 에이전트로 사용자 지정 지표를 보낸다', 'AWS Config 규칙으로 메모리 사용률을 평가한다', 'CloudTrail 데이터 이벤트를 켜서 사용률을 기록한다'],
+  opts: ['상세 모니터링(1분 간격)을 켠다', 'CloudWatch 에이전트로 사용자 지정 지표를 보낸다', 'AWS Config 규칙으로 메모리 사용률을 평가해 알람을 보낸다', 'CloudTrail 데이터 이벤트를 켜서 사용률을 기록한다'],
   ans: [1],
   exp: 'EC2 기본 지표(CPU, 네트워크, 디스크 I/O, 상태 확인)는 하이퍼바이저 수준에서 수집된다. 그래서 **메모리와 파일 시스템 사용률**처럼 OS 내부 정보는 포함되지 않는다. **CloudWatch 에이전트**를 설치하면 이 값들을 사용자 지정 지표로 수집할 수 있다. 상세 모니터링은 수집 주기만 짧아진다.',
   tip: '메모리/디스크 공간 지표 → CloudWatch Agent.',
@@ -48,7 +48,7 @@ QB.push(
 {
   id: 'mgt-06', cat: 'management', domain: 'cost', svc: ['AWS Budgets'],
   q: '스타트업이 월 AWS 비용이 1,000달러를 넘을 것으로 **예측되면** 미리 이메일로 알림을 받고 싶다. 가장 간단한 방법은?',
-  opts: ['Cost Explorer 보고서를 매일 확인해 월말 비용을 계산한다', 'AWS Budgets에서 예측 금액 기준 알림을 설정한다', 'CloudWatch 결제 알람으로 실제 청구액을 감시한다', 'Trusted Advisor를 켠다'],
+  opts: ['Cost Explorer 보고서를 매일 확인해 월말 비용을 계산한다', 'AWS Budgets에서 예측 금액 기준 알림을 설정한다', 'CloudWatch 결제 알람으로 실제 청구액이 1,000달러를 넘는지 감시한다', 'Trusted Advisor를 켠다'],
   ans: [1],
   exp: '**AWS Budgets**는 실제 비용뿐 아니라 **예측 비용**을 기준으로도 알림을 보낼 수 있고, 예산 작업(budget actions)으로 IAM 정책 적용 같은 자동 조치도 할 수 있다. CloudWatch 결제 알람은 실제로 쌓인 비용만 기준으로 한다. Cost Explorer는 분석 도구라서 직접 확인해야 한다.',
   tip: '비용 임계값 알림(예측 포함) → Budgets. 비용 분석/추세 → Cost Explorer. 비정상 지출 탐지 → Cost Anomaly Detection.',

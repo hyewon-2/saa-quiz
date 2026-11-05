@@ -54,7 +54,7 @@ QB.push(
 {
   id: 'ana-06', cat: 'analytics', domain: 'secure', svc: ['Lake Formation'],
   q: 'S3 기반 데이터 레이크에서 분석가 그룹별로 접근 권한을 다르게 줘야 한다. 예를 들어 마케팅팀은 고객 테이블의 이름·이메일 열을 볼 수 없고, 한국 지사는 한국 고객 행만 볼 수 있어야 한다. Athena와 Redshift Spectrum 모두에 같은 권한이 적용되어야 한다. 가장 적합한 방법은?',
-  opts: ['S3 버킷 정책으로 팀별 접두사 권한을 나누고 민감한 열은 별도 파일로 분리한다', 'AWS Lake Formation으로 테이블·열·행 수준 권한을 중앙에서 관리한다', '팀마다 열과 행을 걸러 낸 데이터 사본을 별도 버킷에 만들어 제공한다', 'IAM 정책으로 Athena 작업 그룹을 나누고 그룹별로 쿼리 결과 위치를 분리한다'],
+  opts: ['S3 버킷 정책으로 팀별 접두사 권한을 나누고 민감한 열은 별도 파일로 분리해 저장한다', 'AWS Lake Formation으로 테이블·열·행 수준 권한을 중앙에서 관리한다', '팀마다 열과 행을 걸러 낸 데이터 사본을 별도 버킷에 만들어 제공한다', 'IAM 정책으로 Athena 작업 그룹을 나누고 그룹별로 쿼리 결과 위치를 분리한다'],
   ans: [1],
   exp: '**Lake Formation**은 Glue 데이터 카탈로그 위에서 **데이터베이스·테이블·열·행·셀 수준**의 세분화된 권한을 중앙에서 관리하고, 이 권한을 Athena, Redshift Spectrum, EMR, Glue에 똑같이 적용한다. S3 버킷 정책은 객체 단위라서 열이나 행 수준으로 제어할 수 없다. 데이터를 복사하면 관리 부담과 불일치 위험이 커진다.',
   tip: '데이터 레이크 + 열/행 수준 보안 + 중앙 권한 → Lake Formation.',
@@ -86,7 +86,7 @@ QB.push(
 {
   id: 'ana-10', cat: 'analytics', domain: 'performance', svc: ['Managed Service for Apache Flink'],
   q: 'Kinesis Data Streams로 들어오는 결제 이벤트를 실시간으로 분석해, 1분 슬라이딩 윈도 동안 카드 하나에서 결제 5건 이상이 발생하면 즉시 이상 거래로 표시해야 한다. 서버 관리 없이 상태를 유지하는 스트림 처리를 하려면?',
-  opts: ['Amazon Athena로 1분마다 쿼리해 결제 건수가 5건 이상인 카드를 찾는다', 'Managed Service for Apache Flink로 윈도 집계를 수행한다', 'AWS Glue 배치 작업을 1분마다 실행해 윈도별 결제 건수를 집계한다', 'Amazon QuickSight 대시보드에 임계값 알림을 설정해 이상 거래를 표시한다'],
+  opts: ['Amazon Athena로 Kinesis 데이터를 1분마다 쿼리해 결제 건수가 5건 이상인 카드를 찾는다', 'Managed Service for Apache Flink로 윈도 집계를 수행한다', 'AWS Glue 배치 작업을 1분마다 실행해 윈도별 결제 건수를 집계한다', 'Amazon QuickSight 대시보드에 임계값 알림을 설정해 이상 거래를 표시한다'],
   ans: [1],
   exp: '**Managed Service for Apache Flink**(구 Kinesis Data Analytics)는 스트리밍 데이터에 대해 **윈도 집계, 상태 저장 처리, 이벤트 시간 기반 연산**을 서버리스로 실행한다. Athena와 Glue는 배치·애드혹 처리라 실시간 탐지에 맞지 않는다.',
   tip: '실시간 스트림 집계/윈도/이상 탐지 → Managed Service for Apache Flink.',

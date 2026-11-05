@@ -4,7 +4,7 @@ QB.push(
 {
   id: 'b07-01', cat: 'storage', domain: 'secure', svc: ['S3 버킷 정책', 'VPC 엔드포인트'],
   q: '민감한 데이터가 든 S3 버킷은 특정 VPC의 게이트웨이 엔드포인트를 통해서만 접근할 수 있어야 한다. 콘솔이나 인터넷을 통한 접근은 IAM 권한이 있어도 거부해야 한다. 어떻게 해야 하는가?',
-  opts: ['버킷 정책에서 aws:SourceVpce가 해당 엔드포인트가 아니면 Deny한다', '모든 IAM 정책에 aws:SourceIp 조건으로 VPC의 프라이빗 IP 대역만 허용하는 문을 추가한다', '버킷 ACL을 private으로 설정한다', 'S3 퍼블릭 액세스 차단을 계정 수준에서 켠다'],
+  opts: ['버킷 정책에 aws:SourceVpce가 해당 엔드포인트 ID가 아니면 모든 S3 작업을 Deny하는 문을 추가한다', '모든 IAM 정책에 aws:SourceIp 조건으로 VPC의 프라이빗 IP 대역만 허용하는 문을 추가한다', '버킷 ACL을 private으로 설정한다', 'S3 퍼블릭 액세스 차단을 계정 수준에서 켠다'],
   ans: [0],
   exp: '버킷 정책의 **명시적 Deny + `aws:SourceVpce` 조건**을 쓰면 지정한 VPC 엔드포인트를 거치지 않은 요청은 IAM 권한과 상관없이 모두 거부된다. VPC 엔드포인트를 거친 트래픽은 프라이빗 IP를 쓰므로 `aws:SourceIp` 조건이 맞지 않는다. 퍼블릭 액세스 차단은 인증된 IAM 사용자의 접근은 막지 못한다.',
   tip: '"특정 엔드포인트/VPC에서만" → 버킷 정책 aws:SourceVpce / aws:SourceVpc + Deny.',
@@ -26,7 +26,7 @@ QB.push(
 {
   id: 'b07-03', cat: 'security', domain: 'secure', svc: ['Secrets Manager', 'IAM 역할'],
   q: 'EC2 애플리케이션이 시작될 때 Secrets Manager에서 DB 자격 증명을 읽어야 한다. 비밀은 고객 관리형 KMS 키로 암호화되어 있다. 인스턴스 역할에 필요한 최소 권한은?',
-  opts: ['해당 비밀의 GetSecretValue와 해당 키의 kms:Decrypt', 'SecretsManagerReadWrite 관리형 정책 전체를 인스턴스 역할에 연결', '해당 비밀의 GetSecretValue만 (KMS 권한은 자동 부여)', '모든 키에 대한 kms:*와 모든 비밀의 ListSecrets'],
+  opts: ['해당 비밀의 GetSecretValue와 해당 키의 kms:Decrypt', 'SecretsManagerReadWrite 관리형 정책 전체를 인스턴스 역할에 연결', '해당 비밀의 GetSecretValue만 (KMS 복호화 권한은 자동으로 부여됨)', '모든 키에 대한 kms:*와 모든 비밀의 ListSecrets'],
   ans: [0],
   exp: '비밀을 읽으려면 **특정 비밀 ARN**에 대한 `secretsmanager:GetSecretValue`가 필요하다. 비밀이 **고객 관리형 키**로 암호화되어 있다면 그 키에 대한 `kms:Decrypt`도 필요하다(키 정책에서도 허용해야 한다). 리소스를 특정해 최소 권한을 지킨다.',
   tip: 'CMK로 암호화된 데이터 읽기 = 서비스 권한 + kms:Decrypt.',
@@ -72,7 +72,7 @@ QB.push(
 {
   id: 'b07-08', cat: 'security', domain: 'secure', svc: ['외부 ID', 'IAM 역할'],
   q: '회사가 외부 비용 분석 SaaS 업체에 자기 AWS 계정의 읽기 전용 접근 권한을 주려 한다. 이 업체는 여러 고객의 계정에 접근한다. "혼동된 대리인(confused deputy)" 문제를 막는 가장 좋은 방법은?',
-  opts: ['업체를 신뢰하는 역할을 만들고 sts:ExternalId 조건을 건다', '업체 전용 IAM 사용자를 만들고 읽기 전용 정책을 붙인 뒤 액세스 키를 90일마다 교체해 전달한다', '업체에 루트 계정 비밀번호를 공유한다', '업체 IP를 보안 그룹에 등록한다'],
+  opts: ['업체 계정을 신뢰하는 IAM 역할을 만들고, 신뢰 정책에 업체가 알려 준 고유한 sts:ExternalId 조건을 건다', '업체 전용 IAM 사용자를 만들고 읽기 전용 정책을 붙인 뒤 액세스 키를 90일마다 교체해 전달한다', '업체에 루트 계정 비밀번호를 공유한다', '업체 IP를 보안 그룹에 등록한다'],
   ans: [0],
   exp: '**외부 ID**는 제3자가 역할을 맡을 때 고객마다 고유한 값을 함께 보내게 해서, 다른 고객이 업체를 속여 **내 계정의 역할을 맡게 하는 것**(혼동된 대리인)을 막는다. 장기 액세스 키나 루트 자격 증명을 공유하는 것은 항상 오답이다.',
   tip: '제3자 교차 계정 역할 → External ID.',
@@ -118,7 +118,7 @@ QB.push(
 {
   id: 'b07-13', cat: 'networking', domain: 'secure', svc: ['Shield Advanced', 'Global Accelerator'],
   q: 'NLB 뒤의 EC2에서 운영하는 온라인 게임 서버(UDP)가 자주 대규모 DDoS 공격을 받는다. 24시간 DDoS 대응 지원과 공격 중 확장 비용 보호가 필요하다. 가장 적합한 조합은?',
-  opts: ['Global Accelerator를 앞에 두고 Shield Advanced로 가속기를 보호한다', 'WAF 웹 ACL을 NLB에 연결해 UDP 플러드 규칙으로 공격 트래픽을 걸러 내고 비용을 보호한다', '보안 그룹으로 공격 IP를 하나씩 차단한다', 'CloudFront를 UDP 게임 서버 앞에 둔다'],
+  opts: ['Global Accelerator를 앞에 두고 Shield Advanced로 가속기(또는 EIP/NLB)를 보호한다', 'WAF 웹 ACL을 NLB에 연결해 UDP 플러드 규칙으로 공격 트래픽을 걸러 내고 비용을 보호한다', '보안 그룹으로 공격 IP를 하나씩 차단한다', 'CloudFront를 UDP 게임 서버 앞에 둔다'],
   ans: [0],
   exp: '**Shield Advanced**는 Global Accelerator, EIP, NLB, CloudFront, Route 53을 보호 대상으로 지정할 수 있고, SRT 지원과 비용 보호를 제공한다. **Global Accelerator**는 엣지에서 트래픽을 흡수하고 UDP를 지원한다. **WAF는 NLB에 연결할 수 없다**(ALB, CloudFront, API Gateway 등만 가능). CloudFront는 UDP를 지원하지 않는다.',
   tip: 'WAF 연결 가능: CloudFront, ALB, API Gateway, AppSync, Cognito 등 (NLB X).',
@@ -126,7 +126,7 @@ QB.push(
 {
   id: 'b07-14', cat: 'networking', domain: 'secure', svc: ['Route 53 Resolver DNS Firewall'],
   q: 'VPC 안의 워크로드가 악성 도메인이나 승인되지 않은 도메인을 DNS로 조회해 데이터를 빼돌리는 것(DNS 유출)을 막고 싶다. 허용된 도메인 목록만 조회할 수 있게 하는 관리형 기능은?',
-  opts: ['Route 53 Resolver DNS Firewall', 'VPC 흐름 로그와 Athena로 DNS 쿼리 내용을 분석해 차단', 'NACL에 악성 도메인을 거부 규칙으로 등록', 'AWS Shield Advanced의 DNS 보호 기능'],
+  opts: ['Route 53 Resolver DNS Firewall', 'VPC 흐름 로그와 Athena로 DNS 쿼리 내용을 분석해 차단', 'NACL에 악성 도메인을 거부 규칙으로 등록', 'AWS Shield Advanced의 DNS 보호 기능으로 악성 쿼리를 차단'],
   ans: [0],
   exp: '**DNS Firewall**은 VPC의 Route 53 Resolver를 거치는 DNS 쿼리를 **도메인 목록 기반으로 허용, 차단, 알림** 처리한다. AWS 관리형 위협 도메인 목록도 쓸 수 있고, Firewall Manager로 여러 계정에 배포할 수 있다. NACL은 도메인 단위로 제어하지 못한다.',
   tip: 'DNS 쿼리 필터링 → Route 53 Resolver DNS Firewall. 트래픽 도메인 필터 → Network Firewall.',
@@ -204,7 +204,7 @@ QB.push(
 {
   id: 'b07-23', cat: 'management', domain: 'secure', svc: ['루트 사용자 모니터링'],
   q: '보안팀이 AWS 계정의 **루트 사용자가 콘솔에 로그인할 때마다** 즉시 알림을 받고 싶다. 가장 간단한 방법은?',
-  opts: ['루트 ConsoleLogin 이벤트를 EventBridge 규칙으로 잡아 SNS로 알린다', 'IAM 자격 증명 보고서를 매주 내려받아 루트 사용자의 마지막 로그인 시각을 스크립트로 비교한다', 'Trusted Advisor를 매일 확인한다', 'AWS Budgets 알림을 설정한다'],
+  opts: ['EventBridge 규칙으로 루트 사용자의 ConsoleLogin CloudTrail 이벤트를 감지해 SNS로 알린다', 'IAM 자격 증명 보고서를 매주 내려받아 루트 사용자의 마지막 로그인 시각을 스크립트로 비교한다', 'Trusted Advisor를 매일 확인한다', 'AWS Budgets 알림을 설정한다'],
   ans: [0],
   exp: 'CloudTrail에 기록된 **루트 ConsoleLogin 이벤트**를 **EventBridge 규칙**(userIdentity.type = Root)으로 잡아 **SNS**로 알리면 거의 실시간으로 알 수 있다. 루트 사용자는 **MFA를 켜고 액세스 키를 만들지 않으며**, 일상 업무에 쓰지 않는 것이 모범 사례다.',
   tip: '특정 API/로그인 이벤트 실시간 알림 → CloudTrail + EventBridge + SNS.',
@@ -244,7 +244,7 @@ QB.push(
 {
   id: 'b07-28', cat: 'compute', domain: 'secure', svc: ['EC2 Instance Connect Endpoint'],
   q: '퍼블릭 IP가 없는 프라이빗 서브넷의 EC2에 운영자가 SSH로 접속해야 한다. 배스천 호스트를 운영하지 않고, IAM 권한으로 접속을 통제하고 싶다. 인스턴스에 SSM Agent는 설치할 수 없다. 가장 적합한 방법은?',
-  opts: ['EC2 Instance Connect Endpoint와 IAM 정책으로 접속한다', '인스턴스에 탄력적 IP를 붙이고 사무실 IP에만 22번을 연다', 'NAT 게이트웨이의 포트 전달로 SSH 연결을 받는다', '운영자 VPC와 피어링을 맺어 사설 IP로 접속하되 그 VPC에 공용 진입 호스트를 하나 둔다'],
+  opts: ['VPC에 EC2 Instance Connect Endpoint를 만들고 IAM 정책으로 접속을 허용한다', '인스턴스에 탄력적 IP를 붙이고 사무실 IP에만 22번을 연다', 'NAT 게이트웨이의 포트 전달로 SSH 연결을 받는다', '운영자 VPC와 피어링을 맺어 사설 IP로 접속하되 그 VPC에 공용 진입 호스트를 하나 둔다'],
   ans: [0],
   exp: '**EC2 Instance Connect Endpoint**는 퍼블릭 IP나 배스천, 에이전트 없이 **프라이빗 인스턴스에 SSH나 RDP로** 접속하게 해 준다. 접근은 **IAM 정책**과 보안 그룹으로 제어하고, CloudTrail에 기록된다. SSM Agent를 쓸 수 있다면 Session Manager도 좋은 대안이다.',
   tip: '배스천 없는 프라이빗 접속: Session Manager(에이전트) / EC2 Instance Connect Endpoint(SSH).',
@@ -282,7 +282,7 @@ QB.push(
 {
   id: 'b07-32', cat: 'security', domain: 'secure', svc: ['태그 정책', 'SCP'],
   q: '조직의 모든 EC2 인스턴스는 생성할 때 CostCenter 태그를 반드시 가져야 한다. 태그 없이 인스턴스를 시작하려는 요청은 거부해야 한다. 가장 적합한 방법은?',
-  opts: ['SCP에서 aws:RequestTag가 없는 RunInstances를 Deny한다', '매일 Lambda로 태그가 없는 인스턴스를 찾아 자동으로 종료하고 담당자에게 메일로 알린다', 'Cost Explorer에서 태그가 없는 비용을 찾아 담당 팀에 요청한다', '모든 인스턴스에 기본 태그를 붙이는 Lambda를 만든다'],
+  opts: ['SCP에서 aws:RequestTag가 없는 RunInstances를 Deny한다', '매일 Lambda로 태그가 없는 인스턴스를 찾아 자동으로 종료하고 담당자에게 메일로 알린다', 'Cost Explorer에서 태그가 없는 비용을 찾아 매달 담당 팀에 수정을 요청한다', '모든 인스턴스에 기본 태그를 붙이는 Lambda를 만든다'],
   ans: [0],
   exp: '**`aws:RequestTag` + Null 조건**을 쓰는 Deny 정책(SCP 또는 IAM)은 리소스를 **생성하는 시점에** 태그가 없으면 요청 자체를 거부한다(**예방적 통제**). Organizations의 **태그 정책**은 태그 키와 값 형식을 표준화하고 규정 준수를 보고한다. 사후에 종료하는 방식은 탐지적 통제다.',
   tip: '생성 시 태그 강제 = aws:RequestTag 조건 Deny. 태그 형식 표준화 = Tag Policy.',
@@ -314,7 +314,7 @@ QB.push(
 {
   id: 'b07-36', cat: 'networking', domain: 'secure', svc: ['WAF 지역 차단'],
   q: '전자상거래 사이트(ALB)가 서비스하지 않는 특정 국가들에서 악성 트래픽이 많이 들어온다. 해당 국가에서 오는 요청을 ALB 앞단에서 차단하려면?',
-  opts: ['WAF 웹 ACL에 지역 일치 차단 규칙을 추가한다', 'NACL에 해당 국가들의 IP 대역을 거부 규칙으로 일일이 추가한다', 'Route 53 지리 위치 라우팅으로 차단한다', '보안 그룹에 Deny 규칙을 추가한다'],
+  opts: ['WAF 웹 ACL에 지역 일치 차단 규칙을 추가한다', 'NACL에 해당 국가들의 IP 대역을 거부 규칙으로 일일이 추가한다', 'Route 53 지리 위치 라우팅으로 해당 국가 요청을 차단한다', '보안 그룹에 Deny 규칙을 추가한다'],
   ans: [0],
   exp: '**WAF 지역 일치 규칙**은 요청 IP의 국가를 기준으로 차단하거나 허용한다. NACL은 규칙 수가 제한되어 있고 국가별 IP 대역을 관리하기 어렵다. 보안 그룹은 Deny 규칙이 없다. Route 53 지리 위치 라우팅은 접근 차단 기능이 아니다. CloudFront를 쓴다면 지리적 제한도 쓸 수 있다.',
   tip: 'ALB 국가 차단 → WAF Geo match. CloudFront → Geo restriction도 가능.',
@@ -322,7 +322,7 @@ QB.push(
 {
   id: 'b07-37', cat: 'security', domain: 'secure', svc: ['IAM Identity Center 권한 세트'],
   q: '개발자는 개발 계정에서는 넓은 권한, 운영 계정에서는 읽기 전용 권한을 가져야 한다. 회사는 IAM Identity Center를 쓴다. 가장 적합한 구성은?',
-  opts: ['개발자 그룹에 계정별로 다른 권한 세트를 할당한다', '계정마다 IAM 사용자를 만든다', '개발자에게 운영 계정의 루트 자격 증명을 준다', '모든 계정에 같은 AdministratorAccess를 준다'],
+  opts: ['개발자 그룹에 계정별로 다른 권한 세트를 할당한다', '계정마다 IAM 사용자를 만든다', '개발자에게 운영 계정의 루트 자격 증명을 안전하게 전달한다', '모든 계정에 같은 AdministratorAccess를 준다'],
   ans: [0],
   exp: 'Identity Center에서는 **사용자 또는 그룹 × 계정 × 권한 세트** 조합으로 접근을 할당한다. 같은 그룹이라도 계정마다 다른 권한 세트를 줄 수 있고, 권한 세트는 각 계정에 IAM 역할로 자동으로 만들어진다.',
   tip: 'Identity Center 할당 = (그룹, 계정, 권한 세트).',
@@ -352,7 +352,7 @@ QB.push(
 {
   id: 'b07-40', cat: 'compute', domain: 'secure', svc: ['Lambda VPC 접근'],
   q: 'Lambda 함수가 프라이빗 서브넷의 ElastiCache와 인터넷의 외부 API를 모두 호출해야 하고, DynamoDB에도 접근한다. 보안을 지키면서 NAT 데이터 처리 비용을 최소화하는 구성은?',
-  opts: ['프라이빗 서브넷 + NAT 게이트웨이 + DynamoDB 게이트웨이 엔드포인트', 'Lambda를 퍼블릭 서브넷에 연결해 퍼블릭 IP로 인터넷에 나가고 DynamoDB도 인터넷 엔드포인트로 호출한다', 'ElastiCache를 퍼블릭으로 만들고 Lambda는 VPC 밖에 둔다', '모든 트래픽을 NAT 게이트웨이로 보낸다'],
+  opts: ['프라이빗 서브넷 + NAT 게이트웨이 + DynamoDB 게이트웨이 엔드포인트', 'Lambda를 퍼블릭 서브넷에 연결해 퍼블릭 IP로 인터넷에 나가고 DynamoDB도 인터넷 엔드포인트로 호출한다', 'ElastiCache를 퍼블릭으로 만들고 Lambda는 VPC 밖에 두어 NAT를 없앤다', '모든 트래픽을 NAT 게이트웨이로 보낸다'],
   ans: [0],
   exp: 'VPC Lambda는 **프라이빗 서브넷 + NAT 게이트웨이**로 인터넷에 접근한다. **DynamoDB**(그리고 S3) 트래픽은 무료인 **게이트웨이 엔드포인트**로 보내면 NAT 처리 비용이 들지 않고 트래픽이 AWS 네트워크 안에 머문다. 퍼블릭 서브넷에 둬도 Lambda ENI에는 퍼블릭 IP가 붙지 않는다.',
   tip: 'VPC Lambda: 인터넷=NAT, S3/DynamoDB=Gateway Endpoint.',

@@ -28,7 +28,7 @@ QB.push(
 {
   id: 'b14-04', cat: 'database', domain: 'resilient', svc: ['RDS 백업 보존 기간'],
   q: '개발자가 비용을 줄이려고 RDS 자동 백업 보존 기간을 0일로 설정했다. 이 설정의 영향으로 옳은 것은?',
-  opts: ['자동 백업이 꺼져 PITR과 읽기 전용 복제본을 쓸 수 없다', '자동 백업이 꺼지면서 지금까지 만든 수동 스냅샷도 모두 삭제되고 다시 복구할 수 없게 된다', '성능이 크게 떨어진다', 'Multi-AZ가 자동으로 꺼진다'],
+  opts: ['자동 백업이 비활성화되어 특정 시점 복원(PITR)을 할 수 없고, 읽기 전용 복제본도 만들 수 없다', '자동 백업이 꺼지면서 지금까지 만든 수동 스냅샷도 모두 삭제되고 다시 복구할 수 없게 된다', '성능이 크게 떨어진다', 'Multi-AZ가 자동으로 꺼진다'],
   ans: [0],
   exp: '보존 기간이 **0**이면 **자동 백업이 꺼지므로** PITR을 쓸 수 없고, 자동 백업이 전제인 **읽기 전용 복제본**도 만들 수 없다. 운영 DB는 보존 기간을 1일 이상(보통 7~35일)으로 둬야 한다. 이미 만든 수동 스냅샷은 그대로 남는다.',
   tip: '백업 보존 0 = PITR·Read Replica 불가.',
@@ -44,7 +44,7 @@ QB.push(
 {
   id: 'b14-06', cat: 'compute', domain: 'resilient', svc: ['ALB 서브넷'],
   q: 'ALB를 만들려고 하는데 서브넷을 하나만 선택하면 생성되지 않는다. 그 이유와 올바른 구성은?',
-  opts: ['ALB는 최소 2개 AZ의 서브넷이 필요하다', 'ALB는 프라이빗 서브넷에만 만들 수 있다', 'ALB는 VPC당 하나로 제한되어 이미 만들어진 ALB를 먼저 지워야 한다', '서브넷에 NAT 게이트웨이가 없기 때문이다'],
+  opts: ['ALB는 최소 2개 AZ의 서브넷이 필요하다', 'ALB는 프라이빗 서브넷에만 만들 수 있기 때문이다', 'ALB는 VPC당 하나로 제한되어 이미 만들어진 ALB를 먼저 지워야 한다', '서브넷에 NAT 게이트웨이가 없기 때문이다'],
   ans: [0],
   exp: 'ALB는 **최소 2개 AZ**의 서브넷을 요구하고, 각 AZ에 로드 밸런서 노드를 둬서 AZ 장애에 대비한다. 인터넷용 ALB는 퍼블릭 서브넷에, 내부용 ALB는 프라이빗 서브넷에 둔다. 대상 인스턴스도 같은 AZ들에 분산해야 의미가 있다.',
   tip: 'ALB = 최소 2 AZ 서브넷.',
@@ -68,7 +68,7 @@ QB.push(
 {
   id: 'b14-09', cat: 'management', domain: 'resilient', svc: ['AWS Backup 복원 테스트'],
   q: '규정상 백업이 실제로 복원 가능한지 정기적으로 검증하고 그 결과를 감사에 제출해야 한다. 사람이 매번 복원해 보는 대신 자동화하려면?',
-  opts: ['AWS Backup 복원 테스트 계획으로 자동 검증한다', '백업 볼트를 하나 더 만들고 복사본의 체크섬을 비교해 복원 가능 여부를 판단한 뒤 기록을 남긴다', '백업 주기를 매시간으로 늘린다', 'CloudTrail을 켠다'],
+  opts: ['AWS Backup 복원 테스트(restore testing) 계획으로 주기적으로 복원을 실행해 검증하고 결과를 기록한다', '백업 볼트를 하나 더 만들고 복사본의 체크섬을 비교해 복원 가능 여부를 판단한 뒤 기록을 남긴다', '백업 주기를 매시간으로 늘린다', 'CloudTrail을 켠다'],
   ans: [0],
   exp: '**AWS Backup 복원 테스트**는 지정한 일정에 따라 복구 지점을 **자동으로 복원**하고, 검증(필요하면 Lambda 검증 훅)한 뒤 정리하며, 복원 성공 여부와 소요 시간을 기록한다. 복원 소요 시간으로 RTO 달성 여부도 증명할 수 있다.',
   tip: '백업 복원 가능성 자동 검증 → Backup Restore Testing.',
@@ -76,7 +76,7 @@ QB.push(
 {
   id: 'b14-10', cat: 'management', domain: 'resilient', svc: ['AWS Backup Audit Manager'],
   q: '감사인이 "모든 운영 RDS와 EBS가 일일 백업 정책으로 보호되고, 백업이 35일 이상 보관되며, 교차 리전 사본이 있다"는 것을 지속적으로 증명하라고 요구했다. 가장 적합한 도구는?',
-  opts: ['AWS Backup Audit Manager 프레임워크와 보고서', 'Trusted Advisor 내결함성 점검 결과를 매일 내려받아 증적 제출', 'Cost Explorer의 백업 비용 내역으로 증명', 'AWS Artifact의 규정 준수 보고서 제출'],
+  opts: ['AWS Backup Audit Manager 프레임워크와 보고서', 'Trusted Advisor 내결함성 점검 결과를 매일 내려받아 증적 제출', 'Cost Explorer의 백업 비용 내역으로 일일 백업 여부를 증명', 'AWS Artifact의 규정 준수 보고서 제출'],
   ans: [0],
   exp: '**AWS Backup Audit Manager**는 백업 빈도, 보존 기간, 교차 리전·교차 계정 사본, 암호화 같은 **백업 정책 준수 여부**를 컨트롤로 평가하고, **일일 보고서**를 만들어 감사 증거로 제출할 수 있게 한다.',
   tip: '백업 정책 준수 증명 → Backup Audit Manager.',
@@ -84,7 +84,7 @@ QB.push(
 {
   id: 'b14-11', cat: 'storage', domain: 'resilient', svc: ['EFS 마운트 대상'],
   q: '3개 AZ에 걸친 Auto Scaling 그룹이 EFS를 마운트한다. EFS 마운트 대상을 AZ-a에만 만들었더니, AZ-a 장애 때 다른 AZ의 인스턴스들도 파일 시스템에 접근하지 못했다. 어떻게 해야 하는가?',
-  opts: ['모든 AZ에 마운트 대상을 만들고 같은 AZ 대상을 쓴다', 'EFS를 EBS Multi-Attach로 바꿔 모든 AZ의 인스턴스가 같은 볼륨을 직접 연결해 쓰게 한다', 'AZ-a에 마운트 대상을 하나 더 만든다', 'One Zone 스토리지 클래스로 바꾼다'],
+  opts: ['인스턴스가 있는 모든 AZ에 EFS 마운트 대상을 만들고, 각 인스턴스가 같은 AZ의 마운트 대상을 쓰게 한다', 'EFS를 EBS Multi-Attach로 바꿔 모든 AZ의 인스턴스가 같은 볼륨을 직접 연결해 쓰게 한다', 'AZ-a에 마운트 대상을 하나 더 만든다', 'One Zone 스토리지 클래스로 바꾼다'],
   ans: [0],
   exp: 'EFS Standard는 데이터를 여러 AZ에 저장하지만, 클라이언트는 **마운트 대상(ENI)**을 통해 접근한다. **AZ마다 마운트 대상**을 만들어야 한 AZ에 장애가 나도 다른 AZ의 인스턴스가 계속 접근할 수 있다(같은 AZ 마운트 대상을 쓰면 AZ 간 전송 비용도 없다).',
   tip: 'EFS HA = 각 AZ에 마운트 대상.',
@@ -122,7 +122,7 @@ QB.push(
 {
   id: 'b14-15', cat: 'compute', domain: 'resilient', svc: ['ECS 배포 최소 정상 비율'],
   q: 'ECS 서비스(작업 4개)를 롤링 업데이트할 때, 배포 중에도 항상 작업 4개 이상이 트래픽을 처리해야 한다. 어떤 배포 설정이 맞는가?',
-  opts: ['minimumHealthyPercent 100, maximumPercent 200', 'minimumHealthyPercent 0, maximumPercent 100으로 설정해 기존 작업을 먼저 내린 뒤 새 작업을 띄운다', 'minimumHealthyPercent 50, maximumPercent 100', '원하는 작업 수를 0으로 설정한다'],
+  opts: ['minimumHealthyPercent 100, maximumPercent 200으로 설정해 새 작업을 먼저 띄우고 기존 작업을 내린다', 'minimumHealthyPercent 0, maximumPercent 100으로 설정해 기존 작업을 먼저 내린 뒤 새 작업을 띄운다', 'minimumHealthyPercent 50, maximumPercent 100', '원하는 작업 수를 0으로 설정한다'],
   ans: [0],
   exp: '**minimumHealthyPercent 100**은 배포하는 동안 실행 중인 정상 작업이 원하는 수(4개)보다 **줄지 않게** 하고, **maximumPercent 200**은 최대 8개까지 동시에 실행할 수 있게 한다. 그래서 새 작업이 먼저 뜨고 정상이 된 뒤에 기존 작업이 종료된다. 대신 일시적으로 리소스가 더 필요하다.',
   tip: 'ECS 무중단 롤링 = minHealthy 100% + max 200%.',
@@ -130,7 +130,7 @@ QB.push(
 {
   id: 'b14-16', cat: 'database', domain: 'resilient', svc: ['DynamoDB 내구성 설계'],
   q: 'DynamoDB 테이블에 대해 "AZ 장애에 대비해 Multi-AZ 옵션을 켜야 하는가?"라는 질문이 나왔다. 올바른 설명은?',
-  opts: ['기본으로 여러 AZ에 복제되므로 별도 설정이 없다', '테이블 설정에서 Multi-AZ 옵션을 켜야만 AZ 장애에 대비할 수 있고 쓰기 용량이 두 배로 든다', 'DAX를 켜야 다중 AZ가 된다', 'DynamoDB는 단일 AZ 서비스다'],
+  opts: ['기본으로 여러 AZ에 복제되므로 별도 설정이 없다', '테이블 설정에서 Multi-AZ 옵션을 켜야만 AZ 장애에 대비할 수 있고 쓰기 용량이 두 배로 든다', 'DAX를 켜야 다중 AZ가 된다', 'DynamoDB는 단일 AZ 서비스라 AZ 장애에 대비할 수 없다'],
   ans: [0],
   exp: 'DynamoDB는 **완전 관리형 리전 서비스**로, 데이터를 자동으로 **여러 AZ에 동기 복제**한다. AZ 장애에 대비한 별도 설정이 필요 없다. **리전 장애**에 대비하려면 **글로벌 테이블**을 쓰고, 논리적 오류에 대비하려면 PITR과 백업을 쓴다.',
   tip: 'DynamoDB = 기본 다중 AZ. 리전 DR = Global Tables.',
@@ -138,7 +138,7 @@ QB.push(
 {
   id: 'b14-17', cat: 'integration', domain: 'resilient', svc: ['SNS + SQS 내구성'],
   q: '여러 소비자 서비스가 같은 이벤트를 받아야 하는데, 소비자 중 하나가 가끔 몇 시간씩 점검으로 멈춘다. 점검 중에 발행된 이벤트도 나중에 모두 처리해야 한다. SNS 구독 방식으로 가장 적절한 것은?',
-  opts: ['SNS → 소비자마다 SQS 대기열 구독, 소비자는 자기 대기열을 폴링', 'SNS → 소비자 HTTP 엔드포인트를 직접 구독하고 재시도 정책을 늘림', 'SNS → 담당자 이메일 구독 후 수동 처리', 'SNS → Lambda 구독으로 소비자 API 호출'],
+  opts: ['SNS → 소비자마다 SQS 대기열 구독(팬아웃), 소비자는 자기 대기열을 폴링', 'SNS → 소비자 HTTP 엔드포인트를 직접 구독하고 재시도 정책을 늘림', 'SNS → 담당자 이메일 구독 후 수동 처리', 'SNS → Lambda 구독으로 소비자 API 호출'],
   ans: [0],
   exp: 'SNS는 메시지를 **보관하지 않으므로**, 소비자가 멈춘 동안의 메시지를 지키려면 **SQS 대기열**을 구독자로 두어 **버퍼링**해야 한다. 소비자가 돌아오면 대기열에 쌓인 메시지를 처리한다(최대 14일 보관). HTTP 직접 구독은 재시도 정책이 끝나면 메시지가 사라진다(DLQ가 없다면).',
   tip: '소비자 중단 대비 팬아웃 = SNS → SQS.',
@@ -176,7 +176,7 @@ QB.push(
 {
   id: 'b14-21', cat: 'compute', domain: 'resilient', svc: ['Auto Scaling 다중 인스턴스 유형'],
   q: '특정 AZ에서 c6i.xlarge 온디맨드 용량이 일시적으로 부족해 Auto Scaling 그룹이 인스턴스를 띄우지 못하는 상황(InsufficientInstanceCapacity)이 생겼다. 확장 실패를 줄이려면?',
-  opts: ['혼합 인스턴스 정책에 여러 유형을 지정하고 다중 AZ를 쓴다', '인스턴스 유형을 하나만 고정하고 실패하면 ASG가 같은 AZ에서 계속 재시도하도록 쿨다운을 줄인다', 'AZ를 하나로 줄인다', '최대 용량을 줄인다'],
+  opts: ['혼합 인스턴스 정책에 비슷한 사양의 여러 인스턴스 유형(c6i, c7i, c6a, m6i 등)을 지정하고 여러 AZ를 쓴다', '인스턴스 유형을 하나만 고정하고 실패하면 ASG가 같은 AZ에서 계속 재시도하도록 쿨다운을 줄인다', 'AZ를 하나로 줄인다', '최대 용량을 줄인다'],
   ans: [0],
   exp: '인스턴스 유형을 **다양하게** 지정하면 특정 유형의 용량이 부족해도 다른 유형으로 확장할 수 있다. 여러 AZ를 쓰면 확장할 수 있는 용량 풀도 넓어진다. 꼭 필요한 용량은 **온디맨드 용량 예약**으로 미리 확보할 수 있다.',
   tip: '용량 부족 오류 → 인스턴스 유형 다양화 + 다중 AZ (+용량 예약).',
@@ -209,7 +209,7 @@ QB.push(
 {
   id: 'b14-25', cat: 'database', domain: 'cost', svc: ['ElastiCache 예약 노드', 'Graviton'],
   q: 'ElastiCache for Redis OSS 클러스터가 앞으로 3년 동안 r6g.xlarge 노드 6개로 24시간 운영될 예정이다. 비용을 줄이는 방법으로 가장 효과적인 것은?',
-  opts: ['예약 노드를 구매하고 Valkey로 전환을 검토한다', 'Compute Savings Plans를 구매해 노드 시간당 요금을 낮춘다', '노드를 스팟으로 바꾼다', '노드 수를 늘려 노드당 사용률을 낮춘다'],
+  opts: ['예약 노드를 구매하고 Valkey로 전환을 검토한다', 'Compute Savings Plans를 구매해 노드 시간당 요금을 낮춘다', '노드를 스팟으로 바꾼다', '노드 수를 늘려 노드당 사용률을 낮추고 단가를 줄인다'],
   ans: [0],
   exp: '상시 운영하는 ElastiCache는 **예약 노드**로 크게 할인받는다(Compute Savings Plans는 적용되지 않는다). **Valkey 엔진**은 Redis OSS와 호환되면서 ElastiCache에서 더 저렴한 요금이 적용된다. Graviton(r6g/r7g) 노드도 x86보다 가격 대비 성능이 좋다. ElastiCache에는 스팟이 없다.',
   tip: 'ElastiCache 절감 = 예약 노드 + Graviton + Valkey.',
@@ -217,7 +217,7 @@ QB.push(
 {
   id: 'b14-26', cat: 'compute', domain: 'cost', svc: ['ECR 수명 주기 정책'],
   q: 'CI 파이프라인이 커밋마다 컨테이너 이미지를 ECR에 푸시해서, 몇 년 동안 수만 개의 이미지가 쌓여 스토리지 비용이 늘었다. 최신 이미지 몇 개만 남기고 자동으로 정리하려면?',
-  opts: ['ECR 수명 주기 정책으로 오래된 이미지를 만료시킨다', '매달 운영자가 콘솔에서 오래된 이미지를 찾아 수동으로 지우고 운영 배포 태그는 목록으로 관리한다', '이미지를 S3 Glacier로 옮긴다', 'ECR 리포지토리를 매번 새로 만든다'],
+  opts: ['ECR 수명 주기 정책으로 태그가 없거나 오래된 이미지를 자동으로 만료시키고, 최신 N개만 유지한다', '매달 운영자가 콘솔에서 오래된 이미지를 찾아 수동으로 지우고 운영 배포 태그는 목록으로 관리한다', '이미지를 S3 Glacier로 옮긴다', 'ECR 리포지토리를 매번 새로 만든다'],
   ans: [0],
   exp: '**ECR 수명 주기 정책**은 이미지 개수, 업로드 이후 일수, 태그 상태(태그 없음, 특정 접두사) 같은 규칙으로 **오래된 이미지를 자동으로 삭제**한다. 운영에 배포된 태그는 남기고 나머지만 정리하도록 규칙을 설계한다.',
   tip: 'ECR 비용 → Lifecycle Policy.',
@@ -225,7 +225,7 @@ QB.push(
 {
   id: 'b14-27', cat: 'compute', domain: 'cost', svc: ['Lambda VPC 불필요'],
   q: '퍼블릭 API(외부 SaaS)와 S3, DynamoDB만 호출하는 Lambda 함수들이 "보안상 좋다"는 이유로 VPC에 연결되어 있어, 인터넷 호출 때문에 NAT 게이트웨이 비용이 많이 나온다. VPC 안의 리소스에는 접근하지 않는다. 가장 비용 효율적인 개선은?',
-  opts: ['VPC 리소스가 필요 없으므로 Lambda를 VPC에서 분리한다', 'AZ마다 NAT 게이트웨이를 하나씩 더 추가해 AZ 간 전송을 없애고 시간당 요금은 Savings Plans로 줄인다', 'Lambda 메모리를 줄인다', '프로비저닝된 동시성을 켠다'],
+  opts: ['VPC 리소스에 접근할 필요가 없으므로 Lambda를 VPC에서 분리해 AWS 관리 네트워크에서 바로 인터넷과 AWS API를 호출하게 한다', 'AZ마다 NAT 게이트웨이를 하나씩 더 추가해 AZ 간 전송을 없애고 시간당 요금은 Savings Plans로 줄인다', 'Lambda 메모리를 줄인다', '프로비저닝된 동시성을 켠다'],
   ans: [0],
   exp: 'Lambda를 **VPC에 연결하지 않으면** AWS가 관리하는 네트워크에서 실행되면서 **인터넷과 AWS 공개 엔드포인트**에 바로 접근할 수 있어 NAT 비용이 들지 않는다. VPC 연결은 **VPC 안의 프라이빗 리소스**(RDS, ElastiCache 등)에 접근해야 할 때만 쓴다. 네트워크 수준의 통제가 반드시 필요한 경우가 아니라면 분리하는 것이 단순하고 저렴하다.',
   tip: 'Lambda VPC 연결은 VPC 리소스 접근이 필요할 때만.',
@@ -255,7 +255,7 @@ QB.push(
 {
   id: 'b14-30', cat: 'management', domain: 'cost', svc: ['Data Exports(CUR)'],
   q: '재무팀이 리소스 ID, 태그, 시간 단위까지 포함된 가장 상세한 AWS 비용·사용량 데이터를 SQL로 분석하고 자체 BI 도구로 시각화하고 싶어 한다. 어떤 방법이 적합한가?',
-  opts: ['Data Exports로 CUR을 S3에 내보내 Athena로 쿼리한다', 'Cost Explorer 화면에서 필터를 걸고 CSV로 내려받아 시간 단위 표를 만든다', 'AWS Budgets 알림을 설정한다', 'Trusted Advisor 보고서를 내려받는다'],
+  opts: ['Data Exports로 비용 및 사용량 보고서(CUR 2.0)를 S3로 내보내고 Athena로 쿼리한다', 'Cost Explorer 화면에서 필터를 걸고 CSV로 내려받아 시간 단위 표를 만든다', 'AWS Budgets 알림을 설정한다', 'Trusted Advisor 보고서를 내려받는다'],
   ans: [0],
   exp: '**비용 및 사용량 보고서(CUR 2.0)**는 Data Exports로 S3에 내보내는 **가장 상세한 결제 데이터**(시간·리소스 단위, 태그, 할인 적용 내역)다. Athena, QuickSight나 다른 BI 도구로 자유롭게 분석할 수 있다. Cost Explorer는 미리 집계된 화면 분석에 적합하다.',
   tip: '가장 상세한 비용 데이터 → CUR(Data Exports) + Athena.',
@@ -279,7 +279,7 @@ QB.push(
 {
   id: 'b14-33', cat: 'networking', domain: 'cost', svc: ['Direct Connect 데이터 전송'],
   q: '매달 온프레미스로 수백 TB를 내려받는(AWS → 온프레미스) 하이브리드 워크로드가 인터넷으로 전송하면서 데이터 전송 비용이 매우 크다. 비용을 줄이는 방법은?',
-  opts: ['Direct Connect로 낮은 DX 전송 요금을 적용한다', 'Site-to-Site VPN을 추가해 인터넷 아웃바운드 요금을 VPN 요금으로 바꾼다', 'S3 Transfer Acceleration을 켠다', 'CloudFront를 거친다'],
+  opts: ['Direct Connect로 낮은 DX 전송 요금을 적용한다', 'Site-to-Site VPN을 추가해 인터넷 아웃바운드 요금을 VPN 요금으로 바꾼다', 'S3 Transfer Acceleration을 켜서 다운로드 전송 단가를 낮춘다', 'CloudFront를 거친다'],
   ans: [0],
   exp: '**Direct Connect**를 거쳐 AWS에서 나가는 데이터 전송은 일반 인터넷 아웃바운드보다 **GB당 단가가 낮다.** 전송량이 많으면 포트 요금을 감안해도 비용이 크게 줄고, 대역폭도 안정적이다. VPN은 인터넷 경로를 쓰므로 인터넷 전송 요금이 그대로 붙는다.',
   tip: '대량 AWS→온프렘 전송 비용 → Direct Connect.',
@@ -303,7 +303,7 @@ QB.push(
 {
   id: 'b14-36', cat: 'compute', domain: 'cost', svc: ['Savings Plans vs 스팟 혼합'],
   q: '회사 컴퓨팅 사용 패턴: 항상 쓰는 기본 100 vCPU, 업무 시간에 예측 가능하게 늘어나는 50 vCPU, 가끔 실행하는 중단 가능한 분석 작업 200 vCPU. 가장 비용 효율적인 구매 조합은?',
-  opts: ['기본은 Savings Plans, 증가분은 온디맨드, 분석은 스팟', '350 vCPU 전체를 3년 Savings Plans로 약정해 할인율을 최대로 받고 남는 시간은 다른 작업에 활용', '모두 온디맨드', '모두 스팟'],
+  opts: ['기본 100 vCPU는 Savings Plans, 업무 시간 증가분은 온디맨드(Auto Scaling), 중단 가능한 분석은 스팟', '350 vCPU 전체를 3년 Savings Plans로 약정해 할인율을 최대로 받고 남는 시간은 다른 작업에 활용', '모두 온디맨드', '모두 스팟'],
   ans: [0],
   exp: '**항상 쓰는 기본 사용량**만 약정 할인(Savings Plans/RI)으로 덮고, **변동하는 부분**은 온디맨드로 Auto Scaling하며, **중단 가능한 작업**은 스팟으로 처리하는 것이 표준 비용 최적화 전략이다. 전부 약정하면 쓰지 않는 시간에도 비용을 내고, 전부 스팟으로 하면 상시 워크로드가 중단될 위험이 있다.',
   tip: '기본=약정, 변동=온디맨드, 중단 가능=스팟.',
@@ -319,7 +319,7 @@ QB.push(
 {
   id: 'b14-38', cat: 'analytics', domain: 'cost', svc: ['Redshift 일시 중지'],
   q: '개발용 Redshift 프로비저닝 클러스터는 업무 시간에만 쓰인다. 밤과 주말에도 실행되어 비용이 낭비된다. 클러스터 구성과 데이터를 유지하면서 비용을 줄이는 가장 간단한 방법은?',
-  opts: ['예약된 일시 중지·재개로 업무 시간 외에 멈춘다', '클러스터를 매일 저녁 스냅샷을 남기고 삭제한 뒤 아침마다 스냅샷에서 복원해 쓰지 않는 시간의 비용을 없앤다', '노드 수를 두 배로 늘린다', '예약 노드를 구매한다'],
+  opts: ['Redshift 예약된 일시 중지·재개(pause/resume) 작업으로 업무 시간 외에는 클러스터를 일시 중지한다', '클러스터를 매일 저녁 스냅샷을 남기고 삭제한 뒤 아침마다 스냅샷에서 복원해 쓰지 않는 시간의 비용을 없앤다', '노드 수를 두 배로 늘린다', '예약 노드를 구매한다'],
   ans: [0],
   exp: 'Redshift 프로비저닝 클러스터는 **일시 중지**하면 **컴퓨팅 요금이 나오지 않고** 스토리지 요금만 낸다. 콘솔에서 일정을 예약해 자동으로 일시 중지하고 재개할 수 있다. 사용 패턴이 아주 불규칙하다면 Redshift Serverless도 대안이다.',
   tip: '간헐적 프로비저닝 Redshift → Pause/Resume 예약.',

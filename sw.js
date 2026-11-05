@@ -1,4 +1,4 @@
-const CACHE = 'saa-quiz-v23';
+const CACHE = 'saa-quiz-v24';
 const ASSETS = [
   './', 'index.html', 'css/style.css', 'js/app.js', 'js/firebase-config.js', 'manifest.webmanifest', 'icon.svg',
   'data/compute.js', 'data/storage.js', 'data/database.js', 'data/networking.js',
