@@ -34,8 +34,8 @@ QB.push(
   id: 'ana-04', cat: 'analytics', domain: 'cost', svc: ['EMR'],
   q: '데이터 엔지니어링 팀이 온프레미스에서 운영하는 Hadoop·Spark 작업을 코드 변경을 최소화하면서 AWS로 옮기려 한다. 작업은 매일 밤 몇 시간 동안 실행되며 비용을 줄이고 싶다. 가장 적합한 방법은?',
   opts: [
-    'EC2에 Hadoop을 직접 설치해 온프레미스와 같은 구성으로 클러스터를 상시 운영한다',
-    'Amazon EMR을 쓰고, 작업할 때만 클러스터를 띄운 뒤 태스크 노드에 스팟 인스턴스를 활용한다',
+    'EC2에 Hadoop을 직접 설치해 온프레미스와 같은 구성으로 클러스터를 24시간 상시 운영한다',
+    'Amazon EMR을 작업 때만 띄우고 태스크 노드에 스팟을 활용한다',
     '모든 작업을 Lambda로 다시 작성하고 EventBridge로 매일 밤 실행한다',
     '데이터를 Amazon Redshift로 옮기고 기존 Spark 작업을 SQL로 대체한다',
   ],
@@ -70,7 +70,7 @@ QB.push(
 {
   id: 'ana-08', cat: 'analytics', domain: 'cost', svc: ['Redshift Spectrum'],
   q: 'Redshift 클러스터에는 최근 1년치 판매 데이터만 있고, 그 이전 5년치 데이터는 S3에 Parquet 파일로 보관되어 있다. 가끔 두 데이터를 조인해서 분석해야 하는데, 오래된 데이터를 Redshift에 적재해 스토리지 비용을 늘리고 싶지는 않다. 어떻게 해야 하는가?',
-  opts: ['오래된 데이터를 COPY 명령으로 Redshift에 적재하고 노드를 추가해 용량을 늘린다', 'Redshift Spectrum으로 S3의 외부 테이블을 만들어 Redshift 테이블과 조인한다', '오래된 데이터를 DynamoDB로 옮기고 조인이 필요할 때 애플리케이션에서 합친다', '오래된 데이터 전용 Redshift 클러스터를 하나 더 만들어 함께 운영한다'],
+  opts: ['오래된 데이터를 COPY 명령으로 Redshift에 적재하고 노드를 추가해 용량을 늘린다', 'Redshift Spectrum 외부 테이블로 S3 데이터를 조인한다', '오래된 데이터를 DynamoDB로 옮기고 조인이 필요할 때 애플리케이션에서 합친다', '오래된 데이터 전용 Redshift 클러스터를 하나 더 만들어 함께 운영한다'],
   ans: [1],
   exp: '**Redshift Spectrum**은 데이터를 적재하지 않고 **S3에 있는 데이터를 외부 테이블로 바로 쿼리**하며, Redshift 내부 테이블과 조인할 수 있다. 자주 쓰는 데이터는 Redshift에, 오래된 데이터는 저렴한 S3에 두는 계층형 구조다. 적재하면 클러스터 스토리지 비용이 늘어난다.',
   tip: 'Redshift + "S3 데이터를 적재 없이 쿼리" → Redshift Spectrum.',
@@ -86,7 +86,7 @@ QB.push(
 {
   id: 'ana-10', cat: 'analytics', domain: 'performance', svc: ['Managed Service for Apache Flink'],
   q: 'Kinesis Data Streams로 들어오는 결제 이벤트를 실시간으로 분석해, 1분 슬라이딩 윈도 동안 카드 하나에서 결제 5건 이상이 발생하면 즉시 이상 거래로 표시해야 한다. 서버 관리 없이 상태를 유지하는 스트림 처리를 하려면?',
-  opts: ['Amazon Athena로 1분마다 쿼리해 결제 건수가 5건 이상인 카드를 찾는다', 'Amazon Managed Service for Apache Flink로 윈도 집계를 수행한다', 'AWS Glue 배치 작업을 1분마다 실행해 윈도별 결제 건수를 집계한다', 'Amazon QuickSight 대시보드에 임계값 알림을 설정해 이상 거래를 표시한다'],
+  opts: ['Amazon Athena로 1분마다 쿼리해 결제 건수가 5건 이상인 카드를 찾는다', 'Managed Service for Apache Flink로 윈도 집계를 수행한다', 'AWS Glue 배치 작업을 1분마다 실행해 윈도별 결제 건수를 집계한다', 'Amazon QuickSight 대시보드에 임계값 알림을 설정해 이상 거래를 표시한다'],
   ans: [1],
   exp: '**Managed Service for Apache Flink**(구 Kinesis Data Analytics)는 스트리밍 데이터에 대해 **윈도 집계, 상태 저장 처리, 이벤트 시간 기반 연산**을 서버리스로 실행한다. Athena와 Glue는 배치·애드혹 처리라 실시간 탐지에 맞지 않는다.',
   tip: '실시간 스트림 집계/윈도/이상 탐지 → Managed Service for Apache Flink.',

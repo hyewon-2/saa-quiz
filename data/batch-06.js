@@ -4,7 +4,7 @@ QB.push(
 {
   id: 'sto-44', cat: 'storage', domain: 'secure', svc: ['S3 정적 웹 호스팅'],
   q: 'S3 정적 웹 사이트 호스팅 엔드포인트로 회사 소개 사이트를 운영 중이다. 보안 정책상 HTTPS가 필요해졌다. 가장 간단한 방법은?',
-  opts: ['CloudFront 배포를 앞에 두고 ACM 인증서로 HTTPS를 제공한다', 'S3 웹 사이트 엔드포인트에 ACM 인증서를 직접 연결한다', 'S3 버킷에 TLS 정책을 설정한다', 'ALB를 앞에 두고 S3를 대상으로 등록한다'],
+  opts: ['CloudFront 배포를 앞에 두고 ACM 인증서로 HTTPS를 제공한다', 'S3 웹 사이트 엔드포인트에 ACM 인증서를 직접 연결해 HTTPS를 켠다', 'S3 버킷 속성에서 TLS 정책을 설정해 웹 사이트 엔드포인트를 HTTPS로 바꾼다', 'ALB를 앞에 두고 대상 그룹에 S3 버킷을 등록해 HTTPS를 종료한다'],
   ans: [0],
   exp: 'S3 **웹 사이트 엔드포인트는 HTTP만** 지원한다. HTTPS와 사용자 지정 도메인을 쓰려면 **CloudFront**를 앞에 두고 **ACM 인증서**(us-east-1)를 연결한다. ALB는 S3를 대상 그룹으로 등록할 수 없다.',
   tip: 'S3 웹 사이트 엔드포인트 = HTTP 전용 → HTTPS는 CloudFront.',

@@ -17,7 +17,8 @@ const wrongLens = q => q.opts.filter((_, i) => !q.ans.includes(i)).map(o => o.le
 const rightMax = q => Math.max(...q.ans.map(i => q.opts[i].length));
 const isLongest = q => rightMax(q) > Math.max(...wrongLens(q));
 const ratio = q => { const w = wrongLens(q); return rightMax(q) / (w.reduce((a, b) => a + b, 0) / w.length); };
-const flagged = q => isLongest(q) || ratio(q) >= 1.3;
+// 보기가 모두 짧은 서비스 이름뿐인 문제는 길이가 단서가 되지 않으므로 제외
+const flagged = q => isLongest(q) && rightMax(q) > 28;
 
 function audit(qs) {
   const longest = qs.filter(isLongest).length, avg = qs.reduce((s, q) => s + ratio(q), 0) / qs.length;
