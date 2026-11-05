@@ -162,7 +162,7 @@ QB.push(
 {
   id: 'b13-20', cat: 'database', domain: 'secure', svc: ['DynamoDB 엔드포인트 정책'],
   q: '프라이빗 서브넷의 애플리케이션이 DynamoDB 게이트웨이 엔드포인트를 통해 `Orders` 테이블에만 접근해야 한다. 같은 계정의 다른 테이블에는 이 VPC에서 접근하지 못하게 하려면?',
-  opts: ['DynamoDB 게이트웨이 엔드포인트 정책에서 Orders 테이블 ARN만 허용한다', '인스턴스 보안 그룹에서 다른 테이블의 IP를 막는다', 'NACL로 다른 DynamoDB 테이블 IP를 막는다', '다른 테이블의 DynamoDB Streams를 끈다'],
+  opts: ['게이트웨이 엔드포인트 정책에서 Orders ARN만 허용한다', '인스턴스 보안 그룹에서 다른 테이블로 가는 DynamoDB IP 대역을 막는다', 'NACL로 다른 DynamoDB 테이블 IP를 막는다', '다른 테이블의 DynamoDB Streams를 끈다'],
   ans: [0],
   exp: '**게이트웨이 엔드포인트 정책**은 엔드포인트를 통해 접근할 수 있는 **리소스와 작업**을 제한한다. Orders 테이블만 허용하면 이 VPC에서는 다른 테이블에 접근할 수 없다. 인스턴스 역할의 IAM 정책도 최소 권한으로 함께 설정한다.',
   tip: '엔드포인트 정책 = VPC에서 접근 가능한 리소스 제한.',
@@ -186,7 +186,7 @@ QB.push(
 {
   id: 'b13-23', cat: 'security', domain: 'secure', svc: ['S3 Access Grants'],
   q: '회사가 사내 디렉터리(IAM Identity Center에 연결된 Entra ID)의 사용자와 그룹 단위로 S3 접두사 권한을 대규모로 관리하려 한다. 사용자가 수만 명이라 IAM 정책이나 버킷 정책으로는 한도와 관리 문제가 있다. 가장 적합한 기능은?',
-  opts: ['Amazon S3 Access Grants로 디렉터리 ID를 S3 접두사 권한에 매핑한다', '사용자마다 IAM 사용자를 만들어 접두사 정책을 붙인다', '버킷 정책에 사용자 수만 명을 나열하고 정책을 여러 개로 나눠 연결한다', '버킷을 퍼블릭으로 연다'],
+  opts: ['S3 Access Grants로 디렉터리 ID를 접두사 권한에 매핑한다', '사용자마다 IAM 사용자를 만들어 접두사 정책을 붙인다', '버킷 정책에 사용자 수만 명을 나열하고 정책을 여러 개로 나눠 연결한다', '버킷을 퍼블릭으로 연다'],
   ans: [0],
   exp: '**S3 Access Grants**는 **IAM 주체나 기업 디렉터리 ID**(Identity Center 연동)를 S3 버킷이나 접두사의 읽기·쓰기 권한에 매핑하고, 접근할 때 임시 자격 증명을 발급한다. 정책 크기 한도 없이 대규모 사용자 권한을 관리하고 CloudTrail로 사용자 단위 감사도 할 수 있다.',
   tip: '디렉터리 사용자 단위 대규모 S3 권한 → S3 Access Grants.',
@@ -235,7 +235,7 @@ QB.push(
 {
   id: 'b13-29', cat: 'compute', domain: 'performance', svc: ['Lambda SnapStart'],
   q: 'Java(Spring Boot)로 작성된 Lambda 함수의 콜드 스타트가 수 초나 걸린다. 프로비저닝된 동시성 비용을 들이지 않고 콜드 스타트를 크게 줄이려면?',
-  opts: ['Lambda SnapStart를 켜서 초기화된 실행 환경의 스냅샷에서 시작하게 한다', '메모리를 128MB로 줄여 초기화할 클래스 수를 줄인다', '예약된 동시성을 0으로 설정한다', '제한 시간을 15분으로 늘려 콜드 스타트 실패를 막는다'],
+  opts: ['Lambda SnapStart를 켠다', '메모리를 128MB로 줄여 초기화할 클래스 수를 줄인다', '예약된 동시성을 0으로 설정해 실행 환경을 재활용한다', '제한 시간을 15분으로 늘려 콜드 스타트 실패를 막는다'],
   ans: [0],
   exp: '**SnapStart**는 함수 버전을 게시할 때 초기화된 실행 환경의 **스냅샷**을 만들어 두고, 호출되면 스냅샷에서 **재개**해서 Java, Python, .NET 같은 런타임의 콜드 스타트를 크게 줄인다. 추가 요금이 없거나 적다(런타임에 따라 다름). 고유성이 필요한 값(난수, 연결)은 재개 후 다시 만들도록 주의한다.',
   tip: '무거운 런타임 콜드 스타트 → SnapStart (또는 Provisioned Concurrency).',

@@ -11,7 +11,7 @@ QB.push(
 {
   id: 'mgt-02', cat: 'management', domain: 'performance', svc: ['CloudWatch Agent'],
   q: 'EC2 인스턴스의 **메모리 사용률**과 **디스크 사용률**이 80%를 넘으면 알람을 받고 싶다. 그런데 CloudWatch 기본 지표에는 이 값이 없다. 어떻게 해야 하는가?',
-  opts: ['상세 모니터링(1분 간격)을 켠다', '인스턴스에 CloudWatch 에이전트를 설치해 사용자 지정 지표로 보낸다', 'AWS Config 규칙을 만든다', 'CloudTrail 데이터 이벤트를 켠다'],
+  opts: ['상세 모니터링(1분 간격)을 켠다', 'CloudWatch 에이전트로 사용자 지정 지표를 보낸다', 'AWS Config 규칙으로 메모리 사용률을 평가한다', 'CloudTrail 데이터 이벤트를 켜서 사용률을 기록한다'],
   ans: [1],
   exp: 'EC2 기본 지표(CPU, 네트워크, 디스크 I/O, 상태 확인)는 하이퍼바이저 수준에서 수집된다. 그래서 **메모리와 파일 시스템 사용률**처럼 OS 내부 정보는 포함되지 않는다. **CloudWatch 에이전트**를 설치하면 이 값들을 사용자 지정 지표로 수집할 수 있다. 상세 모니터링은 수집 주기만 짧아진다.',
   tip: '메모리/디스크 공간 지표 → CloudWatch Agent.',
@@ -36,10 +36,10 @@ QB.push(
   id: 'mgt-05', cat: 'management', domain: 'secure', svc: ['Systems Manager Session Manager'],
   q: '보안 정책상 EC2 인스턴스의 22번 포트(SSH)를 열 수 없고 배스천 호스트도 쓰면 안 된다. 그래도 운영자는 인스턴스 셸에 접속해야 하고, 모든 세션 기록이 남아야 한다. 어떻게 해야 하는가?',
   opts: [
-    'EC2 Instance Connect를 쓴다',
-    'SSM Agent와 IAM 역할을 설정하고 Systems Manager Session Manager로 접속하며, 세션 로그를 S3나 CloudWatch Logs에 저장한다',
+    'EC2 Instance Connect로 임시 키를 밀어 넣어 SSH로 접속한다',
+    'SSM Agent와 IAM 역할로 Session Manager에 접속하고 로그를 남긴다',
     '보안 그룹에서 운영자 IP만 22번 포트를 연다',
-    'Site-to-Site VPN을 구성한다',
+    'Site-to-Site VPN을 구성해 사설 IP로 접속한다',
   ],
   ans: [1],
   exp: '**Session Manager**는 인바운드 포트를 열지 않고 SSM Agent의 아웃바운드 연결로 셸에 접속하게 해 준다. 프라이빗 서브넷이라면 NAT나 SSM VPC 엔드포인트가 필요하다. IAM으로 접근을 제어하고, **세션 로그를 S3나 CloudWatch Logs**에 남길 수 있다. EC2 Instance Connect는 기본적으로 SSH(22번 포트)를 쓴다.',
@@ -48,7 +48,7 @@ QB.push(
 {
   id: 'mgt-06', cat: 'management', domain: 'cost', svc: ['AWS Budgets'],
   q: '스타트업이 월 AWS 비용이 1,000달러를 넘을 것으로 **예측되면** 미리 이메일로 알림을 받고 싶다. 가장 간단한 방법은?',
-  opts: ['Cost Explorer 보고서를 매일 확인한다', 'AWS Budgets로 비용 예산을 만들고 예측 금액 기준 알림을 설정한다', 'CloudWatch 결제 알람만 쓴다', 'Trusted Advisor를 켠다'],
+  opts: ['Cost Explorer 보고서를 매일 확인해 월말 비용을 계산한다', 'AWS Budgets에서 예측 금액 기준 알림을 설정한다', 'CloudWatch 결제 알람으로 실제 청구액을 감시한다', 'Trusted Advisor를 켠다'],
   ans: [1],
   exp: '**AWS Budgets**는 실제 비용뿐 아니라 **예측 비용**을 기준으로도 알림을 보낼 수 있고, 예산 작업(budget actions)으로 IAM 정책 적용 같은 자동 조치도 할 수 있다. CloudWatch 결제 알람은 실제로 쌓인 비용만 기준으로 한다. Cost Explorer는 분석 도구라서 직접 확인해야 한다.',
   tip: '비용 임계값 알림(예측 포함) → Budgets. 비용 분석/추세 → Cost Explorer. 비정상 지출 탐지 → Cost Anomaly Detection.',
@@ -80,7 +80,7 @@ QB.push(
 {
   id: 'mgt-10', cat: 'management', domain: 'resilient', svc: ['CloudWatch 알람', 'EC2 자동 복구'],
   q: '단일 EC2 인스턴스에서 실행되는 레거시 애플리케이션은 수평 확장이 불가능하다. 인스턴스가 기반 하드웨어 문제로 시스템 상태 확인에 실패하면 같은 인스턴스 ID, 프라이빗 IP, 탄력적 IP를 유지한 채 자동으로 복구되어야 한다. 어떻게 해야 하는가?',
-  opts: ['Auto Scaling 그룹의 최소·최대 용량을 1로 설정한다', 'StatusCheckFailed_System 지표에 CloudWatch 알람을 만들고 EC2 복구 작업을 설정한다', '매시간 AMI를 만든다', '인스턴스를 재부팅하는 Lambda를 매일 실행한다'],
+  opts: ['Auto Scaling 그룹의 최소·최대 용량을 1로 설정해 인스턴스를 자동 교체한다', 'StatusCheckFailed_System 알람에 EC2 복구 작업을 설정한다', '매시간 AMI를 만들어 두고 장애 때 복원한다', '인스턴스를 재부팅하는 Lambda를 매일 실행한다'],
   ans: [1],
   exp: '**EC2 복구 작업**(또는 지원되는 인스턴스의 기본 자동 복구)은 인스턴스를 다른 하드웨어로 옮기면서 **인스턴스 ID, 프라이빗 IP, 탄력적 IP, 메타데이터를 그대로 유지**한다. ASG(1/1/1)도 자가 복구는 되지만 **새 인스턴스**를 띄우므로 ID와 IP가 바뀐다.',
   tip: '"같은 인스턴스 ID/IP 유지" + 하드웨어 장애 → CloudWatch 알람 recover 작업.',
@@ -88,7 +88,7 @@ QB.push(
 {
   id: 'mgt-11', cat: 'management', domain: 'cost', svc: ['비용 할당 태그', 'Cost Explorer'],
   q: '여러 부서가 같은 AWS 계정을 쓰고 있다. 재무팀은 매달 부서별·프로젝트별 AWS 비용을 나눠 보고 싶어 한다. 가장 적합한 방법은?',
-  opts: ['부서마다 리전을 다르게 쓴다', '리소스에 Department·Project 태그를 붙이고 결제 콘솔에서 비용 할당 태그로 활성화한 뒤 Cost Explorer에서 태그별로 분석한다', 'CloudTrail 로그를 분석한다', 'AWS Budgets만 만든다'],
+  opts: ['부서마다 리전을 다르게 쓰고 리전별 비용을 집계한다', '비용 할당 태그를 활성화해 Cost Explorer에서 분석한다', 'CloudTrail 로그로 리소스 생성자를 찾아 비용을 나눈다', 'AWS Budgets만 만든다'],
   ans: [1],
   exp: '**비용 할당 태그**는 결제 콘솔에서 **활성화해야** 비용 데이터에 반영된다. 활성화하면 Cost Explorer나 비용 보고서(CUR/Data Exports)에서 태그 기준으로 비용을 나눠 볼 수 있다. 태그 정책(Organizations)으로 태그 규칙을 강제할 수도 있다. 리전으로 나누는 방식은 비현실적이다.',
   tip: '"부서별/프로젝트별 비용" → 비용 할당 태그 활성화. 계정 단위 분리 → Organizations 통합 결제.',
@@ -96,7 +96,7 @@ QB.push(
 {
   id: 'mgt-12', cat: 'management', domain: 'cost', svc: ['Organizations 통합 결제'],
   q: '회사에 독립적으로 결제하는 AWS 계정이 10개 있다. 결제를 하나로 합치고, 계정 전체 사용량을 합쳐 S3·데이터 전송 볼륨 할인을 받고, 한 계정의 사용하지 않는 예약 인스턴스·Savings Plans 할인을 다른 계정에서도 쓰고 싶다. 어떻게 해야 하는가?',
-  opts: ['각 계정에서 따로 예약 인스턴스를 산다', 'AWS Organizations를 만들고 모든 계정을 초대해 통합 결제를 쓴다', '모든 워크로드를 계정 하나로 합친다', 'Cost Explorer에서 계정을 연결한다'],
+  opts: ['각 계정에서 따로 예약 인스턴스를 사고 사용량을 맞춘다', 'Organizations 통합 결제를 쓴다', '모든 워크로드를 계정 하나로 합친다', 'Cost Explorer에서 계정을 연결한다'],
   ans: [1],
   exp: '**Organizations 통합 결제**는 관리 계정에서 청구서 하나로 결제하고, 모든 계정의 사용량을 **합산해 볼륨 할인 구간**을 적용하며, 예약 인스턴스와 Savings Plans 할인을 **계정 간에 공유**한다(공유는 끌 수도 있다). 워크로드를 계정 하나로 합치면 보안 경계가 사라진다.',
   tip: '"여러 계정 결제 통합 + 할인 공유" → Organizations Consolidated Billing.',
@@ -104,7 +104,7 @@ QB.push(
 {
   id: 'mgt-13', cat: 'management', domain: 'cost', svc: ['Instance Scheduler', 'EventBridge Scheduler'],
   q: '개발·테스트용 EC2 인스턴스와 RDS 인스턴스는 평일 오전 9시부터 오후 7시까지만 쓰이는데, 지금은 24시간 실행되고 있다. 운영 부담을 최소화하면서 비용을 줄이는 방법은?',
-  opts: ['예약 인스턴스를 구매한다', 'AWS Instance Scheduler로 업무 시간 외에는 인스턴스를 자동으로 중지하고 업무 시간에 시작한다', '인스턴스를 스팟으로 바꾼다', '인스턴스 크기를 줄인다'],
+  opts: ['1년 예약 인스턴스를 구매해 24시간 운영 비용을 낮춘다', 'Instance Scheduler로 업무 시간 외에 자동 중지한다', '인스턴스를 스팟으로 바꿔 업무 시간에만 요청한다', '인스턴스 크기를 줄인다'],
   ans: [1],
   exp: '하루 10시간, 주 5일만 쓰면 사용 시간은 주 168시간 중 50시간이다. 업무 시간 외에 **자동으로 중지**하면 컴퓨팅 비용을 약 70% 줄일 수 있다. Instance Scheduler on AWS나 EventBridge Scheduler로 EC2와 RDS의 시작·중지를 예약한다. 예약 인스턴스는 상시 실행하는 워크로드에 맞고, 이 경우에는 오히려 낭비다.',
   tip: '"업무 시간에만 사용" → 예약 시작/중지. RI·Savings Plans는 24/7 워크로드용.',

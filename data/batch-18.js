@@ -188,7 +188,7 @@ QB.push(
 {
   id: 'b18-23', cat: 'analytics', domain: 'cost', svc: ['Kinesis 향상된 팬아웃 비용'],
   q: 'Kinesis Data Streams 소비자 2개가 모두 향상된 팬아웃으로 등록되어 있다. 두 소비자 모두 지연에 민감하지 않고, 샤드당 2MB/s를 나눠 써도 충분하다. 비용을 줄이려면?',
-  opts: ['향상된 팬아웃 등록을 해제하고 공유 처리량 소비자로 바꾼다', '샤드를 두 배로 늘려 소비자당 요금을 낮춘다', '보존 기간을 늘려 소비자가 천천히 읽게 한다', '온디맨드 모드로 바꿔 소비자 요금을 없앤다'],
+  opts: ['향상된 팬아웃을 해제하고 공유 처리량으로 바꾼다', '샤드를 두 배로 늘려 소비자당 요금을 낮춘다', '보존 기간을 늘려 소비자가 천천히 읽게 한다', '온디맨드 모드로 바꿔 소비자 요금을 없앤다'],
   ans: [0],
   exp: '**향상된 팬아웃**은 소비자와 샤드마다 시간당 요금과 GB당 데이터 검색 요금이 **추가**된다. 소비자 수가 적고 지연 요구가 낮으면 **공유 처리량** 소비자로 충분하고 더 저렴하다. 소비자가 많거나 70ms 수준의 저지연이 필요할 때 향상된 팬아웃을 쓴다.',
   tip: '향상된 팬아웃은 필요할 때만(유료).',
@@ -226,7 +226,7 @@ QB.push(
 {
   id: 'b18-27', cat: 'integration', domain: 'cost', svc: ['API Gateway → SQS 비용'],
   q: '웹훅 수집 API가 API Gateway → Lambda(메시지를 SQS에 넣기만 함) → SQS 구조라서, 하루 수억 건의 요청마다 Lambda 호출 비용이 나온다. 비용을 줄이려면?',
-  opts: ['API Gateway에서 SQS로 직접 통합해 Lambda 호출을 없앤다', 'Lambda 메모리를 늘려 호출당 실행 시간을 줄인다', 'SQS 대신 DynamoDB에 먼저 쓴다', 'Lambda 프로비저닝된 동시성을 켜서 호출 단가를 낮춘다'],
+  opts: ['API Gateway에서 SQS로 직접 통합한다', 'Lambda 메모리를 늘려 호출당 실행 시간을 줄인다', 'SQS 대신 DynamoDB에 먼저 쓴다', 'Lambda 프로비저닝된 동시성을 켜서 호출 단가를 낮춘다'],
   ans: [0],
   exp: '단순히 전달만 하는 Lambda를 없애고 **API Gateway → SQS 직접 통합**을 쓰면 **Lambda 호출과 실행 시간 비용**이 사라진다. 매핑 템플릿으로 요청을 SQS 메시지 형식으로 바꾼다. 처리 로직은 SQS 소비자 쪽에서 배치로 처리하면 효율적이다.',
   tip: '전달용 Lambda 제거 = 비용·지연 ↓.',
@@ -343,7 +343,7 @@ QB.push(
 {
   id: 'b18-40', cat: 'integration', domain: 'resilient', svc: ['SQS 오래된 메시지 감시'],
   q: '주문 처리 소비자가 조용히 멈춰도(오류 없이 처리만 중단) 운영팀이 알아차리지 못하는 일이 있었다. 소비자 정지를 가장 빠르게 감지하는 CloudWatch 지표는?',
-  opts: ['SQS ApproximateAgeOfOldestMessage에 알람을 건다', 'NumberOfMessagesSent가 줄어드는지 알람을 건다', 'SentMessageSize 추이를 본다', 'CloudTrail 이벤트 수를 본다'],
+  opts: ['ApproximateAgeOfOldestMessage에 알람을 건다', 'NumberOfMessagesSent가 줄어드는지 알람을 건다', 'SentMessageSize 추이를 본다', 'CloudTrail 이벤트 수를 본다'],
   ans: [0],
   exp: '**ApproximateAgeOfOldestMessage**는 대기열에서 가장 오래 기다린 메시지의 나이로, 소비자가 멈추거나 느려지면 **계속 증가**한다. 정상 처리 시간보다 크게 늘어나면 알람을 보내도록 설정한다. 메시지 수(ApproximateNumberOfMessagesVisible)도 함께 보면 백로그를 파악할 수 있다.',
   tip: '소비자 정지 감지 → AgeOfOldestMessage 알람.',
