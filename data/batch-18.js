@@ -204,7 +204,7 @@ QB.push(
     '복제본 샤드를 늘린다',
   ],
   ans: [0, 1],
-  exp: 'OpenSearch Service는 **Graviton 인스턴스**로 가격 대비 성능을 높이고, 상시 운영한다면 **예약 인스턴스**로 크게 할인받을 수 있다. **Compute Savings Plans는 OpenSearch에 적용되지 않고**, 관리형 도메인에는 스팟이 없다. 오래된 데이터는 UltraWarm이나 콜드 계층으로 옮겨 비용을 더 줄인다.',
+  exp: 'OpenSearch Service는 **Graviton 인스턴스**로 가격 대비 성능을 높이고, 상시 운영한다면 **예약 인스턴스**로 크게 할인받을 수 있다. **Compute Savings Plans는 OpenSearch에 적용되지 않고**, 관리형 도메인에는 스팟이 없다. 오래된 데이터는 UltraWarm이나 콜드 계층으로 옮겨 비용을 더 줄인다. Database Savings Plans는 OpenSearch의 7세대 이상 인스턴스에 적용된다.',
   tip: 'OpenSearch 절감 = Graviton + RI + 웜/콜드 계층.',
 },
 {

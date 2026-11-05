@@ -48,7 +48,7 @@ QB.push(
   q: '경영진이 Redshift와 Athena 데이터를 바탕으로 한 대화형 대시보드를 웹 브라우저와 모바일에서 보고 싶어 한다. 서버 없이 사용자 수만큼 비용을 내는 BI 서비스는?',
   opts: ['Amazon QuickSight', 'Amazon OpenSearch Dashboards', 'Amazon CloudWatch 대시보드', 'AWS Glue DataBrew'],
   ans: [0],
-  exp: '**QuickSight**는 서버리스 **BI 시각화** 서비스다. Redshift, Athena, RDS, S3 등 여러 데이터 소스에 연결해 대시보드를 만들고 웹이나 모바일로 공유한다. CloudWatch 대시보드는 운영 지표를 모니터링하는 용도다. OpenSearch Dashboards는 로그 검색과 분석에 쓴다.',
+  exp: '**QuickSight**는 서버리스 **BI 시각화** 서비스다. Redshift, Athena, RDS, S3 등 여러 데이터 소스에 연결해 대시보드를 만들고 웹이나 모바일로 공유한다. CloudWatch 대시보드는 운영 지표를 모니터링하는 용도다. OpenSearch Dashboards는 로그 검색과 분석에 쓴다. QuickSight는 2025년 10월부터 Amazon Quick Suite의 Quick Sight로 이름이 바뀌었지만, 시험 자료에는 QuickSight로 나올 수 있다.',
   tip: 'BI 대시보드 → QuickSight. 로그 검색/전문 검색 → OpenSearch.',
 },
 {

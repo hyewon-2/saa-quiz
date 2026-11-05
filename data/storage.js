@@ -79,7 +79,7 @@ QB.push(
   q: '회사가 데이터센터의 데이터 80TB를 2주 안에 S3로 옮겨야 한다. 인터넷 회선은 100Mbps이고 대부분 업무에 쓰이고 있다. 가장 적합한 방법은?',
   opts: ['S3 Transfer Acceleration으로 업로드한다', 'AWS Snowball Edge 디바이스를 주문해 데이터를 옮긴다', 'AWS Site-to-Site VPN을 구성해 DataSync로 전송한다', 'AWS Direct Connect 10Gbps 연결을 새로 신청한다'],
   ans: [1],
-  exp: '100Mbps로 80TB를 보내려면 회선을 100% 써도 약 **74일**이 걸린다. **Snowball Edge**(디바이스당 약 80TB 사용 가능)로 물리적으로 옮기는 것이 정답이다. Transfer Acceleration과 VPN은 회선 대역폭 한계를 넘을 수 없다. Direct Connect는 개통하는 데 보통 몇 주에서 몇 달이 걸린다.',
+  exp: '100Mbps로 80TB를 보내려면 회선을 100% 써도 약 **74일**이 걸린다. **Snowball Edge**(디바이스당 약 80TB 사용 가능)로 물리적으로 옮기는 것이 정답이다. Transfer Acceleration과 VPN은 회선 대역폭 한계를 넘을 수 없다. Direct Connect는 개통하는 데 보통 몇 주에서 몇 달이 걸린다. 참고: Snow 패밀리는 2025년 11월 7일부터 **신규 고객에게 제공되지 않는다**(기존 고객은 계속 사용). 시험 자료에 남아 있을 수 있으니 개념은 알아 두고, 실제로 새로 진행한다면 DataSync, AWS Data Transfer Terminal, 파트너 서비스를 검토한다.',
   tip: '대역폭 부족 + TB~PB 단위 + 기한 → Snow 패밀리. (참고: Snowmobile은 서비스 종료)',
 },
 {
@@ -101,8 +101,8 @@ QB.push(
   q: '온프레미스 Oracle 데이터베이스를 EC2로 옮긴다. 데이터베이스에는 지속적으로 40,000 IOPS와 1밀리초 미만의 안정적인 지연 시간이 필요하다. 어떤 EBS 볼륨 유형을 써야 하는가?',
   opts: ['gp3', 'io2 Block Express', 'st1', 'sc1'],
   ans: [1],
-  exp: '**io2 (Block Express)**는 프로비저닝된 IOPS SSD로, 볼륨당 최대 256,000 IOPS와 1밀리초 미만의 지연 시간을 꾸준히 제공한다. 고성능 DB용이다. gp3는 볼륨당 최대 16,000 IOPS라 40,000에 못 미친다. st1과 sc1은 HDD 기반으로 처리량 중심(로그, 빅데이터) 또는 콜드 데이터용이고 부팅 볼륨으로 쓸 수 없다.',
-  tip: '16,000 IOPS 초과 → io1/io2. 대용량 순차 처리량 → st1. 가장 저렴한 콜드 → sc1.',
+  exp: '**io2 (Block Express)**는 프로비저닝된 IOPS SSD로, 볼륨당 최대 256,000 IOPS와 1밀리초 미만의 지연 시간을 꾸준히 제공한다. 고성능 DB용이다. gp3도 이제 볼륨당 최대 80,000 IOPS를 낼 수 있지만(예전 자료에는 16,000), 지연 시간이 한 자릿수 밀리초 수준이라 1밀리초 미만을 안정적으로 보장하지 못한다. st1과 sc1은 HDD 기반으로 처리량 중심(로그, 빅데이터) 또는 콜드 데이터용이고 부팅 볼륨으로 쓸 수 없다.',
+  tip: '1ms 미만의 안정적 지연 또는 80,000 IOPS 초과 → io2. 대용량 순차 처리량 → st1. 가장 저렴한 콜드 → sc1.',
 },
 {
   id: 'sto-12', cat: 'storage', domain: 'secure', svc: ['S3 미리 서명된 URL'],

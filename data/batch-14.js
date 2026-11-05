@@ -15,7 +15,7 @@ QB.push(
   opts: ['3개 AZ에 6개 사본을 저장하고 손상 블록을 자동 복구한다', '라이터와 같은 AZ의 EBS 볼륨 하나에 저장되고 스냅샷이 S3에 자동으로 백업되어 내구성을 보장한다', '복제본을 만들어야만 여러 AZ에 저장된다', '용량을 미리 프로비저닝해야 한다'],
   ans: [0],
   exp: 'Aurora 스토리지는 인스턴스와 분리된 **분산 공유 스토리지**로, **3개 AZ에 6개 사본**을 둔다. 쓰기에는 6개 중 4개, 읽기에는 3개의 쿼럼이 필요하고, 손상된 세그먼트는 자동으로 복구한다. 복제본 인스턴스가 없어도 **데이터는 이미 다중 AZ**에 있지만, 컴퓨팅 장애 조치를 빠르게 하려면 복제본이 필요하다.',
-  tip: 'Aurora = 3 AZ × 2 = 6 사본, 자동 확장(최대 128TiB).',
+  tip: 'Aurora = 3 AZ × 2 = 6 사본, 자동 확장(최대 256TiB).',
 },
 {
   id: 'b14-03', cat: 'integration', domain: 'resilient', svc: ['Lambda 부분 배치 응답'],
@@ -34,9 +34,9 @@ QB.push(
   tip: '백업 보존 0 = PITR·Read Replica 불가.',
 },
 {
-  id: 'b14-05', cat: 'networking', domain: 'resilient', svc: ['Route 53 ARC 영역 이동'],
+  id: 'b14-05', cat: 'networking', domain: 'resilient', svc: ['ARC 영역 이동'],
   q: '특정 AZ에서 네트워크가 완전히 끊기지는 않았지만 패킷 손실과 지연이 늘어나는 **부분 장애(gray failure)**가 생겼다. 상태 확인은 간헐적으로만 실패한다. 해당 AZ로 가는 로드 밸런서 트래픽을 빠르게 빼려면?',
-  opts: ['Route 53 ARC 영역 이동으로 해당 AZ 트래픽을 뺀다', 'ALB를 삭제하고 정상인 AZ의 서브넷만 지정해 다시 만든 뒤 Route 53 레코드를 새 ALB로 바꾼다', 'ASG 최대 용량을 0으로 설정한다', 'NACL로 AZ 전체를 차단한다'],
+  opts: ['ARC 영역 이동으로 해당 AZ 트래픽을 뺀다', 'ALB를 삭제하고 정상인 AZ의 서브넷만 지정해 다시 만든 뒤 Route 53 레코드를 새 ALB로 바꾼다', 'ASG 최대 용량을 0으로 설정한다', 'NACL로 AZ 전체를 차단한다'],
   ans: [0],
   exp: '**영역 이동(zonal shift)**은 ALB, NLB 같은 지원 리소스에서 **특정 AZ로 가는 트래픽을 일시적으로 다른 AZ로 옮긴다.** **영역 자동 이동**을 켜면 AWS가 AZ 장애를 감지했을 때 자동으로 실행한다. 남은 AZ가 전체 부하를 처리할 수 있도록 용량을 미리 확보해 두는 것(정적 안정성)이 전제다.',
   tip: 'AZ 부분 장애 → Zonal Shift / Autoshift.',
@@ -159,10 +159,10 @@ QB.push(
 },
 {
   id: 'b14-19', cat: 'networking', domain: 'resilient', svc: ['NAT 게이트웨이 장애'],
-  q: '각 AZ에 NAT 게이트웨이를 하나씩 두었다. NAT 게이트웨이 자체의 가용성에 대한 설명으로 옳은 것은?',
+  q: '각 AZ에 영역(zonal) NAT 게이트웨이를 하나씩 두었다. NAT 게이트웨이 자체의 가용성에 대한 설명으로 옳은 것은?',
   opts: ['AZ 안에서 AWS가 중복 구성하며 AZ 장애에 대비해 AZ마다 둔다', 'NAT 게이트웨이는 사실상 단일 EC2라서 같은 AZ에 두 개를 두고 라우팅을 직접 전환해 이중화해야 한다', '리전 전체에 걸쳐 자동으로 장애 조치된다', '스냅샷으로 백업해야 한다'],
   ans: [0],
-  exp: 'NAT 게이트웨이는 **AZ 안에서 자동으로 중복 구성**되는 관리형 서비스다(NAT 인스턴스와 달리 직접 이중화할 필요가 없다). 하지만 **AZ 범위 리소스**라서 AZ 전체에 장애가 나면 쓸 수 없으므로 **AZ마다** 하나씩 두고 같은 AZ의 서브넷이 쓰게 한다.',
+  exp: 'NAT 게이트웨이는 **AZ 안에서 자동으로 중복 구성**되는 관리형 서비스다(NAT 인스턴스와 달리 직접 이중화할 필요가 없다). 하지만 **AZ 범위 리소스**라서 AZ 전체에 장애가 나면 쓸 수 없으므로 **AZ마다** 하나씩 두고 같은 AZ의 서브넷이 쓰게 한다. 2025년 11월에 나온 **리전 NAT 게이트웨이**는 게이트웨이 하나가 여러 AZ로 자동 확장되므로, 이를 쓰면 AZ마다 따로 만들 필요가 없다.',
   tip: 'NAT GW = AZ 내 HA, AZ 장애 대비는 AZ별 배치.',
 },
 {
@@ -211,7 +211,7 @@ QB.push(
   q: 'ElastiCache for Redis OSS 클러스터가 앞으로 3년 동안 r6g.xlarge 노드 6개로 24시간 운영될 예정이다. 비용을 줄이는 방법으로 가장 효과적인 것은?',
   opts: ['예약 노드를 구매하고 Valkey로 전환을 검토한다', 'Compute Savings Plans를 구매해 노드 시간당 요금을 낮춘다', '노드를 스팟으로 바꾼다', '노드 수를 늘려 노드당 사용률을 낮추고 단가를 줄인다'],
   ans: [0],
-  exp: '상시 운영하는 ElastiCache는 **예약 노드**로 크게 할인받는다(Compute Savings Plans는 적용되지 않는다). **Valkey 엔진**은 Redis OSS와 호환되면서 ElastiCache에서 더 저렴한 요금이 적용된다. Graviton(r6g/r7g) 노드도 x86보다 가격 대비 성능이 좋다. ElastiCache에는 스팟이 없다.',
+  exp: '상시 운영하는 ElastiCache는 **예약 노드**로 크게 할인받는다(Compute Savings Plans는 적용되지 않는다). **Valkey 엔진**은 Redis OSS와 호환되면서 ElastiCache에서 더 저렴한 요금이 적용된다. Graviton(r6g/r7g) 노드도 x86보다 가격 대비 성능이 좋다. ElastiCache에는 스팟이 없다. Database Savings Plans는 Valkey 엔진의 7세대 이상 노드에 적용된다.',
   tip: 'ElastiCache 절감 = 예약 노드 + Graviton + Valkey.',
 },
 {

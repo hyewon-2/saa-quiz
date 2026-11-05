@@ -326,7 +326,7 @@ QB.push(
   q: '보안팀이 여러 계정의 Security Hub 결과 중 "S3 버킷 퍼블릭 쓰기 허용"처럼 심각도 높은 결과가 나오면 자동으로 수정하고, 담당자에게 티켓을 만들고 싶다. 가장 적합한 방법은?',
   opts: ['결과를 EventBridge로 받아 Automation과 티켓 Lambda를 실행한다', 'Security Hub 콘솔을 담당자가 매일 확인해 심각한 결과를 찾아 수동으로 고치고 티켓을 만든다', 'Trusted Advisor 알림을 켠다', 'CloudTrail Insights를 켠다'],
   ans: [0],
-  exp: 'Security Hub 결과는 **EventBridge**로 전달되므로, 심각도나 유형으로 필터링해 **자동 수정**(SSM Automation, Lambda)과 **알림·티켓 생성**을 연결할 수 있다. Security Hub의 자동화 규칙으로 결과의 심각도나 상태를 자동으로 바꾸는 것도 가능하다.',
+  exp: 'Security Hub 결과는 **EventBridge**로 전달되므로, 심각도나 유형으로 필터링해 **자동 수정**(SSM Automation, Lambda)과 **알림·티켓 생성**을 연결할 수 있다. Security Hub의 자동화 규칙으로 결과의 심각도나 상태를 자동으로 바꾸는 것도 가능하다. 기존 서비스의 현재 이름은 AWS Security Hub CSPM이다.',
   tip: '보안 결과 자동 대응 = Security Hub → EventBridge → Automation.',
 },
 {

@@ -59,7 +59,7 @@ QB.push(
 },
 {
   id: 'cmp-22', cat: 'compute', domain: 'performance', svc: ['Wavelength', 'Local Zones'],
-  q: '게임 회사가 서울의 특정 대도시 사용자에게 한 자릿수 밀리초 지연 시간으로 게임 서버를 제공하려 한다. 가장 가까운 AWS 리전보다 더 사용자 가까이에 EC2를 배치해야 한다. 어떤 인프라 옵션이 적합한가?',
+  q: '게임 회사가 가까운 리전이 없는 대도시(예: 로스앤젤레스)의 사용자에게 한 자릿수 밀리초 지연 시간으로 게임 서버를 제공하려 한다. 가장 가까운 AWS 리전보다 더 사용자 가까이에 EC2를 배치해야 한다. 어떤 인프라 옵션이 적합한가?',
   opts: ['AWS Local Zones', 'AWS Outposts', '여러 AZ에 걸친 Auto Scaling 그룹', 'Amazon CloudFront'],
   ans: [0],
   exp: '**Local Zones**는 대도시 가까이에 AWS 컴퓨팅, 스토리지, DB 같은 일부 서비스를 배치한 리전 확장 인프라라서, 해당 지역 사용자에게 **한 자릿수 ms 지연 시간**을 제공한다. **Outposts**는 고객 데이터센터에 AWS 랙을 설치하는 서비스다(온프레미스 데이터 상주나 로컬 처리용). **Wavelength**는 5G 통신사 네트워크 안에 배치되어 모바일 기기용 초저지연을 제공한다.',
@@ -192,7 +192,7 @@ QB.push(
   q: 'RDS 데이터베이스의 데이터가 예측할 수 없는 속도로 늘어나서 가끔 스토리지가 꽉 차 장애가 난다. 처음부터 과하게 프로비저닝하지 않으면서 이 문제를 막는 방법은?',
   opts: ['RDS 스토리지 자동 조정을 켜고 최대 스토리지 임계값을 설정한다', '처음부터 예상 최대 용량으로 프로비저닝해 스토리지 부족이 생기지 않게 한다', '매일 밤 오래된 데이터를 삭제하는 배치 작업으로 여유 공간을 확보한다', '인스턴스 클래스를 늘리면 함께 늘어나는 스토리지 한도를 활용한다'],
   ans: [0],
-  exp: '**RDS 스토리지 자동 조정**은 여유 공간이 부족해지면 지정한 최대값까지 **다운타임 없이 자동으로** 스토리지를 늘린다. 미리 크게 잡을 필요가 없어 비용이 효율적이다. 참고로 Aurora는 스토리지가 처음부터 자동으로 늘어난다(최대 128TiB).',
+  exp: '**RDS 스토리지 자동 조정**은 여유 공간이 부족해지면 지정한 최대값까지 **다운타임 없이 자동으로** 스토리지를 늘린다. 미리 크게 잡을 필요가 없어 비용이 효율적이다. 참고로 Aurora는 스토리지가 처음부터 자동으로 늘어난다(최대 256TiB).',
   tip: 'RDS 용량 부족 예방 → Storage Auto Scaling.',
 },
 // ── 네트워킹 ──
@@ -282,7 +282,7 @@ QB.push(
   q: '보안팀이 여러 계정의 GuardDuty, Inspector, Macie 결과와 CIS·AWS 기본 보안 모범 사례 점검 결과를 대시보드 하나에서 모아 보고 우선순위를 정하려 한다. 어떤 서비스를 써야 하는가?',
   opts: ['AWS Security Hub', 'Amazon Detective', 'AWS Config만', 'AWS Trusted Advisor'],
   ans: [0],
-  exp: '**Security Hub**는 여러 AWS 보안 서비스와 서드파티 도구의 결과를 표준 형식(ASFF)으로 **통합**하고, **보안 표준**(CIS, AWS 기본 보안 모범 사례, PCI DSS 등)을 자동으로 점검하며, 조직 전체를 위임된 관리자 계정에서 한꺼번에 볼 수 있다. **Detective**는 보안 사고의 근본 원인을 그래프로 분석하고 조사하는 서비스다.',
+  exp: '**Security Hub**는 여러 AWS 보안 서비스와 서드파티 도구의 결과를 표준 형식(ASFF)으로 **통합**하고, **보안 표준**(CIS, AWS 기본 보안 모범 사례, PCI DSS 등)을 자동으로 점검하며, 조직 전체를 위임된 관리자 계정에서 한꺼번에 볼 수 있다. **Detective**는 보안 사고의 근본 원인을 그래프로 분석하고 조사하는 서비스다. 2025년 12월부터 기존 서비스 이름은 **AWS Security Hub CSPM**으로 바뀌었고, 새 Security Hub는 여러 보안 신호를 묶어 위험을 분석한다. 시험 자료에는 Security Hub로 나올 수 있다.',
   tip: '보안 결과 통합·점수화 → Security Hub. 사고 조사 → Detective.',
 },
 {
@@ -306,7 +306,7 @@ QB.push(
   q: '회사가 온프레미스 Active Directory를 그대로 두고, AWS 관리 콘솔과 Amazon WorkSpaces 로그인에 기존 AD 자격 증명을 쓰고 싶다. AD 데이터를 클라우드에 복제하거나 캐싱하지 않아야 한다. 어떤 옵션이 적합한가?',
   opts: ['AD Connector', 'AWS Managed Microsoft AD', 'Simple AD', 'Amazon Cognito'],
   ans: [0],
-  exp: '**AD Connector**는 인증 요청을 **온프레미스 AD로 전달하는 프록시**라서 디렉터리 데이터를 AWS에 저장하지 않는다. **AWS Managed Microsoft AD**는 AWS에서 실제 AD를 운영하는 방식이다(온프레미스 AD와 신뢰 관계 구성 가능). **Simple AD**는 Samba 기반의 저렴한 독립 디렉터리라 온프레미스와 연동되지 않는다.',
+  exp: '**AD Connector**는 인증 요청을 **온프레미스 AD로 전달하는 프록시**라서 디렉터리 데이터를 AWS에 저장하지 않는다. **AWS Managed Microsoft AD**는 AWS에서 실제 AD를 운영하는 방식이다(온프레미스 AD와 신뢰 관계 구성 가능). **Simple AD**는 Samba 기반의 저렴한 독립 디렉터리라 온프레미스와 연동되지 않는다. Simple AD는 2026년 7월 30일부터 신규 고객에게 제공되지 않는다.',
   tip: '온프렘 AD 프록시 → AD Connector. AWS에서 AD 운영/신뢰 → Managed Microsoft AD.',
 },
 {
