@@ -126,7 +126,7 @@ QB.push(
 {
   id: 'b07-14', cat: 'networking', domain: 'secure', svc: ['Route 53 Resolver DNS Firewall'],
   q: 'VPC 안의 워크로드가 악성 도메인이나 승인되지 않은 도메인을 DNS로 조회해 데이터를 빼돌리는 것(DNS 유출)을 막고 싶다. 허용된 도메인 목록만 조회할 수 있게 하는 관리형 기능은?',
-  opts: ['Route 53 Resolver DNS Firewall', 'VPC 흐름 로그', 'NACL', 'AWS Shield'],
+  opts: ['Route 53 Resolver DNS Firewall', 'VPC 흐름 로그와 Athena로 DNS 쿼리 내용을 분석해 차단', 'NACL에 악성 도메인을 거부 규칙으로 등록', 'AWS Shield Advanced의 DNS 보호 기능'],
   ans: [0],
   exp: '**DNS Firewall**은 VPC의 Route 53 Resolver를 거치는 DNS 쿼리를 **도메인 목록 기반으로 허용, 차단, 알림** 처리한다. AWS 관리형 위협 도메인 목록도 쓸 수 있고, Firewall Manager로 여러 계정에 배포할 수 있다. NACL은 도메인 단위로 제어하지 못한다.',
   tip: 'DNS 쿼리 필터링 → Route 53 Resolver DNS Firewall. 트래픽 도메인 필터 → Network Firewall.',

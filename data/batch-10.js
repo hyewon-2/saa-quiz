@@ -90,7 +90,7 @@ QB.push(
 {
   id: 'b10-11', cat: 'integration', domain: 'performance', svc: ['SQS FIFO 처리량'],
   q: 'SQS FIFO 대기열의 전송 요청이 초당 300건을 넘으면서 스로틀링이 생긴다. 순서 보장은 고객 ID 단위로만 필요하다. 처리량을 크게 높이는 방법은?',
-  opts: ['FIFO 대기열의 높은 처리량 모드를 켜고, 고객 ID를 메시지 그룹 ID로 써서 그룹을 다양하게 분산한다', '표준 대기열로 바꾸고 순서는 포기한다', '모든 메시지에 같은 메시지 그룹 ID를 쓴다', '가시성 제한 시간을 늘린다'],
+  opts: ['높은 처리량 모드를 켜고 고객 ID를 메시지 그룹 ID로 쓴다', '표준 대기열로 바꾸고 소비자 쪽에서 타임스탬프로 고객별 순서를 복원하도록 코드를 작성한다', '모든 메시지에 같은 메시지 그룹 ID를 써서 묶는다', '가시성 제한 시간을 늘린다'],
   ans: [0],
   exp: 'FIFO 대기열의 **높은 처리량 모드**는 **메시지 그룹 ID별로** 처리량을 분산해서 기본 한도보다 훨씬 높은 TPS를 지원한다. 순서는 **그룹 안에서만** 보장되므로, 고객 ID처럼 다양한 값을 그룹 ID로 써야 확장된다. 그룹 ID를 하나만 쓰면 병렬 처리가 되지 않는다. 배치 API를 쓰면 처리량을 더 높일 수 있다.',
   tip: 'FIFO 확장 = High throughput mode + 다양한 Message Group ID.',
@@ -98,7 +98,7 @@ QB.push(
 {
   id: 'b10-12', cat: 'analytics', domain: 'performance', svc: ['Redshift 동시성 확장'],
   q: '월말 결산 때 수백 명의 분석가가 동시에 Redshift 대시보드를 열면서 쿼리 대기열이 길어지고 응답이 느려진다. 평소에는 문제가 없다. 클러스터 크기를 상시로 키우지 않고 해결하려면?',
-  opts: ['Redshift 동시성 확장을 켜서 피크 때 일시적인 클러스터 용량을 자동으로 추가한다', '노드 수를 상시 두 배로 늘린다', '모든 쿼리를 Athena로 옮긴다', '분석가 접근을 제한한다'],
+  opts: ['동시성 확장을 켜서 피크 때 용량을 자동으로 추가한다', '결산 기간에 맞춰 노드 수를 상시 두 배로 늘리고 대기열(WLM)을 분석가 그룹별로 나눈다', '모든 쿼리를 Athena로 옮긴다', '분석가 동시 접근 수를 제한한다'],
   ans: [0],
   exp: '**동시성 확장**은 동시 쿼리가 몰리면 **추가 클러스터 용량을 자동으로** 붙여 대기 없이 처리하고, 부하가 줄면 자동으로 뗀다. 하루 사용분만큼 무료 크레딧이 쌓인다. Redshift Serverless도 부하에 따라 자동으로 확장된다.',
   tip: 'Redshift 동시 쿼리 급증 → Concurrency Scaling.',
@@ -106,7 +106,7 @@ QB.push(
 {
   id: 'b10-13', cat: 'database', domain: 'performance', svc: ['ElastiCache 클러스터 모드'],
   q: 'ElastiCache for Redis OSS의 단일 기본 노드가 쓰기 처리량과 메모리 한계에 도달했다. 읽기 복제본을 늘려도 쓰기 성능은 좋아지지 않는다. 쓰기와 메모리를 수평 확장하려면?',
-  opts: ['클러스터 모드를 활성화해 데이터를 여러 샤드로 분할한다', '읽기 복제본을 5개로 늘린다', 'TTL을 줄인다', 'Memcached로 바꾸고 복제를 켠다'],
+  opts: ['클러스터 모드를 활성화해 데이터를 여러 샤드로 분할한다', '읽기 복제본을 5개로 늘려 쓰기를 복제본으로 나눈다', 'TTL을 줄여 메모리 사용량을 낮춘다', 'Memcached로 바꾸고 복제를 켜서 여러 노드에 쓴다'],
   ans: [0],
   exp: '**클러스터 모드 활성화**는 키 공간을 **여러 샤드**에 나누고, 샤드마다 기본 노드와 복제본을 둔다. 그래서 **쓰기 처리량과 메모리 용량**이 샤드 수만큼 늘어난다. 읽기 복제본은 읽기만 분산한다. Memcached는 복제를 지원하지 않는다.',
   tip: 'Redis 쓰기/메모리 확장 = Cluster mode(샤딩). 읽기 확장 = 복제본.',
@@ -114,7 +114,7 @@ QB.push(
 {
   id: 'b10-14', cat: 'database', domain: 'performance', svc: ['DynamoDB Query vs Scan'],
   q: '주문 테이블(파티션 키: CustomerId, 정렬 키: OrderDate)에서 특정 고객의 최근 30일 주문을 조회하는 API가 Scan과 FilterExpression을 쓰고 있어서 느리고 읽기 용량을 많이 소모한다. 어떻게 개선해야 하는가?',
-  opts: ['파티션 키 조건과 정렬 키 범위 조건을 쓰는 Query로 바꾼다', 'Scan 병렬 세그먼트를 늘린다', '테이블 읽기 용량을 늘린다', 'FilterExpression 조건을 더 추가한다'],
+  opts: ['파티션 키 조건과 정렬 키 범위 조건을 쓰는 Query로 바꾼다', 'Scan 병렬 세그먼트를 늘려 테이블 전체를 더 빨리 읽는다', '테이블 읽기 용량을 늘려 스로틀링을 없앤다', 'FilterExpression에 날짜 조건을 더 넣어 읽기 용량 소모를 줄인다'],
   ans: [0],
   exp: '**Scan**은 테이블 전체를 읽은 뒤 필터링하므로, **필터로 걸러낸 항목까지 모두 읽기 용량으로 과금**된다. **Query**는 키 조건으로 필요한 파티션과 정렬 키 범위만 읽어서 빠르고 저렴하다. 접근 패턴에 맞게 키와 인덱스를 설계하는 것이 DynamoDB 성능의 핵심이다.',
   tip: 'DynamoDB: Scan 지양, Query + 키 설계 (FilterExpression은 비용을 못 줄임).',
@@ -122,7 +122,7 @@ QB.push(
 {
   id: 'b10-15', cat: 'networking', domain: 'performance', svc: ['CloudFront Origin Shield'],
   q: '전 세계 수백 개 엣지 로케이션이 같은 원본(S3 + 이미지 리사이즈 Lambda)에 캐시 미스 요청을 보내서 원본 부하와 비용이 크다. 원본으로 가는 요청을 더 줄이려면?',
-  opts: ['원본과 가까운 리전에 CloudFront Origin Shield를 켜서 추가 캐싱 계층을 둔다', '엣지 로케이션 수를 늘린다', 'TTL을 0으로 설정한다', 'S3 Transfer Acceleration을 켠다'],
+  opts: ['원본 가까운 리전에 Origin Shield를 켠다', 'CloudFront 가격 등급을 All로 바꿔 엣지 로케이션 수를 늘린다', 'TTL을 0으로 설정해 항상 최신 이미지를 받는다', 'S3 Transfer Acceleration을 켜서 원본 응답을 가속한다'],
   ans: [0],
   exp: '**Origin Shield**는 리전 엣지 캐시 앞에 **중앙 캐싱 계층**을 하나 더 둬서, 여러 엣지의 캐시 미스를 모아 **원본에 한 번만** 요청하게 한다. 캐시 적중률이 높아지고 원본 부하와 비용이 줄어든다. 동적 이미지 변환처럼 원본 처리가 비싼 경우에 특히 효과적이다.',
   tip: '원본 요청 최소화 → Origin Shield.',
@@ -154,7 +154,7 @@ QB.push(
 {
   id: 'b10-19', cat: 'integration', domain: 'performance', svc: ['Step Functions Distributed Map'],
   q: 'S3 버킷에 있는 수백만 개의 CSV 파일을 각각 Lambda로 처리해야 한다. 동시 실행을 수천 개까지 늘려 병렬로 처리하면서 진행 상황과 실패 항목을 관리하고 싶다. 가장 적합한 방법은?',
-  opts: ['Step Functions의 분산 맵 상태로 S3 객체 목록을 대규모 병렬 처리한다', '하나의 Lambda가 모든 파일을 순서대로 처리한다', 'EC2 한 대에서 스크립트를 실행한다', 'SNS로 파일 목록을 보낸다'],
+  opts: ['Step Functions 분산 맵으로 대규모 병렬 처리한다', '하나의 Lambda가 파일 목록을 읽어 처리하고 시간이 다 되면 자신을 다시 호출해 이어서 처리한다', 'EC2 한 대에서 스크립트를 실행한다', 'SNS로 파일 목록을 발행한다'],
   ans: [0],
   exp: '**분산 맵**은 S3 객체 목록, CSV, JSON 같은 대규모 데이터 세트를 **최대 1만 개의 병렬 하위 워크플로**로 처리하고, 허용 실패율, 배치 처리, 결과 내보내기를 지원한다. 단일 Lambda는 15분 제한에 걸린다.',
   tip: 'S3 대량 객체 병렬 처리 → Step Functions Distributed Map (또는 S3 Batch Operations + Lambda).',
@@ -162,7 +162,7 @@ QB.push(
 {
   id: 'b10-20', cat: 'integration', domain: 'performance', svc: ['API Gateway WebSocket'],
   q: '실시간 채팅 앱에서 서버가 클라이언트에게 새 메시지를 즉시 **푸시**해야 한다. 지금은 클라이언트가 1초마다 REST API를 폴링해서 비용과 지연이 크다. 서버리스로 개선하려면?',
-  opts: ['API Gateway WebSocket API + Lambda + DynamoDB로 양방향 연결을 유지한다', 'REST API 폴링 간격을 0.1초로 줄인다', 'SQS 긴 폴링을 클라이언트가 직접 쓴다', 'CloudFront 캐싱을 켠다'],
+  opts: ['API Gateway WebSocket API + Lambda + DynamoDB', 'REST API 폴링 간격을 0.1초로 줄이고 CloudFront로 응답을 캐싱해 비용을 낮춘다', '클라이언트가 SQS 긴 폴링을 직접 쓴다', 'CloudFront 캐싱을 켠다'],
   ans: [0],
   exp: '**WebSocket API**는 클라이언트와 **지속적인 양방향 연결**을 유지하므로, 서버가 연결 ID로 메시지를 바로 **푸시**할 수 있다. 연결 ID는 DynamoDB에 저장하고, 메시지는 `@connections` API로 보낸다. GraphQL 구독이 필요하면 AppSync도 대안이다.',
   tip: '실시간 서버 푸시(채팅, 알림) → API Gateway WebSocket / AppSync 구독.',
@@ -178,7 +178,7 @@ QB.push(
 {
   id: 'b10-22', cat: 'analytics', domain: 'performance', svc: ['OpenSearch 검색'],
   q: '쇼핑몰의 상품 검색이 RDS의 `LIKE \'%키워드%\'` 쿼리로 구현되어 있어 느리고, 오타 허용, 자동 완성, 관련도 순 정렬 같은 기능이 없다. 가장 적합한 개선 방법은?',
-  opts: ['상품 데이터를 Amazon OpenSearch Service에 색인하고 검색 API를 OpenSearch로 처리한다', 'RDS 인스턴스를 키운다', 'DynamoDB Scan으로 바꾼다', 'ElastiCache에 모든 상품을 저장한다'],
+  opts: ['상품을 OpenSearch Service에 색인해 검색을 처리한다', 'RDS 인스턴스를 키우고 LIKE 쿼리 열에 일반 B-트리 인덱스를 추가해 검색을 빠르게 만든다', 'DynamoDB Scan으로 바꾼다', 'ElastiCache에 모든 상품을 저장한다'],
   ans: [0],
   exp: '**OpenSearch**는 역색인 기반 **전문 검색 엔진**이라 형태소 분석, 오타 허용(fuzzy), 자동 완성, 관련도 점수, 패싯 검색을 빠르게 처리한다. 원본 데이터는 RDS에 두고, 변경 사항을 OpenSearch로 동기화(예: DMS, 애플리케이션 이중 쓰기)하는 구조가 일반적이다.',
   tip: '전문 검색·자동 완성·관련도 → OpenSearch.',
@@ -186,7 +186,7 @@ QB.push(
 {
   id: 'b10-23', cat: 'compute', domain: 'performance', svc: ['ECS 서비스 Auto Scaling'],
   q: 'ALB 뒤의 ECS 서비스(Fargate)가 트래픽 증가에 맞춰 작업 수를 자동으로 늘리고 줄여야 한다. 가장 적합한 구성은?',
-  opts: ['ECS 서비스 Auto Scaling으로 평균 CPU나 ALBRequestCountPerTarget 대상 추적 정책을 설정한다', 'EC2 Auto Scaling 그룹만 설정한다', '원하는 작업 수를 최대로 고정한다', 'CloudFormation 스택을 매시간 업데이트한다'],
+  opts: ['ECS 서비스 Auto Scaling으로 대상 추적 정책을 설정한다', 'EC2 Auto Scaling 그룹을 만들어 ALB 요청 수에 따라 Fargate 작업 수가 함께 늘어나게 설정한다', '원하는 작업 수를 피크에 맞춰 고정한다', 'CloudFormation 스택을 매시간 업데이트한다'],
   ans: [0],
   exp: 'ECS 서비스의 **작업 수**는 **Application Auto Scaling**(서비스 Auto Scaling)으로 조정한다. CPU·메모리 사용률이나 **ALB 대상당 요청 수**로 대상 추적하는 것이 일반적이다. Fargate는 인스턴스가 없으므로 EC2 ASG는 필요 없다(EC2 시작 유형이라면 용량 공급자로 인스턴스도 함께 확장한다).',
   tip: 'ECS 작업 수 확장 = Service Auto Scaling. 인스턴스 확장 = Capacity Provider.',
@@ -194,7 +194,7 @@ QB.push(
 {
   id: 'b10-24', cat: 'compute', domain: 'performance', svc: ['EKS Karpenter'],
   q: 'EKS 클러스터의 파드 요구 사항(CPU, 메모리, GPU, 아키텍처)이 매우 다양해서, 노드 그룹을 미리 정해 두면 대기 중인 파드가 오래 기다리거나 노드가 낭비된다. 파드 요구에 맞는 노드를 빠르고 효율적으로 자동 프로비저닝하려면?',
-  opts: ['Karpenter로 대기 중인 파드에 맞는 인스턴스 유형을 자동으로 골라 프로비저닝한다', '노드 그룹 하나에 가장 큰 인스턴스를 고정한다', '파드 요청 리소스를 모두 같게 만든다', 'Fargate 없이 수동으로 노드를 추가한다'],
+  opts: ['Karpenter로 파드에 맞는 인스턴스를 자동 프로비저닝한다', '노드 그룹 하나에 가장 큰 GPU 인스턴스를 고정해 어떤 파드든 바로 배치될 수 있게 항상 띄워 둔다', '파드 요청 리소스를 모두 같게 만든다', '운영자가 수동으로 노드를 추가한다'],
   ans: [0],
   exp: '**Karpenter**는 스케줄되지 못한 파드의 요구 사항을 보고 **가장 적합한 인스턴스 유형과 구매 옵션(스팟 포함)**을 골라 몇 초 만에 노드를 띄우고, 쓰지 않는 노드는 정리(consolidation)한다. EKS Auto Mode는 이를 관리형으로 제공한다. Cluster Autoscaler는 미리 정의한 노드 그룹 단위로만 확장한다.',
   tip: 'EKS 유연·빠른 노드 확장 → Karpenter / EKS Auto Mode.',
@@ -202,7 +202,7 @@ QB.push(
 {
   id: 'b10-25', cat: 'database', domain: 'performance', svc: ['ElastiCache 읽기 복제본'],
   q: '게임 프로필 캐시(ElastiCache for Redis OSS, 클러스터 모드 비활성화)에서 읽기 요청이 쓰기보다 20배 많아 기본 노드의 CPU가 포화되었다. 쓰기는 여유가 있다. 가장 간단한 해결책은?',
-  opts: ['읽기 복제본을 추가하고 애플리케이션이 리더 엔드포인트로 읽기를 보내게 한다', '클러스터를 Memcached로 바꾼다', '기본 노드의 TTL을 늘린다', '모든 데이터를 RDS로 옮긴다'],
+  opts: ['읽기 복제본을 추가하고 리더 엔드포인트로 읽는다', '클러스터를 Memcached로 바꿔 멀티스레드로 읽기를 처리하고 프로필 데이터는 DB에서 다시 채운다', '기본 노드의 TTL을 늘린다', '모든 데이터를 RDS로 옮긴다'],
   ans: [0],
   exp: 'Redis OSS/Valkey는 기본 노드당 **읽기 복제본을 최대 5개** 둘 수 있고, **리더 엔드포인트**로 읽기를 복제본에 분산한다. 쓰기에 여유가 있다면 샤딩까지 할 필요는 없다.',
   tip: '읽기 병목 → 복제본 + 리더 엔드포인트 / 쓰기·메모리 병목 → 클러스터 모드.',
@@ -210,7 +210,7 @@ QB.push(
 {
   id: 'b10-26', cat: 'database', domain: 'performance', svc: ['Aurora 마이그레이션'],
   q: 'RDS for MySQL이 쓰기 처리량과 복제 지연 한계에 도달했다. 애플리케이션 코드는 바꾸지 않고 MySQL 호환성을 유지하면서, 더 높은 처리량과 1초 미만의 복제 지연을 원한다. 가장 적합한 방법은?',
-  opts: ['Amazon Aurora MySQL로 마이그레이션한다', 'DynamoDB로 다시 설계한다', 'RDS MySQL 읽기 복제본을 10개로 늘린다', 'MySQL을 EC2에 직접 설치한다'],
+  opts: ['Amazon Aurora MySQL로 마이그레이션한다', 'DynamoDB로 다시 설계해 쓰기를 파티션에 나눈다', 'RDS MySQL 읽기 복제본을 10개로 늘려 쓰기를 분산한다', 'MySQL을 EC2에 직접 설치해 튜닝한다'],
   ans: [0],
   exp: '**Aurora MySQL**은 MySQL과 호환되면서 일반적으로 더 높은 처리량을 내고, 공유 스토리지 덕분에 **복제 지연이 보통 수십 ms 수준**이다. RDS MySQL에서 **Aurora 읽기 전용 복제본**을 만든 뒤 승격하면 짧은 다운타임으로 옮길 수 있다. DynamoDB는 코드를 바꿔야 한다.',
   tip: 'MySQL/PostgreSQL 호환 + 더 높은 성능·낮은 복제 지연 → Aurora.',
@@ -218,7 +218,7 @@ QB.push(
 {
   id: 'b10-27', cat: 'networking', domain: 'performance', svc: ['다중 리전 액티브-액티브 성능'],
   q: '글로벌 SaaS가 미국, 유럽, 아시아 사용자 모두에게 100ms 미만의 응답 시간을 제공해야 한다. 지금은 미국 리전 하나에만 배포되어 있다. 가장 효과적인 아키텍처는?',
-  opts: ['세 리전에 애플리케이션을 배포하고, Route 53 지연 시간 기반 라우팅으로 가장 가까운 리전에 연결하며, 데이터는 DynamoDB 글로벌 테이블이나 Aurora Global Database로 복제한다', '미국 리전 인스턴스를 더 큰 크기로 바꾼다', '미국 리전에 CloudFront만 추가한다', '미국 리전에 ALB를 하나 더 둔다'],
+  opts: ['세 리전에 배포하고 지연 시간 라우팅과 글로벌 DB를 쓴다', '미국 리전 인스턴스를 더 큰 크기로 바꾸고 ElastiCache를 추가해 애플리케이션 처리 시간을 대폭 줄인다', '미국 리전 앞에 CloudFront를 추가해 모든 응답을 캐싱한다', '미국 리전에 ALB를 하나 더 둔다'],
   ans: [0],
   exp: '대륙 간 왕복 지연은 물리적인 거리 때문에 생기므로, **사용자 가까이에 컴퓨팅과 데이터**를 두는 것이 근본적인 해결책이다. 다중 리전 배포, **지연 시간 기반 라우팅**, **글로벌 데이터 복제**를 함께 쓴다. CloudFront는 정적 콘텐츠와 연결 최적화에는 도움이 되지만, 데이터베이스 왕복 지연까지 줄이지는 못한다.',
   tip: '전 세계 저지연 = 다중 리전 + 지연 시간 라우팅 + 글로벌 DB.',
@@ -226,7 +226,7 @@ QB.push(
 {
   id: 'b10-28', cat: 'storage', domain: 'performance', svc: ['S3 요청 병렬화'],
   q: '데이터 처리 작업이 S3 버킷의 `data/` 접두사 하나에서 초당 2만 건의 GET 요청을 보내 503 Slow Down 오류가 난다. 애플리케이션 수정이 가능할 때 가장 효과적인 방법은?',
-  opts: ['객체를 여러 접두사로 분산 저장하고 요청을 병렬로 나눈다', '버킷을 다른 리전으로 옮긴다', '객체를 Standard-IA로 옮긴다', '요청을 하나의 스레드로 직렬화한다'],
+  opts: ['객체를 여러 접두사로 분산 저장하고 요청을 병렬로 나눈다', '버킷을 사용량이 적은 다른 리전으로 옮겨 처리 한도를 늘린다', '객체를 Standard-IA로 옮겨 GET 한도를 높인다', '요청을 하나의 스레드로 직렬화해 오류를 없앤다'],
   ans: [0],
   exp: 'S3 요청 한도는 **접두사 단위**(GET 5,500/초)로 적용된다. 객체를 **여러 접두사로 나누면** 처리량이 접두사 수만큼 늘어난다(예: 4개면 GET 22,000/초). S3는 요청률이 높아지면 자동으로 분할하지만, 급격한 증가에는 시간이 걸린다. 지수 백오프 재시도도 함께 구현한다.',
   tip: 'S3 503 Slow Down → 접두사 분산 + 백오프.',
@@ -234,7 +234,7 @@ QB.push(
 {
   id: 'b10-29', cat: 'compute', domain: 'performance', svc: ['HPC 구성'],
   q: '유전체 분석 HPC 워크로드에 수백 개 노드의 MPI 통신, 수백 GB/s의 공유 파일 시스템 처리량, S3 데이터 연동이 필요하다. 가장 적합한 조합은?',
-  opts: ['클러스터 배치 그룹 + EFA를 지원하는 HPC 인스턴스 + FSx for Lustre', '여러 AZ에 분산 배치 + EFS + ALB', 'Lambda + DynamoDB', 'T 인스턴스 + EBS gp2'],
+  opts: ['클러스터 배치 그룹 + EFA + FSx for Lustre', '여러 AZ에 분산 배치 + EFS Max I/O + ALB로 노드 간 통신 분산', 'Lambda 병렬 호출 + DynamoDB로 MPI 상태 공유', 'T 인스턴스 Auto Scaling + EBS gp2 볼륨 공유'],
   ans: [0],
   exp: 'HPC의 정석 조합은 **클러스터 배치 그룹**(저지연), **EFA**(OS 바이패스 MPI), **FSx for Lustre**(병렬 파일 시스템, S3 연동)다. **AWS ParallelCluster**로 HPC 클러스터와 스케줄러(Slurm) 배포를 자동화할 수 있다. 여러 AZ에 분산하면 노드 간 지연이 커진다.',
   tip: 'HPC = Cluster PG + EFA + FSx Lustre (+ParallelCluster).',
@@ -242,7 +242,7 @@ QB.push(
 {
   id: 'b10-30', cat: 'database', domain: 'performance', svc: ['DynamoDB 대규모 분석 vs OLTP'],
   q: 'DynamoDB 운영 테이블에서 실시간 대시보드용 복잡한 집계 쿼리(그룹화, 조인)를 실행하려다 성능과 비용 문제가 생겼다. 운영 성능에 영향을 주지 않고 거의 실시간 분석을 하려면?',
-  opts: ['DynamoDB의 zero-ETL 통합으로 데이터를 Redshift나 OpenSearch에 거의 실시간으로 보내 분석한다', '운영 테이블에서 매분 Scan한다', '테이블 용량을 10배로 늘린다', 'GSI를 20개 만든다'],
+  opts: ['zero-ETL 통합으로 Redshift나 OpenSearch에 보내 분석한다', '운영 테이블에서 매분 Scan해 애플리케이션에서 그룹화하고 결과를 별도 항목으로 저장해 대시보드가 읽게 한다', '테이블 용량을 10배로 늘린다', '집계 조합마다 GSI를 만든다'],
   ans: [0],
   exp: 'DynamoDB는 키 기반 OLTP에 최적화되어 있어 **집계와 조인에 맞지 않는다.** **zero-ETL 통합**(DynamoDB → Redshift, OpenSearch)이나 **Streams + Firehose** 파이프라인으로 분석 저장소에 데이터를 옮기면, 운영 테이블에 부담을 주지 않고 분석할 수 있다. 배치 분석이라면 Export to S3 + Athena도 쓸 수 있다.',
   tip: 'OLTP와 분석 분리 → zero-ETL/Streams로 Redshift·OpenSearch.',
@@ -250,7 +250,7 @@ QB.push(
 {
   id: 'b10-31', cat: 'integration', domain: 'performance', svc: ['Lambda SQS 확장'],
   q: 'SQS 대기열에 메시지가 갑자기 수십만 건 쌓였는데, 이를 처리하는 Lambda의 동시 실행 수가 천천히만 늘어나 백로그 처리가 늦다. 다운스트림은 높은 동시성을 감당할 수 있다. 확인해야 할 사항으로 가장 적절한 것은?',
-  opts: ['함수의 예약된 동시성이나 이벤트 소스 매핑의 최대 동시성이 낮게 제한되어 있는지, 계정 동시성 한도가 충분한지 확인하고 배치 크기를 조정한다', '대기열을 FIFO로 바꾼다', '가시성 제한 시간을 0으로 설정한다', 'Lambda를 VPC에서 분리한다'],
+  opts: ['예약된 동시성, 최대 동시성, 계정 한도를 확인한다', '대기열을 FIFO로 바꿔 Lambda 폴러 수가 메시지 그룹 수만큼 늘어나게 한다', '가시성 제한 시간을 0으로 설정한다', 'Lambda를 VPC에서 분리해 ENI 생성 대기를 없앤다'],
   ans: [0],
   exp: 'SQS 이벤트 소스는 백로그에 따라 폴러를 늘리며 Lambda를 확장한다. 확장이 막혀 있다면 **예약된 동시성**, **이벤트 소스 최대 동시성**, **계정 동시 실행 한도**를 확인하고, 필요하면 한도 증가를 요청한다. **배치 크기와 배치 기간**을 늘리면 호출당 처리량도 늘어난다.',
   tip: 'Lambda 확장 제한 요인: Reserved concurrency, 최대 동시성 설정, 계정 한도.',
@@ -258,7 +258,7 @@ QB.push(
 {
   id: 'b10-32', cat: 'networking', domain: 'performance', svc: ['VPC 엔드포인트 성능'],
   q: '프라이빗 서브넷의 대용량 데이터 처리 작업이 NAT 게이트웨이를 거쳐 S3와 주고받는 데이터가 많아서, NAT 대역폭이 병목이 되고 비용도 크다. 성능과 비용을 함께 개선하는 방법은?',
-  opts: ['S3 게이트웨이 VPC 엔드포인트를 만들어 S3 트래픽이 NAT를 우회하게 한다', 'NAT 게이트웨이를 여러 개 같은 서브넷에 둔다', 'NAT 인스턴스로 바꾼다', '인터넷 게이트웨이를 하나 더 붙인다'],
+  opts: ['S3 게이트웨이 엔드포인트로 NAT를 우회한다', '같은 서브넷에 NAT 게이트웨이를 여러 개 두고 라우팅 테이블에서 트래픽을 나눠 대역폭을 합친다', 'NAT 인스턴스로 바꾼다', '인터넷 게이트웨이를 하나 더 붙인다'],
   ans: [0],
   exp: '**게이트웨이 엔드포인트**를 쓰면 S3 트래픽이 NAT를 거치지 않고 VPC 라우팅으로 바로 S3에 가므로 **NAT 대역폭 병목과 처리 비용**이 모두 사라진다. VPC에 인터넷 게이트웨이는 하나만 붙일 수 있다.',
   tip: 'S3/DynamoDB 대량 트래픽 → Gateway Endpoint(성능·비용 모두).',
@@ -266,7 +266,7 @@ QB.push(
 {
   id: 'b10-33', cat: 'analytics', domain: 'performance', svc: ['Athena 성능'],
   q: 'Athena 쿼리가 수천 개의 작은 파일(각 수 KB)을 읽느라 느리다. 데이터 양 자체는 크지 않다. 성능을 높이는 방법으로 가장 적절한 것은?',
-  opts: ['작은 파일들을 128MB 내외의 큰 파일로 합치고 Parquet로 변환한다', '파일을 더 잘게 나눈다', 'S3 스토리지 클래스를 Glacier로 바꾼다', '쿼리에 LIMIT를 붙인다'],
+  opts: ['작은 파일을 큰 파일로 합치고 Parquet로 변환한다', '파일을 더 잘게 나눠 병렬로 읽는 단위를 늘리고 Athena 작업 그룹의 동시성 한도를 높인다', '스토리지 클래스를 Glacier로 바꾼다', '쿼리에 LIMIT를 붙인다'],
   ans: [0],
   exp: 'Athena와 Spark 같은 엔진은 파일마다 열기·메타데이터 처리 오버헤드가 있어서, **작은 파일이 많으면 성능이 크게 떨어진다.** Glue 작업이나 CTAS로 파일을 **적당히 큰 크기로 합치고** 컬럼 형식으로 변환하면 빨라진다. Firehose 버퍼 크기를 늘려 처음부터 큰 파일로 쓰는 것도 방법이다.',
   tip: '"작은 파일 문제" → 파일 병합(compaction) + 컬럼 형식.',
@@ -274,7 +274,7 @@ QB.push(
 {
   id: 'b10-34', cat: 'compute', domain: 'performance', svc: ['Graviton 성능'],
   q: 'Java 기반 마이크로서비스를 운영하는 회사가 같은 비용으로 더 많은 요청을 처리하고 싶다. 애플리케이션은 멀티 아키텍처 컨테이너 이미지로 빌드되어 있다. 가장 효과적인 방법은?',
-  opts: ['ECS/EKS 노드나 Fargate 작업을 ARM64 기반으로 바꾼다', '모든 서비스를 T 인스턴스로 바꾼다', '컨테이너를 하나로 합친다', 'JVM 힙을 최소로 줄인다'],
+  opts: ['ECS/EKS 노드나 Fargate 작업을 ARM64 기반으로 바꾼다', '모든 서비스를 T 인스턴스로 바꿔 크레딧으로 피크를 처리한다', '컨테이너를 하나로 합쳐 메모리 오버헤드를 줄인다', 'JVM 힙을 최소로 줄인다'],
   ans: [0],
   exp: '**Graviton**은 같은 가격에 더 높은 성능(가격 대비 성능 최대 약 40% 향상)을 제공한다. 멀티 아키텍처 이미지가 있으면 노드나 작업의 아키텍처만 ARM64로 바꾸면 된다. Fargate도 ARM64를 지원한다.',
   tip: '가격 대비 성능 ↑ → Graviton(ARM64).',
@@ -282,7 +282,7 @@ QB.push(
 {
   id: 'b10-35', cat: 'storage', domain: 'performance', svc: ['EBS 최적화'],
   q: 'EC2 인스턴스에 io2 볼륨으로 30,000 IOPS를 프로비저닝했는데, 실제로는 그 성능이 나오지 않는다. 볼륨 자체에는 문제가 없다. 가장 가능성 높은 원인은?',
-  opts: ['인스턴스 유형의 최대 EBS 대역폭·IOPS 한도가 볼륨 성능보다 낮다', 'io2는 10,000 IOPS 이상을 지원하지 않는다', '보안 그룹이 EBS 트래픽을 제한한다', '볼륨이 암호화되어 있어서다'],
+  opts: ['인스턴스의 EBS 대역폭·IOPS 한도가 볼륨보다 낮다', 'io2는 볼륨 크기가 4TB 미만이면 10,000 IOPS 이상을 낼 수 없으므로 볼륨을 늘려야 한다', '보안 그룹이 EBS 트래픽을 제한한다', '볼륨이 암호화되어 있어 IOPS가 절반으로 줄었다'],
   ans: [0],
   exp: 'EBS 성능은 **볼륨 성능과 인스턴스의 EBS 대역폭·IOPS 한도 중 낮은 쪽**으로 제한된다. 작은 인스턴스는 EBS 한도가 낮으므로 **더 큰 EBS 최적화 인스턴스**를 골라야 한다. EBS 트래픽은 보안 그룹의 영향을 받지 않고, 암호화는 성능에 거의 영향을 주지 않는다.',
   tip: 'EBS 성능 = min(볼륨 한도, 인스턴스 EBS 한도).',
@@ -290,7 +290,7 @@ QB.push(
 {
   id: 'b10-36', cat: 'database', domain: 'performance', svc: ['DynamoDB 온디맨드 급증'],
   q: '새 게임 출시 당일, DynamoDB 테이블에 평소의 수십 배 트래픽이 몰릴 예정이다. 온디맨드 모드를 쓰고 있는데, 출시 직후 스로틀링이 생길까 걱정된다. 사전에 할 수 있는 조치는?',
-  opts: ['출시 전에 웜 처리량 값을 높여 테이블과 인덱스가 즉시 높은 처리량을 낼 수 있게 미리 준비한다', '출시 직전 테이블을 삭제하고 다시 만든다', 'LSI를 추가한다', 'TTL을 켠다'],
+  opts: ['출시 전에 웜 처리량을 높여 미리 준비한다', '출시 직전 테이블을 프로비저닝 모드로 바꿔 최대 용량을 잡았다가 다시 온디맨드로 되돌린다', 'LSI를 추가해 쓰기를 분산한다', 'TTL을 켜서 테이블 크기를 줄인다'],
   ans: [0],
   exp: '온디맨드 테이블은 이전 피크를 기준으로 빠르게 확장되지만, **처음 겪는 큰 급증**에는 스로틀링이 생길 수 있다. DynamoDB **웜 처리량**을 미리 높이면 테이블과 GSI가 지정한 읽기·쓰기 속도를 **즉시** 처리할 수 있게 준비된다. 파티션 키 분산 설계도 함께 점검한다.',
   tip: '대규모 이벤트 전 DynamoDB → Warm Throughput 사전 설정.',
@@ -306,7 +306,7 @@ QB.push(
 {
   id: 'b10-38', cat: 'analytics', domain: 'performance', svc: ['Firehose 버퍼'],
   q: 'Firehose로 S3에 적재한 로그를 대시보드에서 볼 수 있기까지 최대 5분이 걸린다. 비즈니스 요건은 1분 이내다. 어떻게 조정해야 하는가?',
-  opts: ['Firehose 버퍼링 간격을 줄여 더 자주 전송하게 한다', 'Firehose 버퍼 크기를 최대로 늘린다', 'S3 Transfer Acceleration을 켠다', 'Kinesis 보존 기간을 늘린다'],
+  opts: ['Firehose 버퍼링 간격을 줄여 더 자주 전송하게 한다', 'Firehose 버퍼 크기를 최대로 늘려 한 번에 더 많이 보낸다', 'S3 Transfer Acceleration을 켜서 적재를 앞당긴다', 'Kinesis 보존 기간을 늘려 지연 데이터를 다시 읽는다'],
   ans: [0],
   exp: 'Firehose는 **버퍼 크기**나 **버퍼 시간** 중 먼저 도달한 조건에서 데이터를 전송한다. 지연을 줄이려면 **버퍼 간격을 짧게** 설정한다(작은 파일이 많아지는 트레이드오프가 있다). 버퍼를 0초로 설정할 수도 있다. 진짜 실시간 처리가 필요하면 Data Streams와 Lambda/Flink를 쓴다.',
   tip: 'Firehose 지연 ↔ 버퍼 크기/시간 트레이드오프.',
