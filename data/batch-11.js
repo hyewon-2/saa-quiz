@@ -36,7 +36,7 @@ QB.push(
 {
   id: 'b11-05', cat: 'security', domain: 'secure', svc: ['AssumeRole MFA 조건'],
   q: '운영 계정의 관리자 역할은 MFA 인증을 마친 사용자만 맡을(assume) 수 있어야 한다. 어디에 어떤 조건을 넣어야 하는가?',
-  opts: ['역할의 신뢰 정책에 aws:MultiFactorAuthPresent 조건을 넣는다', '역할의 권한 정책 각 문에 MFA 조건을 넣어 역할을 맡은 뒤에 인증을 확인한다', 'SCP로 모든 AssumeRole을 거부한다', '콘솔 로그인 정책에서 MFA 장치를 필수로 지정한다'],
+  opts: ['역할의 신뢰 정책에 aws:MultiFactorAuthPresent 조건을 넣는다', '역할의 권한 정책 각 문에 MFA 조건을 넣어 역할을 맡은 뒤에 인증을 확인한다', 'SCP로 모든 AssumeRole을 거부한다', '콘솔 로그인 정책에서 MFA 장치를 필수로 지정해 모든 역할 전환에 자동으로 적용되게 한다'],
   ans: [0],
   exp: '역할을 **누가 어떤 조건에서 맡을 수 있는지**는 **신뢰 정책**이 정한다. 신뢰 정책에 `aws:MultiFactorAuthPresent` 조건을 걸면, MFA로 받은 세션 자격 증명으로만 역할을 맡을 수 있다. 권한 정책은 역할을 맡은 **뒤에** 무엇을 할 수 있는지를 정한다.',
   tip: '역할 맡기 조건 = 신뢰 정책 / 맡은 후 권한 = 권한 정책.',
@@ -77,7 +77,7 @@ QB.push(
   opts: [
     '전송 중 암호화와 저장 시 암호화를 켠다',
     'Redis AUTH나 RBAC로 인증하고 SG로 제한한다',
-    'Memcached로 바꾸고 노드를 전용 서브넷에 둔다',
+    'Memcached로 바꾸고 노드를 전용 서브넷에 둬서 다른 앱의 접속을 막는다',
     '노드 유형을 키운다',
     'TTL을 짧게 한다',
   ],
@@ -144,7 +144,7 @@ QB.push(
 {
   id: 'b11-17', cat: 'security', domain: 'secure', svc: ['미사용 자격 증명 탐지'],
   q: '보안 감사에서 90일 넘게 쓰지 않은 IAM 사용자, 액세스 키, 역할을 찾아 정리하라는 요구가 나왔다. 조직의 여러 계정에서 지속적으로 찾아내려면 어떤 기능이 가장 적합한가?',
-  opts: ['IAM Access Analyzer의 미사용 액세스 분석기', 'AWS Budgets로 사용자별 비용이 0인 계정 찾기', 'VPC 흐름 로그로 키별 호출 기록 분석', 'Amazon Macie의 자격 증명 사용 분석'],
+  opts: ['IAM Access Analyzer의 미사용 액세스 분석기', 'AWS Budgets로 사용자별 비용이 0인 계정 찾기', 'VPC 흐름 로그를 Athena로 분석해 액세스 키별 호출 기록 찾기', 'Amazon Macie의 자격 증명 사용 분석'],
   ans: [0],
   exp: '**Access Analyzer 미사용 액세스 분석기**는 조직이나 계정의 **사용하지 않는 역할, 액세스 키, 암호, 서비스·작업 수준 권한**을 지속적으로 찾아 결과로 보여 준다. 단일 계정이라면 **IAM 자격 증명 보고서**(credential report)로 키의 마지막 사용일을 확인할 수도 있다.',
   tip: '미사용 자격 증명/권한 → Access Analyzer unused access (또는 Credential Report).',
@@ -246,7 +246,7 @@ QB.push(
 {
   id: 'b11-29', cat: 'security', domain: 'secure', svc: ['Inspector Lambda 스캔'],
   q: '서버리스 팀이 Lambda 함수의 패키지 의존성(npm, pip)과 코드 자체에 알려진 취약점이나 하드코딩된 비밀이 있는지 지속적으로 점검하고 싶다. 가장 적합한 서비스는?',
-  opts: ['Amazon Inspector의 Lambda 표준 스캔과 코드 스캔', 'Amazon Macie 코드 스캔', 'AWS Shield Advanced의 애플리케이션 보호', 'AWS Config 규칙과 사용자 지정 Lambda 평가'],
+  opts: ['Amazon Inspector의 Lambda 표준 스캔과 코드 스캔', 'Amazon Macie 코드 스캔', 'AWS Shield Advanced의 애플리케이션 보호', 'AWS Config 규칙과 사용자 지정 Lambda 평가로 함수의 패키지를 점검'],
   ans: [0],
   exp: '**Inspector**는 Lambda 함수의 **패키지 취약점(표준 스캔)**과 **코드 취약점·하드코딩된 비밀(코드 스캔)**을 배포할 때와 새 CVE가 공개될 때 **자동으로** 점검한다. EC2와 ECR 이미지도 같은 콘솔에서 관리한다.',
   tip: 'Lambda 취약점·코드 스캔 → Inspector.',

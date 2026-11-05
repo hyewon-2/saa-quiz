@@ -4,7 +4,7 @@ QB.push(
 {
   id: 'b13-01', cat: 'security', domain: 'secure', svc: ['kms:ViaService'],
   q: 'KMS 고객 관리형 키는 **S3를 통한 암호화·복호화에만** 쓰여야 하고, 사용자가 KMS API를 직접 호출해 임의의 데이터를 복호화하는 것은 막아야 한다. 키 정책에 어떤 조건을 써야 하는가?',
-  opts: ['kms:ViaService 조건에 s3.<리전>.amazonaws.com을 지정한다', 'aws:SourceIp 조건', 'aws:SecureTransport 조건', 'kms:EncryptionAlgorithm 조건만 지정'],
+  opts: ['kms:ViaService 조건에 S3 서비스를 지정한다', 'aws:SourceIp 조건으로 S3 IP 대역만 허용한다', 'aws:SecureTransport 조건으로 HTTPS 요청만 허용한다', 'kms:EncryptionAlgorithm 조건으로 사용할 알고리즘을 지정한다'],
   ans: [0],
   exp: '**kms:ViaService** 조건은 KMS 요청이 **지정한 AWS 서비스를 거쳐 들어온 경우에만** 허용한다. 사용자가 S3를 통해 객체를 읽을 때는 복호화되지만, KMS Decrypt API를 직접 호출하면 거부된다.',
   tip: '키를 특정 서비스 경유로만 사용 → kms:ViaService.',
@@ -12,7 +12,7 @@ QB.push(
 {
   id: 'b13-02', cat: 'security', domain: 'secure', svc: ['데이터 경계', 'aws:ResourceOrgID'],
   q: '내부자가 회사 EC2에서 **조직 밖의 개인 S3 버킷**으로 데이터를 업로드해 유출하는 것을 막고 싶다. VPC의 S3 게이트웨이 엔드포인트를 쓰고 있다. 가장 효과적인 통제는?',
-  opts: ['S3 엔드포인트 정책에서 aws:ResourceOrgID가 회사 조직 ID인 버킷만 허용한다', '보안 그룹 아웃바운드에서 S3를 막는다', 'S3 퍼블릭 액세스 차단을 켠다', 'CloudTrail을 켠다'],
+  opts: ['엔드포인트 정책에서 aws:ResourceOrgID가 회사인 버킷만 허용한다', '보안 그룹 아웃바운드에서 S3 접두사 목록을 막고 회사 버킷의 프라이빗 IP만 허용해 유출 경로를 차단한다', 'S3 퍼블릭 액세스 차단을 켠다', 'CloudTrail을 켠다'],
   ans: [0],
   exp: '**aws:ResourceOrgID** 조건은 접근 대상 **리소스가 속한 조직**을 확인한다. 엔드포인트 정책이나 SCP에서 **우리 조직의 리소스만** 허용하면 외부 버킷으로 쓰는 것을 막을 수 있다. 이렇게 신뢰할 수 있는 주체, 리소스, 네트워크만 허용하는 구성을 **데이터 경계(data perimeter)**라고 한다. 퍼블릭 액세스 차단은 우리 버킷의 공개만 막는다.',
   tip: '데이터 경계: 주체(PrincipalOrgID) · 리소스(ResourceOrgID) · 네트워크(SourceVpce).',
@@ -28,7 +28,7 @@ QB.push(
 {
   id: 'b13-04', cat: 'compute', domain: 'secure', svc: ['사용자 데이터 비밀'],
   q: '개발자가 EC2 사용자 데이터 스크립트에 DB 암호를 넣어 인스턴스 시작 시 설정하고 있다. 이 방식의 문제와 개선 방법은?',
-  opts: ['사용자 데이터는 인스턴스 메타데이터와 콘솔·API로 조회할 수 있어 비밀이 노출된다', '사용자 데이터는 암호화되므로 문제없다', '사용자 데이터 크기 제한 때문에 문제다', 'Base64로 인코딩하면 안전하다'],
+  opts: ['사용자 데이터는 메타데이터와 API로 조회되므로 Secrets Manager를 쓴다', '사용자 데이터는 KMS로 암호화되어 저장되므로 문제없고 스크립트 로그만 지우면 된다', '크기 제한(16KB) 때문에 암호를 길게 쓸 수 없는 것이 문제다', 'Base64로 인코딩되어 있어 그대로 두어도 안전하다'],
   ans: [0],
   exp: '사용자 데이터는 **암호화되지 않으며**, 인스턴스 안에서는 메타데이터(IMDS)로, 밖에서는 `DescribeInstanceAttribute` 권한이 있으면 조회할 수 있다. 비밀은 **Secrets Manager나 Parameter Store**에 저장하고 IAM 역할로 가져와야 한다. Base64는 인코딩일 뿐 암호화가 아니다.',
   tip: '사용자 데이터에 비밀 금지.',
@@ -36,7 +36,7 @@ QB.push(
 {
   id: 'b13-05', cat: 'management', domain: 'secure', svc: ['CloudWatch Logs 암호화'],
   q: '애플리케이션 로그에 개인 정보가 일부 포함될 수 있어, CloudWatch Logs 로그 그룹을 회사가 통제하는 키로 암호화하고 키 사용을 감사해야 한다. 어떻게 해야 하는가?',
-  opts: ['로그 그룹에 고객 관리형 KMS 키를 연결하고, 키 정책에서 CloudWatch Logs 서비스 주체의 사용을 허용한다', 'CloudWatch Logs는 암호화를 지원하지 않는다', '로그를 Base64로 인코딩한다', '로그 보존 기간을 1일로 줄인다'],
+  opts: ['로그 그룹에 KMS 키를 연결하고 키 정책에서 Logs를 허용한다', 'CloudWatch Logs는 고객 키를 지원하지 않으므로 로그를 S3로 내보내 SSE-KMS로 저장해야 한다', '로그를 Base64로 인코딩한다', '로그 보존 기간을 1일로 줄인다'],
   ans: [0],
   exp: 'CloudWatch Logs는 기본으로 저장 시 암호화되며, **로그 그룹에 KMS 고객 관리형 키를 연결**하면 키 정책으로 통제하고 CloudTrail로 감사할 수 있다. 키 정책에서 `logs.<리전>.amazonaws.com` 서비스 주체를 허용해야 한다. 민감 데이터를 가리려면 로그 데이터 보호(마스킹) 정책도 쓸 수 있다.',
   tip: 'CloudWatch Logs 암호화 = 로그 그룹 KMS 키 (+데이터 보호 마스킹).',
@@ -44,7 +44,7 @@ QB.push(
 {
   id: 'b13-06', cat: 'networking', domain: 'secure', svc: ['CloudFront OAC', 'SSE-KMS'],
   q: 'CloudFront가 OAC로 S3 원본에 접근하도록 설정했는데, SSE-KMS로 암호화된 객체만 403 오류가 나고 SSE-S3 객체는 잘 열린다. 무엇을 추가해야 하는가?',
-  opts: ['KMS 키 정책에서 cloudfront.amazonaws.com 서비스 주체가 해당 배포로부터 kms:Decrypt를 할 수 있게 허용한다', 'S3 버킷을 퍼블릭으로 바꾼다', 'OAC를 지우고 OAI로 바꾼다', 'CloudFront 캐시를 무효화한다'],
+  opts: ['KMS 키 정책에서 해당 배포의 CloudFront kms:Decrypt를 허용한다', 'S3 버킷을 퍼블릭으로 바꿔 CloudFront가 복호화 없이 객체를 바로 읽을 수 있게 한다', 'OAC를 지우고 OAI로 바꾼다', 'CloudFront 캐시를 무효화한다'],
   ans: [0],
   exp: 'SSE-KMS 객체를 제공하려면 CloudFront가 S3를 통해 **KMS 복호화**를 할 수 있어야 한다. 그래서 **KMS 키 정책**에서 CloudFront 서비스 주체(조건: 배포 ARN)에 `kms:Decrypt`를 허용해야 한다. **레거시 OAI는 SSE-KMS를 지원하지 않는다.**',
   tip: 'OAC + SSE-KMS = KMS 키 정책에 CloudFront 허용 (OAI는 미지원).',
@@ -52,7 +52,7 @@ QB.push(
 {
   id: 'b13-07', cat: 'security', domain: 'secure', svc: ['SCP 조직 이탈 방지'],
   q: '멤버 계정 관리자가 계정을 조직에서 탈퇴시켜 SCP 가드레일을 우회할 수 있다는 우려가 제기되었다. 이를 막으려면?',
-  opts: ['organizations:LeaveOrganization 작업을 거부하는 SCP를 모든 OU에 적용한다', '멤버 계정의 루트 암호를 바꾼다', 'CloudTrail을 켠다', '계정마다 IAM 권한 경계를 설정한다'],
+  opts: ['organizations:LeaveOrganization을 거부하는 SCP를 적용한다', '멤버 계정의 루트 암호를 관리 계정에서 재설정해 중앙에서 보관하고 사용 내역을 감시한다', 'CloudTrail을 켠다', '계정마다 IAM 권한 경계를 설정한다'],
   ans: [0],
   exp: '멤버 계정이 조직을 떠나면 SCP 같은 조직 정책이 더 이상 적용되지 않는다. **organizations:LeaveOrganization을 거부하는 SCP**로 탈퇴를 막는 것이 일반적인 가드레일이다. 같은 방식으로 GuardDuty, Config, CloudTrail 비활성화도 막을 수 있다.',
   tip: '대표 SCP 가드레일: 조직 탈퇴 금지, 보안 서비스 비활성화 금지, 리전 제한.',
@@ -61,9 +61,9 @@ QB.push(
   id: 'b13-08', cat: 'storage', domain: 'secure', svc: ['MFA Delete'],
   q: 'S3 버킷에 MFA Delete를 켜려고 한다. 이에 대한 설명으로 옳은 것은? (2개 선택)',
   opts: [
-    '버전 관리가 켜진 버킷에서만 쓸 수 있고, 객체 버전 영구 삭제와 버전 관리 상태 변경에 MFA를 요구한다',
-    '버킷 소유자 계정의 루트 사용자만 CLI·API로 MFA Delete를 켜고 끌 수 있다',
-    'IAM 사용자 누구나 콘솔에서 켤 수 있다',
+    '버전 관리 버킷에서 영구 삭제와 상태 변경에 MFA를 요구한다',
+    '루트 사용자만 CLI·API로 켜고 끌 수 있다',
+    's3:PutBucketVersioning 권한이 있는 IAM 사용자라면 누구나 콘솔에서 켤 수 있다',
     '모든 GetObject 요청에 MFA를 요구한다',
     '버전 관리 없이도 쓸 수 있다',
   ],
@@ -74,7 +74,7 @@ QB.push(
 {
   id: 'b13-09', cat: 'networking', domain: 'secure', svc: ['CloudFront TLS 정책'],
   q: '보안 정책상 사용자와 CloudFront 사이의 연결은 TLS 1.2 이상만 허용해야 한다. 어떻게 설정해야 하는가?',
-  opts: ['CloudFront 배포의 보안 정책을 TLSv1.2_2021 이상으로 설정한다', 'S3 버킷 정책에 aws:SecureTransport를 추가한다', 'WAF로 TLS 버전을 검사한다', 'Route 53에서 설정한다'],
+  opts: ['CloudFront 배포의 보안 정책을 TLSv1.2_2021 이상으로 설정한다', 'S3 버킷 정책에 s3:TlsVersion 조건을 추가해 뷰어 연결을 제한한다', 'WAF 규칙으로 TLS 버전을 검사해 차단한다', 'Route 53 레코드에서 최소 TLS를 설정한다'],
   ans: [0],
   exp: 'CloudFront는 사용자 지정 인증서를 쓸 때 **뷰어 보안 정책**으로 **최소 TLS 버전과 암호 스위트**를 정한다. TLSv1.2_2021처럼 정책을 고르면 그보다 낮은 버전의 클라이언트 연결은 거부된다. ALB도 리스너 보안 정책으로 같은 제어를 한다.',
   tip: 'TLS 최소 버전 강제 = CloudFront/ALB 보안 정책.',
@@ -82,7 +82,7 @@ QB.push(
 {
   id: 'b13-10', cat: 'compute', domain: 'secure', svc: ['ALB 보안 정책'],
   q: 'PCI 규정상 ALB HTTPS 리스너에서 오래된 프로토콜(TLS 1.0/1.1)과 약한 암호 스위트를 막고, 가능하면 양자 내성(PQ) 알고리즘도 지원해야 한다. 어떻게 해야 하는가?',
-  opts: ['ALB HTTPS 리스너의 보안 정책을 TLS 1.2 이상만 허용하는 최신 정책으로 설정한다', '보안 그룹에서 443을 막는다', '대상 그룹 프로토콜을 HTTP로 바꾼다', 'WAF SQL 인젝션 규칙을 추가한다'],
+  opts: ['HTTPS 리스너 보안 정책을 TLS 1.2 이상 정책으로 설정한다', '보안 그룹에서 TLS 1.0과 1.1이 쓰는 포트를 막고 443만 허용한다', '대상 그룹 프로토콜을 HTTP로 바꿔 TLS를 쓰지 않게 한다', 'WAF SQL 인젝션 규칙을 추가한다'],
   ans: [0],
   exp: 'ALB는 **사전 정의된 보안 정책**으로 허용할 TLS 버전과 암호 스위트를 정한다. TLS 1.3과 1.2만 허용하는 정책(FIPS, PQ 변형 포함)을 고르면 규정 요건을 맞출 수 있다. 보안 그룹은 포트 수준만 제어한다.',
   tip: 'ELB TLS 버전/암호 제어 = 리스너 보안 정책.',
@@ -90,7 +90,7 @@ QB.push(
 {
   id: 'b13-11', cat: 'security', domain: 'secure', svc: ['Access Analyzer 사용자 지정 정책 검사'],
   q: '플랫폼팀은 CI/CD 파이프라인에서 개발자가 바꾼 IAM 정책이 **기존보다 더 넓은 권한을 새로 부여하는지** 배포 전에 자동으로 검사해 막고 싶다. 가장 적합한 기능은?',
-  opts: ['IAM Access Analyzer 사용자 지정 정책 검사를 파이프라인에 넣는다', 'IAM 정책 시뮬레이터를 수동으로 실행한다', 'CloudTrail을 켠다', 'Trusted Advisor를 켠다'],
+  opts: ['IAM Access Analyzer 사용자 지정 정책 검사를 파이프라인에 넣는다', '담당자가 IAM 정책 시뮬레이터를 수동으로 실행해 위험 작업을 확인한다', 'CloudTrail로 배포 후 권한 변경을 추적한다', 'Trusted Advisor IAM 점검을 파이프라인에 넣는다'],
   ans: [0],
   exp: 'Access Analyzer의 **사용자 지정 정책 검사**는 자동 추론으로 정책을 분석해서, **새 정책이 기준 정책보다 더 많은 접근을 허용하는지**(CheckNoNewAccess)나 **특정 위험한 작업을 허용하는지**(CheckAccessNotGranted)를 판단한다. CI/CD에 넣어 권한 상승이 담긴 변경을 자동으로 막을 수 있다.',
   tip: '정책 변경 자동 검증(CI) → Access Analyzer custom policy checks.',
@@ -98,7 +98,7 @@ QB.push(
 {
   id: 'b13-12', cat: 'compute', domain: 'secure', svc: ['ECR 교차 계정'],
   q: '중앙 빌드 계정의 ECR 리포지토리에 있는 컨테이너 이미지를 여러 워크로드 계정의 ECS 작업이 가져와야(pull) 한다. 이미지를 복제하지 않고 하려면?',
-  opts: ['ECR 리포지토리 정책에서 워크로드 계정의 ecr:BatchGetImage 등 pull 권한을 허용하고, 워크로드 계정의 작업 실행 역할에도 권한을 준다', '이미지를 퍼블릭 ECR에 올린다', '각 계정에 이미지를 수동으로 푸시한다', 'S3에 이미지를 tar로 저장한다'],
+  opts: ['리포지토리 정책으로 pull을 허용하고 실행 역할에도 권한을 준다', '이미지를 퍼블릭 ECR에 올리고 워크로드 계정이 인증 없이 가져오게 해서 교차 계정 권한 설정을 없앤다', '각 계정에 이미지를 수동으로 푸시한다', 'S3에 이미지를 tar로 저장한다'],
   ans: [0],
   exp: 'ECR **리포지토리 정책**(리소스 기반)으로 다른 계정이나 조직 전체의 pull을 허용하고, 사용하는 쪽 **작업 실행 역할**에도 ECR 읽기 권한을 준다. 여러 리전이나 계정에 사본이 필요하면 ECR **복제** 기능을 쓸 수도 있다. 사내 이미지를 퍼블릭으로 올리면 안 된다.',
   tip: 'ECR 교차 계정 = 리포지토리 정책 + 사용 측 IAM.',
@@ -106,7 +106,7 @@ QB.push(
 {
   id: 'b13-13', cat: 'compute', domain: 'secure', svc: ['Lambda 코드 서명'],
   q: '규정상 Lambda에는 승인된 빌드 파이프라인이 서명한 코드만 배포되어야 한다. 누군가 서명되지 않거나 변조된 코드를 올리면 배포를 거부해야 한다. 어떤 기능을 써야 하는가?',
-  opts: ['AWS Signer 서명 프로필과 Lambda 코드 서명 구성을 함수에 적용한다', 'Lambda 버전 관리만 쓴다', 'Lambda 환경 변수를 암호화한다', 'S3 버킷 버전 관리를 켠다'],
+  opts: ['AWS Signer 서명 프로필과 Lambda 코드 서명 구성을 함수에 적용한다', 'Lambda 버전과 별칭을 쓰고 승인된 버전만 운영 별칭에 연결한다', 'Lambda 환경 변수를 KMS로 암호화한다', '코드를 올리는 S3 버킷의 버전 관리를 켠다'],
   ans: [0],
   exp: '**Lambda 코드 서명**은 **AWS Signer**로 서명된 코드 패키지만 배포되게 한다. 서명 검증에 실패하면 경고하거나(Warn) **배포를 거부**한다(Enforce). 신뢰할 수 있는 게시자(서명 프로필)를 지정하고, 서명 만료와 폐기도 검사한다.',
   tip: '서명된 코드만 배포 → Lambda Code Signing + AWS Signer.',
@@ -114,7 +114,7 @@ QB.push(
 {
   id: 'b13-14', cat: 'management', domain: 'secure', svc: ['CloudFormation 동적 참조'],
   q: 'CloudFormation 템플릿으로 RDS를 만들 때 마스터 암호를 템플릿이나 파라미터 기본값에 평문으로 쓰지 않고 싶다. 가장 적합한 방법은?',
-  opts: ['RDS의 ManageMasterUserPassword로 Secrets Manager가 암호를 생성·관리하게 하거나, {{resolve:secretsmanager:...}} 동적 참조를 쓴다', '암호를 템플릿에 하드코딩한다', '암호를 스택 출력(Outputs)으로 내보낸다', '암호를 태그에 넣는다'],
+  opts: ['ManageMasterUserPassword나 Secrets Manager 동적 참조를 쓴다', '암호를 NoEcho 없이 파라미터 기본값에 넣고 템플릿 저장소의 접근 권한을 제한해 관리한다', '암호를 스택 출력으로 내보낸다', '암호를 태그에 넣는다'],
   ans: [0],
   exp: 'RDS는 **ManageMasterUserPassword**로 마스터 암호를 **Secrets Manager에서 자동으로 생성하고 교체**할 수 있다. 또는 템플릿에서 **동적 참조**(`{{resolve:secretsmanager:...}}`)로 배포할 때 값을 가져오면 평문이 템플릿에 남지 않는다. 파라미터를 쓴다면 NoEcho를 설정한다.',
   tip: 'IaC 비밀 = Secrets Manager 동적 참조 / RDS 관리형 암호.',
@@ -122,7 +122,7 @@ QB.push(
 {
   id: 'b13-15', cat: 'storage', domain: 'secure', svc: ['미리 서명된 URL 만료'],
   q: '애플리케이션이 7일 유효한 S3 미리 서명된 URL을 만들었는데, 몇 시간 만에 접근이 거부된다. URL은 EC2 인스턴스 역할의 자격 증명으로 서명했다. 원인은?',
-  opts: ['URL에 서명한 임시 자격 증명이 먼저 만료되면, URL의 만료 시각과 관계없이 URL도 무효가 된다', 'S3가 7일 URL을 지원하지 않는다', '버킷이 퍼블릭이 아니라서다', 'URL은 한 번만 쓸 수 있다'],
+  opts: ['서명한 임시 자격 증명이 먼저 만료되면 URL도 무효가 된다', 'S3가 지원하는 미리 서명된 URL의 최대 기간은 12시간이므로 7일로 설정해도 12시간에 만료된다', '버킷이 퍼블릭이 아니라서 URL이 거부된다', 'URL은 한 번만 쓸 수 있다'],
   ans: [0],
   exp: '미리 서명된 URL의 실제 유효 기간은 **설정한 만료 시간과 서명에 쓴 자격 증명의 만료 중 더 이른 쪽**이다. 인스턴스 역할 같은 **임시 자격 증명**은 몇 시간 안에 만료되므로 URL도 함께 무효가 된다. SigV4 미리 서명된 URL의 최대 기간은 7일이며, 장기 URL이 꼭 필요하다면 CloudFront 서명된 URL 같은 다른 방법을 검토한다.',
   tip: 'Presigned URL 유효기간 = min(설정 만료, 서명 자격 증명 만료).',
@@ -138,7 +138,7 @@ QB.push(
 {
   id: 'b13-17', cat: 'networking', domain: 'secure', svc: ['TGW 라우팅 테이블 분리'],
   q: '하나의 Transit Gateway에 운영 VPC들과 개발 VPC들이 연결되어 있다. 운영과 개발 VPC는 서로 통신하면 안 되지만, 둘 다 공유 서비스 VPC와는 통신해야 한다. 어떻게 구성하는가?',
-  opts: ['TGW 라우팅 테이블을 운영용·개발용·공유용으로 나누고, 연결과 전파를 조정해 운영↔개발 경로가 없게 한다', '모든 VPC를 하나의 TGW 라우팅 테이블에 둔다', '보안 그룹만으로 막는다', 'TGW를 두 개 만들고 서로 피어링한다'],
+  opts: ['TGW 라우팅 테이블을 나눠 연결과 전파로 경로를 분리한다', '모든 VPC를 하나의 TGW 라우팅 테이블에 두고 각 VPC의 NACL로 운영과 개발 CIDR을 막는다', '보안 그룹만으로 막는다', 'TGW를 두 개 만들고 서로 피어링한다'],
   ans: [0],
   exp: 'Transit Gateway는 **여러 라우팅 테이블**을 지원한다. 각 연결이 어느 테이블을 쓸지(**연결**)와 어느 테이블에 경로를 알릴지(**전파**)를 조절해 **네트워크 세그먼트를 분리**한다. 운영과 개발 테이블에는 공유 VPC 경로만 넣고, 공유 테이블에는 양쪽 경로를 모두 넣는다.',
   tip: 'TGW 세그먼트 분리 = 다중 라우팅 테이블(association/propagation).',
@@ -146,7 +146,7 @@ QB.push(
 {
   id: 'b13-18', cat: 'security', domain: 'secure', svc: ['GuardDuty 조직 관리'],
   q: '보안팀이 조직의 모든 기존 계정과 앞으로 만들 계정에 GuardDuty를 자동으로 켜고, 결과를 보안 계정 한 곳에서 보고 싶다. 가장 적합한 방법은?',
-  opts: ['보안 계정을 GuardDuty 위임 관리자로 지정하고, 조직의 모든 멤버 계정에 자동 활성화를 설정한다', '계정마다 GuardDuty를 수동으로 켠다', 'CloudTrail 결과를 메일로 받는다', '각 계정의 루트 사용자가 켜게 한다'],
+  opts: ['위임 관리자를 지정하고 자동 활성화를 설정한다', '계정이 생길 때마다 Lambda가 그 계정의 역할을 맡아 GuardDuty를 켜고 결과를 메일로 보내게 한다', 'CloudTrail 결과를 메일로 받는다', '각 계정의 루트 사용자가 켜게 한다'],
   ans: [0],
   exp: 'GuardDuty, Security Hub, Macie, Inspector 같은 보안 서비스는 Organizations와 통합된다. **위임 관리자** 계정에서 **자동 활성화**를 설정하면 새 계정에도 자동으로 켜지고, 결과가 관리자 계정에 모인다. SCP로 비활성화를 막으면 더 확실하다.',
   tip: '보안 서비스 조직 전체 = 위임 관리자 + Auto-enable.',
@@ -162,7 +162,7 @@ QB.push(
 {
   id: 'b13-20', cat: 'database', domain: 'secure', svc: ['DynamoDB 엔드포인트 정책'],
   q: '프라이빗 서브넷의 애플리케이션이 DynamoDB 게이트웨이 엔드포인트를 통해 `Orders` 테이블에만 접근해야 한다. 같은 계정의 다른 테이블에는 이 VPC에서 접근하지 못하게 하려면?',
-  opts: ['DynamoDB 게이트웨이 엔드포인트 정책에서 Orders 테이블 ARN만 허용한다', '보안 그룹에서 DynamoDB를 막는다', 'NACL로 DynamoDB IP를 막는다', 'DynamoDB Streams를 끈다'],
+  opts: ['DynamoDB 게이트웨이 엔드포인트 정책에서 Orders 테이블 ARN만 허용한다', '인스턴스 보안 그룹에서 다른 테이블의 IP를 막는다', 'NACL로 다른 DynamoDB 테이블 IP를 막는다', '다른 테이블의 DynamoDB Streams를 끈다'],
   ans: [0],
   exp: '**게이트웨이 엔드포인트 정책**은 엔드포인트를 통해 접근할 수 있는 **리소스와 작업**을 제한한다. Orders 테이블만 허용하면 이 VPC에서는 다른 테이블에 접근할 수 없다. 인스턴스 역할의 IAM 정책도 최소 권한으로 함께 설정한다.',
   tip: '엔드포인트 정책 = VPC에서 접근 가능한 리소스 제한.',
@@ -178,7 +178,7 @@ QB.push(
 {
   id: 'b13-22', cat: 'networking', domain: 'secure', svc: ['보안 그룹 vs NACL 계층 방어'],
   q: '공격이 의심되는 IP 대역이 서브넷의 여러 인스턴스를 동시에 스캔하고 있다. 즉시 차단하면서, 앞으로 이 서브넷에 새로 생기는 인스턴스에도 자동으로 적용되게 하려면?',
-  opts: ['해당 서브넷의 NACL에 이 IP 대역을 거부하는 인바운드 규칙을 낮은 번호로 추가한다', '각 인스턴스의 보안 그룹에 거부 규칙을 추가한다', '인스턴스를 모두 재부팅한다', 'IAM 정책으로 IP를 거부한다'],
+  opts: ['서브넷 NACL에 낮은 번호의 거부 규칙을 추가한다', '각 인스턴스의 보안 그룹에 해당 IP 대역 거부 규칙을 추가하고 새 인스턴스의 시작 템플릿에도 반영한다', '인스턴스를 모두 재부팅한다', 'IAM 정책으로 IP를 거부한다'],
   ans: [0],
   exp: '**NACL**은 **서브넷 단위**로 적용되므로 그 서브넷의 모든 인스턴스(앞으로 생길 인스턴스 포함)에 바로 적용되고, **명시적 거부**를 지원한다. 보안 그룹은 거부 규칙이 없고 인스턴스 단위로 붙는다. 애플리케이션 계층 공격이라면 WAF IP 집합이 더 적합하다.',
   tip: '서브넷 전체 IP 차단 = NACL Deny.',
@@ -186,7 +186,7 @@ QB.push(
 {
   id: 'b13-23', cat: 'security', domain: 'secure', svc: ['S3 Access Grants'],
   q: '회사가 사내 디렉터리(IAM Identity Center에 연결된 Entra ID)의 사용자와 그룹 단위로 S3 접두사 권한을 대규모로 관리하려 한다. 사용자가 수만 명이라 IAM 정책이나 버킷 정책으로는 한도와 관리 문제가 있다. 가장 적합한 기능은?',
-  opts: ['Amazon S3 Access Grants로 디렉터리 ID를 S3 접두사 권한에 매핑한다', '사용자마다 IAM 사용자를 만든다', '버킷 정책에 사용자 수만 명을 나열한다', '버킷을 퍼블릭으로 연다'],
+  opts: ['Amazon S3 Access Grants로 디렉터리 ID를 S3 접두사 권한에 매핑한다', '사용자마다 IAM 사용자를 만들어 접두사 정책을 붙인다', '버킷 정책에 사용자 수만 명을 나열하고 정책을 여러 개로 나눠 연결한다', '버킷을 퍼블릭으로 연다'],
   ans: [0],
   exp: '**S3 Access Grants**는 **IAM 주체나 기업 디렉터리 ID**(Identity Center 연동)를 S3 버킷이나 접두사의 읽기·쓰기 권한에 매핑하고, 접근할 때 임시 자격 증명을 발급한다. 정책 크기 한도 없이 대규모 사용자 권한을 관리하고 CloudTrail로 사용자 단위 감사도 할 수 있다.',
   tip: '디렉터리 사용자 단위 대규모 S3 권한 → S3 Access Grants.',
@@ -194,7 +194,7 @@ QB.push(
 {
   id: 'b13-24', cat: 'compute', domain: 'secure', svc: ['IMDSv2 조직 강제'],
   q: '보안팀이 조직 전체에서 새로 시작되는 모든 EC2 인스턴스가 IMDSv2만 쓰도록 강제하고 싶다. 가장 적합한 방법은?',
-  opts: ['SCP에서 ec2:MetadataHttpTokens가 required가 아닌 RunInstances를 거부한다', '각 인스턴스에 로그인해 IMDSv1을 끈다', 'CloudTrail에서 IMDSv1 사용을 확인한다', '보안 그룹에서 169.254.169.254를 막는다'],
+  opts: ['SCP에서 ec2:MetadataHttpTokens가 required가 아니면 거부한다', '각 인스턴스에 로그인해 IMDSv1을 끄고 시작 스크립트에도 같은 설정을 넣어 새 인스턴스에 적용한다', 'CloudTrail에서 IMDSv1 사용을 확인한다', '보안 그룹에서 169.254.169.254를 막는다'],
   ans: [0],
   exp: '**ec2:MetadataHttpTokens** 조건 키로 IMDSv2(`required`)가 아닌 인스턴스 시작을 SCP에서 **거부**할 수 있다. **계정·리전 수준 IMDS 기본값**을 IMDSv2로 설정하면 새 인스턴스에 기본으로 적용된다. CloudWatch `MetadataNoToken` 지표로 IMDSv1 사용을 찾아낼 수 있다.',
   tip: 'IMDSv2 강제 = SCP(ec2:MetadataHttpTokens) + 계정 기본값.',
@@ -202,7 +202,7 @@ QB.push(
 {
   id: 'b13-25', cat: 'storage', domain: 'secure', svc: ['S3 버킷 정책 주체 제한'],
   q: '민감한 버킷은 특정 IAM 역할(DataProcessorRole)만 읽을 수 있어야 하고, 같은 계정의 관리자 권한을 가진 다른 사용자도 읽을 수 없어야 한다. 어떻게 해야 하는가?',
-  opts: ['버킷 정책에서 aws:PrincipalArn이 DataProcessorRole이 아니면 s3:GetObject를 Deny한다', 'IAM 정책에서 관리자에게 S3 권한을 준다', '버킷 ACL을 private으로 둔다', '버킷을 다른 리전으로 옮긴다'],
+  opts: ['버킷 정책에서 해당 역할이 아니면 s3:GetObject를 Deny한다', '관리자의 IAM 정책에서 S3 권한을 빼고 DataProcessorRole에만 s3:GetObject를 주어 접근을 나눈다', '버킷 ACL을 private으로 둔다', '버킷을 다른 리전으로 옮긴다'],
   ans: [0],
   exp: '같은 계정 안에서는 IAM 정책 **또는** 버킷 정책 중 하나만 허용해도 접근할 수 있다. 그래서 관리자처럼 넓은 IAM 권한을 가진 주체를 막으려면 **버킷 정책의 명시적 Deny**(예: `aws:PrincipalArn` 조건)가 필요하다. 이때 정책 관리 권한까지 잠기지 않도록 예외를 신중하게 설계한다.',
   tip: '관리자도 못 읽게 = 버킷 정책 Deny + PrincipalArn 조건.',
@@ -210,7 +210,7 @@ QB.push(
 {
   id: 'b13-26', cat: 'security', domain: 'secure', svc: ['외부 IdP 페더레이션'],
   q: '회사가 사내 SAML 2.0 IdP(ADFS)를 이미 쓰고 있고, 단일 AWS 계정에서 직원들이 사내 계정으로 콘솔에 로그인하게 하려 한다. IAM 사용자를 만들지 않으려면 어떻게 하는가?',
-  opts: ['IAM에 SAML 자격 증명 공급자를 만들고, IdP 그룹에 매핑되는 IAM 역할을 만들어 SAML 페더레이션으로 콘솔에 로그인하게 한다', '직원마다 IAM 사용자를 만든다', 'Cognito 사용자 풀에 직원을 등록한다', '루트 계정을 공유한다'],
+  opts: ['SAML 공급자를 만들고 IdP 그룹을 IAM 역할에 매핑한다', '직원마다 IAM 사용자를 만들고 사내 IdP의 암호와 스크립트로 동기화해 같은 암호로 로그인하게 한다', 'Cognito 사용자 풀에 직원을 등록한다', '루트 계정을 공유한다'],
   ans: [0],
   exp: '**SAML 2.0 페더레이션**을 쓰면 IdP가 인증한 사용자가 `AssumeRoleWithSAML`로 IAM 역할의 **임시 자격 증명**을 받아 콘솔이나 API에 접근한다. IAM 사용자가 필요 없다. 계정이 여러 개라면 **IAM Identity Center**로 중앙에서 관리하는 것이 더 편하다.',
   tip: '사내 IdP로 AWS 로그인 → SAML 페더레이션/Identity Center.',
@@ -218,7 +218,7 @@ QB.push(
 {
   id: 'b13-27', cat: 'networking', domain: 'secure', svc: ['프라이빗 API 접근'],
   q: '온프레미스 서버가 Direct Connect를 통해 VPC의 **프라이빗** API Gateway를 호출해야 한다. 인터넷을 거치면 안 된다. 어떻게 구성하는가?',
-  opts: ['VPC에 execute-api 인터페이스 엔드포인트를 만들고, 온프레미스에서는 엔드포인트별 DNS 이름으로 호출한다', '프라이빗 API를 리전 API로 바꾼다', 'NAT 게이트웨이를 만든다', 'API 키를 온프레미스에 배포한다'],
+  opts: ['execute-api 인터페이스 엔드포인트를 만들어 호출한다', '프라이빗 API를 리전 API로 바꾸고 리소스 정책에서 DX 공인 IP만 허용해 온프레미스에서 호출하게 한다', 'NAT 게이트웨이를 만든다', 'API 키를 온프레미스에 배포한다'],
   ans: [0],
   exp: '프라이빗 API는 **execute-api 인터페이스 엔드포인트**를 통해서만 호출할 수 있다. 엔드포인트는 VPC 안의 프라이빗 IP이므로 **DX나 VPN으로 연결된 온프레미스**에서도 접근할 수 있다. 온프레미스 DNS가 엔드포인트 이름을 해석할 수 있도록 Resolver 인바운드 엔드포인트를 쓰거나 엔드포인트별 DNS 이름을 쓴다.',
   tip: '온프렘 → 프라이빗 API = Interface Endpoint over DX/VPN.',
@@ -226,7 +226,7 @@ QB.push(
 {
   id: 'b13-28', cat: 'security', domain: 'secure', svc: ['보안 이벤트 알림 아키텍처'],
   q: 'IAM 정책 변경, 보안 그룹 0.0.0.0/0 개방, CloudTrail 중지 같은 위험한 변경이 일어나면 즉시 보안 채널에 알림을 보내고 싶다. 서버리스로 가장 간단히 구현하려면?',
-  opts: ['CloudTrail 이벤트를 매칭하는 EventBridge 규칙을 만들어 SNS나 Lambda로 보낸다', 'EC2에서 CloudTrail 로그를 매분 폴링한다', 'Trusted Advisor 보고서를 매주 확인한다', 'S3 인벤토리를 쓴다'],
+  opts: ['CloudTrail 이벤트를 EventBridge 규칙으로 잡아 SNS로 보낸다', 'EC2에서 S3에 저장된 CloudTrail 로그를 매분 폴링해 위험한 API 이름을 찾고 채팅으로 알린다', 'Trusted Advisor 보고서를 매주 확인한다', 'S3 인벤토리를 쓴다'],
   ans: [0],
   exp: 'CloudTrail에 기록되는 API 호출은 **EventBridge 이벤트**로도 전달된다. 특정 API(예: AuthorizeSecurityGroupIngress, StopLogging, PutUserPolicy)에 맞는 **이벤트 패턴 규칙**을 만들어 SNS나 Lambda, Amazon Q Developer(채팅 앱 연동)로 보내면 **거의 실시간 알림**이 된다.',
   tip: '위험 API 실시간 알림 = CloudTrail → EventBridge 규칙 → SNS.',
@@ -235,7 +235,7 @@ QB.push(
 {
   id: 'b13-29', cat: 'compute', domain: 'performance', svc: ['Lambda SnapStart'],
   q: 'Java(Spring Boot)로 작성된 Lambda 함수의 콜드 스타트가 수 초나 걸린다. 프로비저닝된 동시성 비용을 들이지 않고 콜드 스타트를 크게 줄이려면?',
-  opts: ['Lambda SnapStart를 켜서 초기화된 실행 환경의 스냅샷에서 시작하게 한다', '메모리를 128MB로 줄인다', '예약된 동시성을 0으로 설정한다', '제한 시간을 15분으로 늘린다'],
+  opts: ['Lambda SnapStart를 켜서 초기화된 실행 환경의 스냅샷에서 시작하게 한다', '메모리를 128MB로 줄여 초기화할 클래스 수를 줄인다', '예약된 동시성을 0으로 설정한다', '제한 시간을 15분으로 늘려 콜드 스타트 실패를 막는다'],
   ans: [0],
   exp: '**SnapStart**는 함수 버전을 게시할 때 초기화된 실행 환경의 **스냅샷**을 만들어 두고, 호출되면 스냅샷에서 **재개**해서 Java, Python, .NET 같은 런타임의 콜드 스타트를 크게 줄인다. 추가 요금이 없거나 적다(런타임에 따라 다름). 고유성이 필요한 값(난수, 연결)은 재개 후 다시 만들도록 주의한다.',
   tip: '무거운 런타임 콜드 스타트 → SnapStart (또는 Provisioned Concurrency).',
@@ -259,7 +259,7 @@ QB.push(
 {
   id: 'b13-32', cat: 'integration', domain: 'performance', svc: ['SQS 배치 API'],
   q: '생산자 애플리케이션이 SQS에 작은 메시지를 초당 수만 건씩 하나씩 SendMessage로 보내고 있어서 API 호출 수와 지연이 크다. 처리량을 높이고 비용을 줄이는 방법은?',
-  opts: ['SendMessageBatch로 최대 10개 메시지를 한 번에 보내고, 소비자도 ReceiveMessage에서 최대 10개씩 받는다', '메시지마다 새 대기열을 만든다', '가시성 제한 시간을 늘린다', 'FIFO로 바꾼다'],
+  opts: ['SendMessageBatch로 최대 10개씩 묶어 보내고 받는다', '메시지 유형마다 새 대기열을 만들어 생산자를 분산하고 API 호출을 대기열별로 나눈다', '가시성 제한 시간을 늘린다', 'FIFO로 바꾼다'],
   ans: [0],
   exp: 'SQS **배치 API**(SendMessageBatch, DeleteMessageBatch, ReceiveMessage MaxNumberOfMessages=10)는 한 번 호출에 **최대 10개**를 처리하므로 API 호출 수와 비용이 최대 1/10로 줄고 처리량은 늘어난다. 요금은 64KB 단위 요청 수 기준이다.',
   tip: 'SQS 처리량·비용 → 배치 API(최대 10건).',
@@ -267,7 +267,7 @@ QB.push(
 {
   id: 'b13-33', cat: 'networking', domain: 'performance', svc: ['CloudFront 압축'],
   q: '웹 애플리케이션의 큰 JavaScript와 CSS, JSON 응답 때문에 모바일 사용자의 로딩이 느리다. 원본 서버를 고치지 않고 전송 크기를 줄이려면?',
-  opts: ['CloudFront 캐시 정책에서 Gzip·Brotli 압축을 켜서 엣지에서 자동으로 압축해 제공한다', 'TTL을 0으로 설정한다', 'CloudFront 가격 등급을 낮춘다', 'S3 Transfer Acceleration을 켠다'],
+  opts: ['캐시 정책에서 Gzip·Brotli 자동 압축을 켠다', 'TTL을 0으로 설정해 항상 최신 파일을 받게 한다', 'CloudFront 가격 등급을 낮춰 가까운 엣지를 쓴다', 'S3 Transfer Acceleration을 켜서 다운로드를 가속한다'],
   ans: [0],
   exp: 'CloudFront는 클라이언트가 지원하면 텍스트 기반 콘텐츠를 **엣지에서 Gzip이나 Brotli로 자동 압축**한다. 전송 크기가 크게 줄어 로딩이 빨라지고, 데이터 전송 비용도 줄어든다. 캐시 정책에서 압축 지원을 켜고 배포에서 자동 압축을 활성화한다.',
   tip: '전송 크기 감소 → CloudFront 자동 압축(Gzip/Brotli).',
@@ -275,7 +275,7 @@ QB.push(
 {
   id: 'b13-34', cat: 'database', domain: 'performance', svc: ['DynamoDB 배치 읽기'],
   q: '상품 상세 페이지가 관련 상품 50개를 DynamoDB에서 GetItem으로 하나씩 순서대로 읽어 응답이 느리다. 왕복 횟수를 줄이려면?',
-  opts: ['BatchGetItem으로 여러 키를 한 번에 요청한다', 'Scan으로 테이블 전체를 읽는다', '강력한 일관성 읽기로 바꾼다', '테이블을 여러 개로 나눈다'],
+  opts: ['BatchGetItem으로 여러 키를 한 번에 요청한다', 'Scan으로 테이블 전체를 읽고 필요한 상품만 거른다', '강력한 일관성 읽기로 바꾼다', '테이블을 카테고리별로 여러 개로 나눈다'],
   ans: [0],
   exp: '**BatchGetItem**은 하나 이상의 테이블에서 **최대 100개 항목**을 한 번의 요청으로 가져와 네트워크 왕복을 크게 줄인다. 처리되지 않은 키(UnprocessedKeys)는 재시도해야 한다. 자주 읽는 데이터라면 DAX 캐싱도 함께 쓸 수 있다.',
   tip: '여러 키 조회 → BatchGetItem (쓰기는 BatchWriteItem).',

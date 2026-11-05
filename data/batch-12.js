@@ -160,7 +160,7 @@ QB.push(
 {
   id: 'b12-19', cat: 'storage', domain: 'resilient', svc: ['FSx for ONTAP 복제'],
   q: 'FSx for NetApp ONTAP에 저장된 파일 공유를 다른 리전에도 유지해서 리전 장애 때 빠르게 전환하고 싶다. NetApp 기능을 활용하는 가장 적합한 방법은?',
-  opts: ['NetApp SnapMirror로 다른 리전의 FSx for ONTAP 파일 시스템에 복제한다', 'EFS 복제를 ONTAP 볼륨에 연결해 리전 간 복제한다', 'ONTAP 파일을 S3로 내보내 교차 리전 복제한다', 'DataSync를 연 1회 실행해 전체를 복사한다'],
+  opts: ['SnapMirror로 다른 리전의 FSx for ONTAP에 복제한다', 'EFS 복제를 ONTAP 볼륨에 연결해 리전 간 복제한다', 'ONTAP 파일을 S3로 내보내 교차 리전 복제한다', 'DataSync를 매일 실행해 다른 리전의 FSx for ONTAP으로 전체를 복사한다'],
   ans: [0],
   exp: 'FSx for ONTAP은 **SnapMirror**를 지원해서 다른 리전(또는 온프레미스 NetApp)의 ONTAP 파일 시스템으로 볼륨을 **비동기 복제**한다. 재해 때 대상 볼륨을 쓰기 가능으로 전환하면 된다. 매일 백업하는 AWS Backup 교차 리전 복사보다 RPO가 짧다.',
   tip: 'FSx ONTAP DR → SnapMirror.',
@@ -249,7 +249,7 @@ QB.push(
 {
   id: 'b12-30', cat: 'analytics', domain: 'cost', svc: ['Athena 작업 그룹'],
   q: '여러 팀이 Athena를 쓰는데, 일부 분석가가 실수로 수 TB를 스캔하는 쿼리를 돌려 비용이 급증하곤 한다. 팀별로 비용을 통제하고 추적하려면?',
-  opts: ['팀별 Athena 작업 그룹을 만들고, 쿼리당·작업 그룹당 스캔 데이터 한도와 비용 할당 태그를 설정한다', '모든 분석가의 Athena 권한을 없앤다', 'Athena 대신 EMR을 쓴다', 'S3 버킷을 비공개로 만든다'],
+  opts: ['팀별 작업 그룹에 쿼리당 스캔 한도와 태그를 설정한다', '모든 분석가의 Athena 권한을 없애고 데이터팀이 요청을 받아 대신 쿼리를 실행해 결과를 전달한다', 'Athena 대신 EMR을 쓴다', 'S3 버킷을 비공개로 만든다'],
   ans: [0],
   exp: 'Athena **작업 그룹**은 팀이나 워크로드별로 쿼리를 나누고, **쿼리당 스캔 한도**(넘으면 취소)와 **작업 그룹 전체 사용량 알림**을 설정할 수 있다. 태그로 비용을 추적하고, 결과 위치와 암호화도 강제할 수 있다.',
   tip: 'Athena 비용 통제 → Workgroup 데이터 사용 한도.',
@@ -265,7 +265,7 @@ QB.push(
 {
   id: 'b12-32', cat: 'analytics', domain: 'cost', svc: ['OpenSearch 스토리지 계층'],
   q: 'OpenSearch Service에 로그를 90일 보관하는데, 최근 7일 로그만 자주 검색하고 그 이전 로그는 가끔 조회한다. 모든 데이터를 핫 노드의 EBS에 두고 있어 비용이 크다. 비용을 줄이는 방법은?',
-  opts: ['인덱스 상태 관리로 7일이 지난 인덱스를 UltraWarm으로, 더 오래된 인덱스는 콜드 스토리지로 옮긴다', '모든 노드를 더 큰 인스턴스로 바꾼다', '복제본 샤드를 늘린다', '로그를 RDS로 옮긴다'],
+  opts: ['ISM으로 오래된 인덱스를 UltraWarm과 콜드로 옮긴다', '모든 노드를 더 큰 인스턴스로 바꿔 노드 수를 줄이고 복제본 샤드를 없애 EBS 사용량을 낮춘다', '복제본 샤드를 늘린다', '로그를 RDS로 옮긴다'],
   ans: [0],
   exp: 'OpenSearch Service의 **UltraWarm**(S3 기반 웜 계층)과 **콜드 스토리지**는 핫 노드보다 훨씬 저렴하다. **ISM 정책**으로 인덱스가 오래되면 자동으로 웜, 콜드, 삭제 단계로 옮긴다. 자주 검색하는 최근 데이터만 핫 노드에 남긴다.',
   tip: 'OpenSearch 로그 비용 → Hot → UltraWarm → Cold (ISM).',
@@ -282,10 +282,10 @@ QB.push(
   id: 'b12-34', cat: 'management', domain: 'cost', svc: ['유휴 리소스'],
   q: '비용 검토 중 트래픽이 거의 없는 ALB 수십 개, 연결되지 않은 탄력적 IP, 몇 달 동안 CPU가 1% 미만인 RDS 인스턴스가 발견되었다. 이런 유휴 리소스를 지속적으로 찾아낼 도구로 적절한 것은? (2개 선택)',
   opts: [
-    'AWS Trusted Advisor 비용 최적화 점검',
-    'AWS Compute Optimizer 및 Cost Optimization Hub의 권장 사항',
-    'AWS Artifact',
-    'Amazon Inspector',
+    'Trusted Advisor 비용 최적화 점검',
+    'Compute Optimizer와 Cost Optimization Hub 권장 사항',
+    'AWS Artifact의 사용률 보고서로 유휴 리소스 찾기',
+    'Amazon Inspector 스캔으로 사용하지 않는 리소스 찾기',
     'AWS Shield',
   ],
   ans: [0, 1],
@@ -303,7 +303,7 @@ QB.push(
 {
   id: 'b12-36', cat: 'compute', domain: 'cost', svc: ['컨테이너 스팟', 'EKS'],
   q: 'EKS에서 실행되는 상태 비저장 웹 API 파드(여러 레플리카)와 배치 작업의 컴퓨팅 비용을 줄이고 싶다. 파드는 언제든 다른 노드로 옮겨져도 된다. 가장 효과적인 방법은?',
-  opts: ['Karpenter로 여러 인스턴스 유형의 스팟 노드를 쓰고, 파드 중단 예산과 여러 레플리카로 중단에 대비한다', '모든 노드를 온디맨드 최대 크기로 고정한다', '파드를 하나의 노드에 몰아넣는다', '전용 호스트를 쓴다'],
+  opts: ['Karpenter로 다양한 스팟 노드를 쓰고 PDB로 대비한다', '모든 노드를 온디맨드 최대 크기로 고정하고 Savings Plans를 약정해 파드를 빈틈없이 채워 넣는다', '파드를 하나의 노드에 몰아넣는다', '전용 호스트를 쓴다'],
   ans: [0],
   exp: '상태 비저장 파드와 배치 작업은 **스팟 노드**에 적합하다. **Karpenter**는 스팟 중단 알림을 처리해 파드를 미리 옮기고, 여러 인스턴스 유형에 걸쳐 용량을 확보한다. **PDB와 여러 레플리카**로 노드가 회수될 때도 가용성을 유지한다.',
   tip: 'EKS 비용 = 스팟 + 다양한 유형 + PDB.',
