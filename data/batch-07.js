@@ -212,7 +212,7 @@ QB.push(
 {
   id: 'b07-24', cat: 'compute', domain: 'secure', svc: ['EKS Pod Identity'],
   q: 'EKS 클러스터에서 실행되는 여러 파드가 각각 다른 AWS 권한(어떤 파드는 S3, 어떤 파드는 DynamoDB)을 가져야 한다. 노드 인스턴스 역할에 모든 권한을 몰아주지 않으려면?',
-  opts: ['EKS Pod Identity로 Kubernetes 서비스 계정마다 IAM 역할을 연결한다', '노드 IAM 역할에 모든 파드에 필요한 S3와 DynamoDB 권한을 합쳐서 준다', '파드 환경 변수에 액세스 키를 넣는다', '권한별로 파드를 서로 다른 노드 그룹에 나눠 노드 역할을 달리 연결한다'],
+  opts: ['EKS Pod Identity로 서비스 계정에 IAM 역할을 연결한다', '노드 IAM 역할에 모든 파드에 필요한 S3와 DynamoDB 권한을 합쳐서 주고 파드 수준에서는 네트워크 정책으로 제한한다', '파드 환경 변수에 액세스 키를 넣는다', '권한별로 파드를 서로 다른 노드 그룹에 나눠 노드 역할을 달리 연결한다'],
   ans: [0],
   exp: '**EKS Pod Identity**나 **IRSA**(IAM Roles for Service Accounts)는 **서비스 계정 단위**로 IAM 역할을 연결해서 파드가 자기 역할의 임시 자격 증명만 받게 한다. ECS의 작업 역할과 같은 개념이다. 노드 역할에 권한을 몰아주면 모든 파드가 모든 권한을 갖게 된다.',
   tip: 'EKS 파드별 권한 → Pod Identity/IRSA. ECS → Task Role.',
@@ -244,7 +244,7 @@ QB.push(
 {
   id: 'b07-28', cat: 'compute', domain: 'secure', svc: ['EC2 Instance Connect Endpoint'],
   q: '퍼블릭 IP가 없는 프라이빗 서브넷의 EC2에 운영자가 SSH로 접속해야 한다. 배스천 호스트를 운영하지 않고, IAM 권한으로 접속을 통제하고 싶다. 인스턴스에 SSM Agent는 설치할 수 없다. 가장 적합한 방법은?',
-  opts: ['VPC에 EC2 Instance Connect Endpoint를 만들고 IAM 정책으로 접속을 허용한다', '인스턴스에 탄력적 IP를 붙이고 사무실 IP에만 22번을 연다', 'NAT 게이트웨이의 포트 전달로 SSH 연결을 받는다', '운영자 VPC와 피어링을 맺어 사설 IP로 접속하되 그 VPC에 공용 진입 호스트를 하나 둔다'],
+  opts: ['EC2 Instance Connect Endpoint와 IAM 정책으로 접속한다', '인스턴스에 탄력적 IP를 붙이고 사무실 IP에만 22번을 연다', 'NAT 게이트웨이의 포트 전달로 SSH 연결을 받는다', '운영자 VPC와 피어링을 맺어 사설 IP로 접속하되 그 VPC에 공용 진입 호스트를 하나 둔다'],
   ans: [0],
   exp: '**EC2 Instance Connect Endpoint**는 퍼블릭 IP나 배스천, 에이전트 없이 **프라이빗 인스턴스에 SSH나 RDP로** 접속하게 해 준다. 접근은 **IAM 정책**과 보안 그룹으로 제어하고, CloudTrail에 기록된다. SSM Agent를 쓸 수 있다면 Session Manager도 좋은 대안이다.',
   tip: '배스천 없는 프라이빗 접속: Session Manager(에이전트) / EC2 Instance Connect Endpoint(SSH).',
@@ -282,7 +282,7 @@ QB.push(
 {
   id: 'b07-32', cat: 'security', domain: 'secure', svc: ['태그 정책', 'SCP'],
   q: '조직의 모든 EC2 인스턴스는 생성할 때 CostCenter 태그를 반드시 가져야 한다. 태그 없이 인스턴스를 시작하려는 요청은 거부해야 한다. 가장 적합한 방법은?',
-  opts: ['SCP에서 aws:RequestTag/CostCenter가 없으면 ec2:RunInstances를 Deny한다', '매일 Lambda로 태그가 없는 인스턴스를 찾아 종료하고 담당자에게 알린다', 'Cost Explorer에서 태그가 없는 비용을 찾아 담당 팀에 요청한다', '모든 인스턴스에 기본 태그를 붙이는 Lambda를 만든다'],
+  opts: ['SCP에서 aws:RequestTag가 없는 RunInstances를 Deny한다', '매일 Lambda로 태그가 없는 인스턴스를 찾아 자동으로 종료하고 담당자에게 메일로 알린다', 'Cost Explorer에서 태그가 없는 비용을 찾아 담당 팀에 요청한다', '모든 인스턴스에 기본 태그를 붙이는 Lambda를 만든다'],
   ans: [0],
   exp: '**`aws:RequestTag` + Null 조건**을 쓰는 Deny 정책(SCP 또는 IAM)은 리소스를 **생성하는 시점에** 태그가 없으면 요청 자체를 거부한다(**예방적 통제**). Organizations의 **태그 정책**은 태그 키와 값 형식을 표준화하고 규정 준수를 보고한다. 사후에 종료하는 방식은 탐지적 통제다.',
   tip: '생성 시 태그 강제 = aws:RequestTag 조건 Deny. 태그 형식 표준화 = Tag Policy.',
@@ -314,7 +314,7 @@ QB.push(
 {
   id: 'b07-36', cat: 'networking', domain: 'secure', svc: ['WAF 지역 차단'],
   q: '전자상거래 사이트(ALB)가 서비스하지 않는 특정 국가들에서 악성 트래픽이 많이 들어온다. 해당 국가에서 오는 요청을 ALB 앞단에서 차단하려면?',
-  opts: ['ALB에 연결된 AWS WAF 웹 ACL에 지역 일치 차단 규칙을 추가한다', 'NACL에 국가별 IP 대역을 일일이 추가한다', 'Route 53 지리 위치 라우팅으로 차단한다', '보안 그룹에 Deny 규칙을 추가한다'],
+  opts: ['WAF 웹 ACL에 지역 일치 차단 규칙을 추가한다', 'NACL에 해당 국가들의 IP 대역을 거부 규칙으로 일일이 추가한다', 'Route 53 지리 위치 라우팅으로 차단한다', '보안 그룹에 Deny 규칙을 추가한다'],
   ans: [0],
   exp: '**WAF 지역 일치 규칙**은 요청 IP의 국가를 기준으로 차단하거나 허용한다. NACL은 규칙 수가 제한되어 있고 국가별 IP 대역을 관리하기 어렵다. 보안 그룹은 Deny 규칙이 없다. Route 53 지리 위치 라우팅은 접근 차단 기능이 아니다. CloudFront를 쓴다면 지리적 제한도 쓸 수 있다.',
   tip: 'ALB 국가 차단 → WAF Geo match. CloudFront → Geo restriction도 가능.',

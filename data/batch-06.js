@@ -208,7 +208,7 @@ QB.push(
 {
   id: 'sec-34', cat: 'security', domain: 'secure', svc: ['IAM MFA 조건'],
   q: '관리자가 EC2 인스턴스를 종료하거나 S3 버킷을 삭제하는 것 같은 위험한 작업은 MFA로 인증한 세션에서만 할 수 있게 하고 싶다. IAM 정책에 어떤 조건을 써야 하는가?',
-  opts: ['aws:MultiFactorAuthPresent가 true일 때만 허용하는 조건', 'aws:SecureTransport가 true일 때만 허용하는 조건', 'aws:SourceIp가 관리자 사무실 대역일 때만 허용하는 조건', 'aws:RequestedRegion이 승인된 리전일 때만 허용하는 조건'],
+  opts: ['aws:MultiFactorAuthPresent가 true일 때만 허용하는 조건', 'aws:SecureTransport가 true일 때만 허용하는 조건', 'aws:SourceIp가 관리자 사무실 대역에 포함될 때만 해당 작업을 허용하는 조건', 'aws:RequestedRegion이 승인된 리전일 때만 허용하는 조건'],
   ans: [0],
   exp: '**aws:MultiFactorAuthPresent** 조건 키를 쓰면 MFA로 인증한 자격 증명에서만 특정 작업을 허용할 수 있다. 보통 `BoolIfExists`와 Deny를 함께 써서 MFA가 없으면 거부한다. 필요하면 `aws:MultiFactorAuthAge`로 MFA 인증 후 경과 시간도 제한할 수 있다.',
   tip: '"MFA 있을 때만 위험 작업" → aws:MultiFactorAuthPresent.',
@@ -249,7 +249,7 @@ QB.push(
 {
   id: 'int-34', cat: 'integration', domain: 'resilient', svc: ['SQS FIFO 중복 제거'],
   q: '클라이언트가 네트워크 오류로 같은 주문 메시지를 SQS FIFO 대기열에 몇 초 간격으로 여러 번 보내는 일이 생긴다. 대기열 수준에서 중복 메시지를 자동으로 제거하려면?',
-  opts: ['콘텐츠 기반 중복 제거나 같은 MessageDeduplicationId를 쓴다', '가시성 제한 시간을 늘려 같은 메시지가 대기열에 다시 들어오는 것을 막는다', '지연 대기열을 5분으로 설정해 중복 메시지가 합쳐지게 한다', 'DLQ를 설정해 중복 메시지를 옮긴다'],
+  opts: ['콘텐츠 기반 중복 제거나 MessageDeduplicationId를 쓴다', '가시성 제한 시간을 늘려 같은 메시지가 대기열에 다시 들어오는 것을 막는다', '지연 대기열을 5분으로 설정해 중복 메시지가 합쳐지게 한다', 'DLQ를 설정해 중복 메시지를 옮긴다'],
   ans: [0],
   exp: 'SQS FIFO는 **5분 중복 제거 기간** 동안 같은 **MessageDeduplicationId**를 가진 메시지를 한 번만 받아들인다. **콘텐츠 기반 중복 제거**를 켜면 메시지 본문의 SHA-256 해시를 중복 제거 ID로 쓴다. 표준 대기열에는 이 기능이 없다.',
   tip: 'FIFO 중복 제거 = 5분 창 + Deduplication ID/콘텐츠 기반.',

@@ -219,7 +219,7 @@ QB.push(
 {
   id: 'net-35', cat: 'networking', domain: 'resilient', svc: ['Route 53 ARC'],
   q: '대규모 결제 시스템이 두 리전에서 액티브-스탠바이로 운영된다. 리전 장애 시 운영자가 **DNS 컨트롤 플레인에 의존하지 않고** 안정적으로 트래픽을 수동 전환할 수 있어야 하고, 대기 리전이 전환할 준비가 되었는지 계속 점검해야 한다. 가장 적합한 서비스는?',
-  opts: ['Amazon Route 53 Application Recovery Controller', 'Route 53 장애 조치 레코드와 수동 TTL 조정을 조합한 운영 절차', 'CloudFront 원본 그룹으로 두 리전을 묶는 구성', 'AWS Backup'],
+  opts: ['Amazon Route 53 Application Recovery Controller', 'Route 53 장애 조치 레코드와 TTL 수동 조정을 조합한 운영 절차와 대기 리전 점검 체크리스트', 'CloudFront 원본 그룹으로 두 리전을 묶는 구성', 'AWS Backup'],
   ans: [0],
   exp: '**Route 53 ARC**는 고가용성 데이터 플레인 API로 상태를 바꾸는 **라우팅 제어**(on/off 스위치), 대기 리전의 용량과 구성을 점검하는 **준비 상태 확인**, 실수로 전부 꺼 버리는 것을 막는 **안전 규칙**, AZ 단위로 트래픽을 빼는 **영역 이동(zonal shift)**을 제공한다. 미션 크리티컬한 다중 리전 장애 조치에 쓴다.',
   tip: '미션 크리티컬 다중 리전/AZ 장애 조치 통제 → Route 53 ARC (Zonal shift 포함).',
