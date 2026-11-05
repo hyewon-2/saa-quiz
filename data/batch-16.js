@@ -4,7 +4,7 @@ QB.push(
 {
   id: 'b16-01', cat: 'networking', domain: 'secure', svc: ['CloudFront 신뢰할 수 있는 키 그룹'],
   q: 'CloudFront 서명된 URL을 쓰려고 한다. AWS 권장 방식에 따라 서명용 키를 관리하려면 어떻게 해야 하는가?',
-  opts: ['공개 키를 CloudFront에 업로드해 신뢰할 수 있는 키 그룹을 만들고, 애플리케이션은 개인 키로 서명한다', '루트 계정의 CloudFront 키 페어를 만든다', 'IAM 사용자 액세스 키로 서명한다', 'KMS 대칭 키로 서명한다'],
+  opts: ['공개 키로 신뢰할 수 있는 키 그룹을 만들고 개인 키로 서명한다', '루트 계정으로 CloudFront 키 페어를 만들어 개인 키를 안전한 곳에 보관하고 애플리케이션이 서명한다', 'IAM 사용자 액세스 키로 서명한다', 'KMS 대칭 키로 서명한다'],
   ans: [0],
   exp: 'AWS는 서명된 URL과 쿠키에 **신뢰할 수 있는 키 그룹**을 권장한다. 공개 키를 CloudFront에 등록하고, 애플리케이션이 **개인 키**로 서명한다. 루트 사용자가 필요 없고, IAM으로 관리하며, 키를 교체하기도 쉽다. 예전 방식인 루트 계정의 CloudFront 키 페어는 권장되지 않는다.',
   tip: 'CloudFront 서명 = Trusted Key Groups (루트 키 페어 X).',
@@ -12,7 +12,7 @@ QB.push(
 {
   id: 'b16-02', cat: 'security', domain: 'secure', svc: ['Secrets Manager 사용자 지정 교체'],
   q: '외부 SaaS API 키를 Secrets Manager에 저장했는데, 90일마다 SaaS 쪽에서 새 키를 발급받아 교체해야 한다. RDS처럼 기본 제공되는 교체 템플릿은 없다. 자동 교체를 구현하려면?',
-  opts: ['SaaS API를 호출해 새 키를 만들고 테스트한 뒤 비밀을 갱신하는 사용자 지정 교체 Lambda 함수를 연결하고 교체 일정을 설정한다', 'Parameter Store로 옮기면 자동으로 교체된다', 'KMS 자동 키 교체를 켠다', '교체는 RDS 비밀만 가능하다'],
+  opts: ['SaaS 키를 갱신하는 사용자 지정 교체 Lambda를 연결한다', '비밀을 Parameter Store로 옮기고 SecureString 정책을 설정하면 SaaS 쪽 키까지 자동으로 교체된다', 'KMS 자동 키 교체를 켠다', '교체는 RDS 비밀만 가능하다'],
   ans: [0],
   exp: 'Secrets Manager는 **교체 Lambda 함수**로 어떤 비밀이든 자동 교체할 수 있다. 함수는 createSecret, setSecret, testSecret, finishSecret 단계를 구현한다. RDS, Redshift, DocumentDB 등은 **관리형 교체**를 제공하고, 그 밖의 비밀은 **사용자 지정 함수**를 쓴다. KMS 키 교체는 암호화 키 교체이지 비밀 값 교체가 아니다.',
   tip: '임의 비밀 자동 교체 → 사용자 지정 교체 Lambda.',
@@ -20,7 +20,7 @@ QB.push(
 {
   id: 'b16-03', cat: 'security', domain: 'secure', svc: ['Parameter Store 고급 파라미터'],
   q: '임시 접근 토큰을 Parameter Store에 저장하는데, 토큰이 7일 뒤에는 자동으로 만료되고 만료 3일 전에 알림을 받고 싶다. 값의 크기는 6KB다. 어떤 설정이 필요한가?',
-  opts: ['고급 파라미터로 만들고 만료·만료 알림 파라미터 정책을 붙인다', '표준 파라미터로 만든다', 'Secrets Manager 교체를 켠다', 'S3 수명 주기 규칙을 쓴다'],
+  opts: ['고급 파라미터로 만들고 만료·만료 알림 파라미터 정책을 붙인다', '표준 파라미터로 만들고 EventBridge로 만료를 예약한다', 'Secrets Manager 교체를 7일로 설정한다', 'S3 수명 주기 규칙을 쓴다'],
   ans: [0],
   exp: 'Parameter Store **고급 파라미터**는 최대 **8KB** 값을 저장하고, **파라미터 정책**(만료, 만료 알림, 변경 없음 알림)을 지원한다(유료). **표준 파라미터**는 무료지만 4KB 한도이고 정책을 지원하지 않는다.',
   tip: 'Parameter Store: 표준(4KB, 무료) / 고급(8KB, 정책, 유료).',
@@ -28,7 +28,7 @@ QB.push(
 {
   id: 'b16-04', cat: 'security', domain: 'secure', svc: ['KMS 비대칭 키 서명'],
   q: '회사가 발급하는 소프트웨어 라이선스 파일에 디지털 서명을 해서, 고객이 공개 키로 위변조를 검증할 수 있게 하려 한다. 개인 키는 절대 외부로 나가면 안 된다. 가장 적합한 방법은?',
-  opts: ['KMS 비대칭 키로 Sign API를 호출해 서명하고, 공개 키를 고객에게 배포한다', 'KMS 대칭 키로 암호화한 파일을 배포한다', '개인 키를 S3에 저장해 고객과 공유한다', 'Secrets Manager에 서명을 저장한다'],
+  opts: ['KMS 비대칭 키로 서명하고 공개 키를 배포한다', 'KMS 대칭 키로 라이선스 파일을 암호화해 배포하고 고객이 Decrypt 권한으로 내용을 확인한다', '개인 키를 S3에 저장해 고객과 공유한다', 'Secrets Manager에 서명을 저장한다'],
   ans: [0],
   exp: 'KMS **비대칭 키**는 **개인 키가 KMS 밖으로 나가지 않은 채** Sign 작업을 수행하고, **공개 키**는 내보내서 누구나 서명을 검증할 수 있게 한다. 대칭 키는 같은 키로 암호화와 복호화를 하므로 고객 검증용으로 맞지 않는다.',
   tip: '디지털 서명 → KMS 비대칭 키(Sign/Verify).',
@@ -44,7 +44,7 @@ QB.push(
 {
   id: 'b16-06', cat: 'networking', domain: 'secure', svc: ['WAF 관리형 규칙'],
   q: '새로 공개한 웹 애플리케이션에 규칙을 직접 작성하지 않고, 알려진 악성 입력(Log4j 등), 일반적인 웹 취약점 공격(OWASP), 평판이 나쁜 IP를 빠르게 막고 싶다. 가장 효율적인 방법은?',
-  opts: ['WAF 웹 ACL에 AWS 관리형 규칙 그룹을 추가한다', '보안 그룹 규칙을 수백 개 작성한다', 'NACL로 모든 해외 IP를 막는다', 'Shield Standard만 쓴다'],
+  opts: ['WAF 웹 ACL에 AWS 관리형 규칙 그룹을 추가한다', '보안 그룹 규칙을 수백 개 작성해 악성 IP 대역을 허용 목록으로 관리한다', 'NACL로 모든 해외 IP를 막는다', 'Shield Standard만 쓴다'],
   ans: [0],
   exp: 'AWS WAF **관리형 규칙 그룹**은 AWS 위협 연구팀이 관리하고 업데이트하는 규칙 모음이다. **Core rule set**(OWASP), **Known bad inputs**, **IP reputation**, SQLi, Linux/Windows 등을 바로 적용할 수 있다. 처음에는 Count 모드로 오탐을 확인한 뒤 Block으로 바꾸는 것이 좋다. 마켓플레이스 서드파티 규칙도 있다.',
   tip: '빠른 웹 보호 → WAF AWS Managed Rules.',
@@ -52,7 +52,7 @@ QB.push(
 {
   id: 'b16-07', cat: 'networking', domain: 'secure', svc: ['피어링 VPC 보안 그룹 참조'],
   q: '같은 리전의 VPC A와 VPC B가 피어링되어 있다. VPC B의 DB 보안 그룹에서 VPC A의 앱 서버들만 허용하고 싶다. 앱 서버 IP는 Auto Scaling으로 계속 바뀐다. 가장 적절한 방법은?',
-  opts: ['DB 보안 그룹 인바운드 원본으로 VPC A 앱 서버의 보안 그룹 ID를 참조한다', 'VPC A의 전체 CIDR을 허용한다', '앱 서버 IP를 하나씩 등록한다', 'NACL로만 제어한다'],
+  opts: ['DB 인바운드 원본으로 앱 서버 보안 그룹 ID를 참조한다', 'VPC A의 전체 CIDR을 허용하고 앱 서버 서브넷의 NACL로 다른 서브넷의 접근을 막는다', '앱 서버 IP를 하나씩 등록한다', 'NACL로만 제어한다'],
   ans: [0],
   exp: '**같은 리전의 VPC 피어링**에서는 상대 VPC의 **보안 그룹 ID를 참조**할 수 있다(다른 계정이면 계정 ID와 함께 지정). 앱 서버 IP가 바뀌어도 자동으로 반영된다. 리전 간 피어링에서는 보안 그룹을 참조할 수 없어 CIDR을 써야 한다.',
   tip: '같은 리전 피어링 = SG 참조 가능 / 리전 간 = CIDR.',
@@ -61,10 +61,10 @@ QB.push(
   id: 'b16-08', cat: 'networking', domain: 'secure', svc: ['NACL 기본 동작'],
   q: '네트워크 ACL에 대한 설명으로 옳은 것은? (2개 선택)',
   opts: [
-    'VPC의 기본 NACL은 모든 인바운드·아웃바운드 트래픽을 허용한다',
-    '새로 만든 사용자 지정 NACL은 규칙을 추가하기 전까지 모든 트래픽을 거부한다',
-    'NACL은 상태 저장 방식이라 응답 트래픽이 자동으로 허용된다',
-    '하나의 서브넷에 NACL 여러 개를 동시에 연결할 수 있다',
+    '기본 NACL은 모든 트래픽을 허용한다',
+    '새 사용자 지정 NACL은 처음에 모든 트래픽을 거부한다',
+    'NACL은 상태 저장 방식이라 인바운드를 허용하면 응답 트래픽이 자동으로 허용된다',
+    '서브넷 하나에 NACL 여러 개를 동시에 연결할 수 있다',
     'NACL은 인스턴스 단위로 연결된다',
   ],
   ans: [0, 1],
@@ -82,7 +82,7 @@ QB.push(
 {
   id: 'b16-10', cat: 'security', domain: 'secure', svc: ['iam:PassRole'],
   q: '개발자가 Lambda 함수를 만들면서 실행 역할로 관리자 권한 역할을 지정하는 방식으로 자기 권한을 넘어서는 권한 상승이 가능하다는 지적을 받았다. 이를 막는 핵심 통제는?',
-  opts: ['개발자의 iam:PassRole 권한을 승인된 특정 역할 ARN으로만 제한한다', '개발자의 lambda:CreateFunction 권한을 없앤다', 'Lambda 예약된 동시성을 설정한다', 'CloudTrail을 끈다'],
+  opts: ['개발자의 iam:PassRole 권한을 승인된 특정 역할 ARN으로만 제한한다', '개발자의 lambda:CreateFunction 권한을 없애고 함수는 플랫폼팀이 티켓을 받아 대신 만들게 한다', 'Lambda 예약된 동시성을 설정한다', 'CloudTrail을 끈다'],
   ans: [0],
   exp: 'EC2, Lambda, ECS 같은 서비스에 역할을 연결하려면 호출자에게 **iam:PassRole** 권한이 필요하다. 이 권한을 **특정 역할 ARN**(와 `iam:PassedToService` 조건)으로 제한하지 않으면, 권한이 큰 역할을 리소스에 붙여 **간접적으로 권한을 상승**시킬 수 있다. 권한 경계와 함께 쓰면 더 안전하다.',
   tip: '역할 전달 권한 상승 방지 → iam:PassRole 리소스 제한.',
@@ -90,7 +90,7 @@ QB.push(
 {
   id: 'b16-11', cat: 'security', domain: 'secure', svc: ['세션 정책'],
   q: '중앙 애플리케이션이 하나의 넓은 IAM 역할을 맡은 뒤, 각 고객 요청을 처리할 때는 그 고객의 S3 접두사에만 접근하도록 **세션마다 권한을 더 좁히고** 싶다. 고객마다 역할을 만들지 않으려면?',
-  opts: ['AssumeRole 호출 시 세션 정책을 전달해 그 세션의 유효 권한을 줄인다', '고객마다 IAM 사용자를 만든다', '역할 권한 정책을 매번 수정한다', 'SCP를 고객마다 만든다'],
+  opts: ['AssumeRole 호출 시 세션 정책을 전달해 그 세션의 유효 권한을 줄인다', '고객마다 IAM 사용자를 만들어 접두사 정책을 붙이고 애플리케이션이 해당 키로 요청한다', '역할 권한 정책을 요청마다 수정한다', 'SCP를 고객마다 만든다'],
   ans: [0],
   exp: '**세션 정책**을 AssumeRole에 함께 넘기면, 그 세션의 유효 권한은 **역할 권한 정책과 세션 정책의 교집합**이 된다. 권한을 추가할 수는 없고 **줄이기만** 한다. 멀티테넌트 애플리케이션에서 테넌트별로 권한을 좁힐 때 유용하다.',
   tip: '세션 단위 권한 축소 → Session Policy (교집합).',
@@ -106,7 +106,7 @@ QB.push(
 {
   id: 'b16-13', cat: 'security', domain: 'secure', svc: ['리소스 정책 주체'],
   q: '관리자가 S3 버킷 정책의 Principal에 IAM 그룹 ARN을 넣어 그룹 구성원 전체에 접근을 허용하려 했는데 정책이 저장되지 않는다. 원인과 올바른 방법은?',
-  opts: ['IAM 그룹은 리소스 기반 정책의 Principal로 지정할 수 없다', '버킷 정책은 IAM 주체를 지원하지 않는다', '그룹 이름에 대문자가 있어서다', 'S3는 리소스 정책을 지원하지 않는다'],
+  opts: ['IAM 그룹은 리소스 정책의 Principal이 될 수 없다', '버킷 정책은 같은 계정의 IAM 주체를 Principal로 지원하지 않으므로 ACL을 써야 한다', '그룹 이름에 대문자가 있어서다', 'S3는 리소스 정책을 지원하지 않는다'],
   ans: [0],
   exp: 'IAM **그룹은 주체(principal)가 아니라** 권한을 묶는 컨테이너라서, 리소스 기반 정책의 **Principal로 쓸 수 없다.** 그룹 구성원에게 권한을 주려면 그룹에 **IAM 정책**을 붙이거나, 역할이나 사용자 ARN을 Principal로 지정한다(또는 `aws:PrincipalTag` 같은 조건을 쓴다).',
   tip: 'IAM 그룹은 Principal 불가.',
@@ -122,7 +122,7 @@ QB.push(
 {
   id: 'b16-15', cat: 'database', domain: 'secure', svc: ['데이터베이스 활동 스트림'],
   q: '규정상 DBA를 포함한 모든 사용자의 Aurora 데이터베이스 활동을 거의 실시간으로 감시하고, 그 기록을 **DBA가 변경하거나 끌 수 없는** 별도 보안 시스템으로 보내야 한다. 가장 적합한 기능은?',
-  opts: ['Aurora 데이터베이스 활동 스트림 → Kinesis Data Streams → 보안 모니터링 도구', 'DB 엔진 일반 로그를 DB 서버 디스크에 남긴다', 'CloudTrail 관리 이벤트', 'VPC 흐름 로그'],
+  opts: ['데이터베이스 활동 스트림 → Kinesis → 보안 도구', 'DB 엔진 일반 로그를 DB 서버 디스크에 남기고 DBA 계정이 매일 보안팀에 전달', 'CloudTrail 관리 이벤트로 SQL 기록', 'VPC 흐름 로그로 쿼리 추적'],
   ans: [0],
   exp: '**데이터베이스 활동 스트림**은 DB 활동을 **KMS로 암호화된 Kinesis 스트림**으로 거의 실시간으로 내보낸다. DB 안에서 설정하는 것이 아니라서 **DBA가 감사 기록을 바꿀 수 없다**(직무 분리). 보안팀은 서드파티 DB 감사 도구나 Firehose로 분석한다.',
   tip: 'DBA와 분리된 DB 감사 → Database Activity Streams.',
@@ -154,7 +154,7 @@ QB.push(
 {
   id: 'b16-19', cat: 'management', domain: 'secure', svc: ['교차 계정 로그 중앙화'],
   q: '여러 계정의 CloudWatch Logs 애플리케이션 로그를 중앙 로그 계정으로 실시간 스트리밍해 보관하고 분석하려 한다. 가장 적합한 구성은?',
-  opts: ['중앙 계정에 로그 대상을 만들고, 각 계정 로그 그룹에 그 대상을 가리키는 구독 필터를 설정한다', '각 계정에서 매일 로그를 수동으로 내보낸다', 'CloudTrail로 애플리케이션 로그를 수집한다', 'VPC 흐름 로그를 쓴다'],
+  opts: ['중앙 계정 로그 대상과 각 계정 구독 필터로 스트리밍한다', '각 계정에서 매일 CreateExportTask로 로그를 S3에 내보내고 중앙 계정 버킷으로 복제한다', 'CloudTrail로 애플리케이션 로그를 수집한다', 'VPC 흐름 로그를 쓴다'],
   ans: [0],
   exp: 'CloudWatch Logs의 **교차 계정 구독**은 중앙 계정의 **로그 대상**(Kinesis Data Streams나 Firehose 연결)으로 다른 계정의 로그 그룹 **구독 필터**가 로그를 실시간 전송하는 방식이다. 계정 수준 구독 필터로 모든 로그 그룹에 한꺼번에 적용할 수 있다. 관측만 필요하다면 CloudWatch 교차 계정 관측성 기능도 쓸 수 있다.',
   tip: '교차 계정 로그 스트리밍 = Logs destination + subscription filter.',
@@ -162,7 +162,7 @@ QB.push(
 {
   id: 'b16-20', cat: 'management', domain: 'secure', svc: ['Config 규칙 restricted-ssh'],
   q: '어떤 보안 그룹이든 0.0.0.0/0에서 22번(SSH) 포트를 열면 즉시 감지해 규정 미준수로 표시하고 자동으로 해당 규칙을 지우고 싶다. 가장 적합한 방법은?',
-  opts: ['Config 관리형 규칙 restricted-ssh와 SSM Automation 자동 수정을 설정한다', 'GuardDuty만 켠다', 'Inspector로 스캔한다', 'Trusted Advisor를 매주 확인한다'],
+  opts: ['Config restricted-ssh 규칙과 자동 수정을 설정한다', 'GuardDuty를 켜서 SSH 포트가 열린 보안 그룹을 찾아 결과를 받는다', 'Inspector 네트워크 도달성 스캔을 돌린다', 'Trusted Advisor를 매주 확인한다'],
   ans: [0],
   exp: 'Config 관리형 규칙 **restricted-ssh**는 보안 그룹이 바뀔 때마다 0.0.0.0/0의 SSH 허용 여부를 평가한다. 규칙을 위반하면 **SSM Automation 런북**으로 자동 수정한다. Firewall Manager 보안 그룹 정책으로 여러 계정에 걸쳐 감사하고 수정할 수도 있다.',
   tip: '열린 SSH 탐지·수정 → Config restricted-ssh + 자동 수정.',
@@ -192,7 +192,7 @@ QB.push(
 {
   id: 'b16-23', cat: 'security', domain: 'secure', svc: ['Verified Permissions'],
   q: 'SaaS 애플리케이션이 "편집자는 자기 팀 문서만 수정 가능, 관리자는 모든 문서 열람 가능" 같은 **애플리케이션 내부의 세밀한 권한 규칙**을 코드에 하드코딩하고 있어 변경이 어렵다. 권한 정책을 외부화해 중앙에서 관리하려면?',
-  opts: ['Amazon Verified Permissions로 애플리케이션 권한 결정을 외부화한다', 'IAM 정책으로 앱 사용자 권한을 관리한다', 'SCP로 앱 기능을 제한한다', 'WAF 규칙으로 권한을 판단한다'],
+  opts: ['Verified Permissions로 권한 결정을 외부화한다', '앱 사용자마다 IAM 사용자를 만들고 문서별 권한을 IAM 정책으로 관리해 앱에서 STS로 확인한다', 'SCP로 앱 기능을 제한한다', 'WAF 규칙으로 권한을 판단한다'],
   ans: [0],
   exp: '**Verified Permissions**는 애플리케이션의 **세밀한 권한 부여**(RBAC/ABAC)를 **Cedar** 정책으로 정의하고, 애플리케이션이 API로 권한을 질의하게 해 준다. 정책을 코드와 분리해 관리하고 감사할 수 있다. IAM은 AWS 리소스 접근용이지 앱 최종 사용자의 비즈니스 권한용이 아니다.',
   tip: '앱 내부 세밀 권한 외부화 → Verified Permissions(Cedar).',
@@ -200,7 +200,7 @@ QB.push(
 {
   id: 'b16-24', cat: 'storage', domain: 'secure', svc: ['S3 VPC 전용 접근 vs 콘솔'],
   q: '버킷 정책에 aws:SourceVpce 조건을 걸어 특정 VPC 엔드포인트에서만 접근을 허용했더니, 관리자도 AWS 콘솔에서 버킷 내용을 볼 수 없게 되었다. 원인은?',
-  opts: ['콘솔 요청은 VPC 엔드포인트를 거치지 않으므로 Deny 조건에 걸린다', '콘솔은 S3를 지원하지 않는다', 'VPC 엔드포인트가 삭제되었다', '버킷이 다른 리전에 있다'],
+  opts: ['콘솔 요청은 VPC 엔드포인트를 거치지 않으므로 Deny 조건에 걸린다', 'S3 콘솔은 VPC 엔드포인트가 있는 버킷을 지원하지 않기 때문이다', 'VPC 엔드포인트가 삭제되었기 때문이다', '버킷이 다른 리전에 있기 때문이다'],
   ans: [0],
   exp: '**aws:SourceVpce** 조건을 쓰는 Deny는 **엔드포인트를 거치지 않은 모든 요청**(콘솔, 인터넷 CLI 등)을 막는다. 관리 목적의 접근이 필요하다면 특정 관리 역할을 `aws:PrincipalArn` 예외로 두거나, 그 역할이 VPC 안에서만 작업하게 설계한다. 실수로 자기 자신을 잠그지 않도록 주의해야 한다.',
   tip: 'SourceVpce Deny = 콘솔 접근도 차단(예외 설계 필요).',
@@ -208,7 +208,7 @@ QB.push(
 {
   id: 'b16-25', cat: 'networking', domain: 'secure', svc: ['엣지 인증'],
   q: 'CloudFront로 제공하는 S3 콘텐츠에 접근할 때, 요청의 JWT 토큰(Authorization 헤더)을 엣지에서 검증해 유효하지 않으면 원본까지 가지 않고 바로 403을 돌려주고 싶다. 간단한 서명 검증만 필요하다. 가장 비용 효율적인 방법은?',
-  opts: ['CloudFront Functions에서 JWT 서명과 만료를 검증한다', '원본 S3에서 검증한다', 'EC2 프록시 서버를 둔다', 'Route 53에서 검증한다'],
+  opts: ['CloudFront Functions에서 JWT 서명과 만료를 검증한다', 'S3 버킷 정책의 조건으로 JWT 서명을 검증한다', 'EC2 프록시 서버를 원본 앞에 두고 검증한다', 'Route 53 레코드에서 토큰을 검증한다'],
   ans: [0],
   exp: '**CloudFront Functions**는 뷰어 요청 단계에서 아주 짧은 시간 안에 실행되며 **엣지에서 간단한 인증**(JWT 서명, 만료 확인)을 처리할 수 있다. 검증 키는 KeyValueStore에 둔다. 외부 IdP 호출처럼 네트워크 접근이나 복잡한 로직이 필요하면 **Lambda@Edge**를 쓴다. S3는 JWT를 검증할 수 없다.',
   tip: '엣지 간단 인증 → CloudFront Functions / 복잡 → Lambda@Edge.',
@@ -216,7 +216,7 @@ QB.push(
 {
   id: 'b16-26', cat: 'security', domain: 'secure', svc: ['Cognito 그룹 역할 매핑'],
   q: '모바일 앱에서 Cognito 사용자 풀의 "admin" 그룹 사용자는 S3 전체 버킷을, "user" 그룹은 자기 폴더만 접근해야 한다. 자격 증명 풀을 쓸 때 그룹별로 다른 IAM 역할을 받게 하려면?',
-  opts: ['사용자 풀 그룹마다 IAM 역할을 지정하고, 자격 증명 풀의 역할 선택을 "토큰에서 역할 선택"으로 설정한다', '사용자마다 자격 증명 풀을 만든다', '앱 코드에서 액세스 키를 바꿔 쓴다', 'S3 버킷을 두 개 만들고 퍼블릭으로 연다'],
+  opts: ['풀 그룹에 IAM 역할을 지정하고 "토큰에서 역할 선택"을 쓴다', '권한 수준별로 자격 증명 풀을 따로 만들고 앱에서 로그인한 사용자의 그룹에 맞는 풀을 골라 호출하게 한다', '앱 코드에서 액세스 키를 바꿔 쓴다', 'S3 버킷을 두 개 만들고 퍼블릭으로 연다'],
   ans: [0],
   exp: 'Cognito 사용자 풀 **그룹에 IAM 역할**을 연결하면 ID 토큰에 역할 정보(`cognito:roles`, `cognito:preferred_role`)가 들어간다. 자격 증명 풀에서 **토큰 기반 역할 선택**(또는 규칙 기반 매핑)을 쓰면 그룹별로 다른 임시 자격 증명을 발급한다.',
   tip: 'Cognito 그룹별 AWS 권한 → 그룹 IAM 역할 + Identity Pool 역할 매핑.',
@@ -224,7 +224,7 @@ QB.push(
 {
   id: 'b16-27', cat: 'security', domain: 'secure', svc: ['KMS 키 정책 기본'],
   q: 'KMS 고객 관리형 키를 콘솔 기본 설정으로 만들었다. 키 정책의 기본 문에는 계정 루트 주체(arn:aws:iam::<계정>:root)에 kms:*가 허용되어 있다. 이 문의 의미로 옳은 것은?',
-  opts: ['계정의 IAM 정책으로 이 키에 대한 접근을 위임할 수 있게 해 준다', '루트 사용자만 키를 쓸 수 있다', '계정의 모든 사용자가 자동으로 키를 쓸 수 있다', '다른 계정도 키를 쓸 수 있다'],
+  opts: ['계정의 IAM 정책으로 키 접근을 위임할 수 있게 한다', '루트 사용자만 키를 쓸 수 있고 다른 주체는 키 정책에 개별 ARN을 추가해야 쓸 수 있다는 뜻이다', '계정의 모든 사용자가 자동으로 쓸 수 있다', '다른 계정도 키를 쓸 수 있다'],
   ans: [0],
   exp: '기본 키 정책의 계정 루트 주체 문은 **"이 계정의 IAM 정책으로 키 권한을 관리할 수 있다"**는 뜻이다. 그래서 IAM 사용자나 역할은 **자기 IAM 정책에서 허용된 경우에만** 키를 쓸 수 있다. 이 문을 지우면 IAM 정책이 무시되어 키를 관리할 수 없게 될(lockout) 위험이 있다.',
   tip: 'KMS 기본 키 정책 = IAM 정책 위임 활성화.',
@@ -232,7 +232,7 @@ QB.push(
 {
   id: 'b16-28', cat: 'compute', domain: 'secure', svc: ['컨테이너 이미지 서명'],
   q: '보안 정책상 EKS와 ECS에는 회사 CI 파이프라인에서 서명한 컨테이너 이미지만 배포되어야 한다. 이미지 무결성과 출처를 검증하는 방법으로 가장 적절한 것은?',
-  opts: ['AWS Signer로 ECR 이미지에 서명하고, 배포 시 Kubernetes 승인 컨트롤러 등에서 서명을 검증한다', 'ECR 이미지를 퍼블릭으로 만든다', '이미지 태그를 latest로 고정한다', 'ECR 수명 주기 정책을 설정한다'],
+  opts: ['AWS Signer로 서명하고 배포할 때 승인 컨트롤러로 검증한다', 'ECR 이미지를 퍼블릭으로 만들어 누구나 다이제스트를 대조할 수 있게 하고 배포 스크립트에서 비교한다', '이미지 태그를 latest로 고정한다', 'ECR 수명 주기 정책을 설정한다'],
   ans: [0],
   exp: '**AWS Signer**는 Notation 기반으로 **컨테이너 이미지 서명**을 지원하고, 서명은 ECR에 이미지와 함께 저장된다. 배포 단계에서 **승인 컨트롤러**(예: Kyverno, Ratify)로 서명을 검증해 서명되지 않거나 변조된 이미지를 막는다. latest 태그는 오히려 추적성을 떨어뜨린다.',
   tip: '이미지 서명·검증 → AWS Signer + 배포 시 검증.',
@@ -240,7 +240,7 @@ QB.push(
 {
   id: 'b16-29', cat: 'networking', domain: 'secure', svc: ['프라이빗 호스팅 영역 + 엔드포인트'],
   q: '인터페이스 VPC 엔드포인트를 만들 때 "프라이빗 DNS 활성화"를 켜지 않았다. 애플리케이션이 기본 서비스 엔드포인트(예: secretsmanager.ap-northeast-2.amazonaws.com)로 호출하면 어떻게 되는가?',
-  opts: ['기본 엔드포인트 이름이 퍼블릭 IP로 해석되어 NAT나 인터넷 경로로 나간다', '자동으로 인터페이스 엔드포인트로 라우팅된다', '요청이 항상 거부된다', 'Gateway 엔드포인트로 대체된다'],
+  opts: ['이름이 퍼블릭 IP로 해석되어 NAT나 인터넷으로 나간다', '이름이 자동으로 엔드포인트의 프라이빗 IP로 해석되고 VPC 안의 트래픽은 그대로 인터페이스 엔드포인트로 라우팅된다', '요청이 항상 거부된다', 'Gateway 엔드포인트로 대체된다'],
   ans: [0],
   exp: '**프라이빗 DNS**를 켜야 기본 서비스 도메인 이름이 VPC 안에서 **엔드포인트의 프라이빗 IP**로 해석된다. 켜지 않으면 퍼블릭 IP로 해석되어 NAT나 인터넷으로 나가고, 프라이빗 서브넷에 그 경로가 없으면 실패한다. VPC에 DNS 확인과 DNS 호스트 이름 속성도 켜져 있어야 한다.',
   tip: 'Interface Endpoint + Private DNS = 코드 변경 없이 프라이빗 경로.',
@@ -248,7 +248,7 @@ QB.push(
 {
   id: 'b16-30', cat: 'security', domain: 'secure', svc: ['Organizations 정책 상속'],
   q: '조직 루트에 "모든 작업 허용(FullAWSAccess)" SCP가 있고, 운영 OU에는 "EC2 종료 거부" SCP가 붙어 있다. 운영 OU 아래 계정의 관리자(IAM에서 AdministratorAccess)는 EC2를 종료할 수 있는가?',
-  opts: ['없다 — 상위 OU에서 거부된 작업은 하위 계정의 IAM 권한과 관계없이 거부된다', '있다 — IAM 관리자 권한이 SCP보다 우선한다', '있다 — 루트의 FullAWSAccess가 우선한다', '계정의 루트 사용자만 종료할 수 없다'],
+  opts: ['없다 — 상위에서 거부되면 IAM 권한과 관계없이 거부된다', '있다 — 계정 안의 IAM 관리자 권한이 조직의 SCP보다 우선하므로 종료할 수 있다', '있다 — 루트의 FullAWSAccess가 우선한다', '계정의 루트 사용자만 종료할 수 없다'],
   ans: [0],
   exp: 'SCP는 **계층(루트 → OU → 계정)**을 따라 적용되고, 유효 권한은 **경로상의 모든 SCP 허용의 교집합에서 명시적 거부를 뺀 것**이다. 운영 OU에서 EC2 종료를 거부했으므로 그 아래 계정에서는 **IAM 관리자도 루트 사용자도** 종료할 수 없다.',
   tip: 'SCP = 상위 거부가 하위 모든 주체에 적용.',
@@ -264,7 +264,7 @@ QB.push(
 {
   id: 'b16-32', cat: 'networking', domain: 'secure', svc: ['Shield Advanced 자동 L7 완화'],
   q: 'Shield Advanced로 보호하는 CloudFront 배포에 HTTP 플러드(L7 DDoS) 공격이 들어오면, 사람의 개입 없이 WAF 규칙을 자동으로 만들어 완화하고 싶다. 어떤 기능을 켜야 하는가?',
-  opts: ['Shield Advanced 자동 애플리케이션 계층 DDoS 완화', 'Shield Standard', 'GuardDuty Runtime Monitoring', 'VPC 흐름 로그'],
+  opts: ['Shield Advanced 자동 애플리케이션 계층 DDoS 완화', 'Shield Standard의 L7 자동 완화 기능', 'GuardDuty Runtime Monitoring 자동 차단', 'VPC 흐름 로그 기반 Lambda 차단 스크립트'],
   ans: [0],
   exp: 'Shield Advanced의 **자동 애플리케이션 계층 DDoS 완화**는 L7 공격을 감지하면 연결된 **WAF 웹 ACL에 완화 규칙을 자동으로 만들어 적용**한다(Count나 Block 모드). Shield Standard는 L3/L4 보호만 한다.',
   tip: 'L7 DDoS 자동 완화 → Shield Advanced + WAF 자동 완화.',
@@ -272,7 +272,7 @@ QB.push(
 {
   id: 'b16-33', cat: 'security', domain: 'secure', svc: ['GuardDuty 보호 플랜'],
   q: '보안팀이 EKS 클러스터의 컨테이너 런타임 위협(악성 프로세스 실행, 권한 상승)과 RDS·Aurora의 비정상 로그인 시도까지 GuardDuty로 탐지하고 싶다. 무엇을 해야 하는가?',
-  opts: ['GuardDuty의 Runtime Monitoring과 RDS Protection 보호 플랜을 활성화한다', 'Inspector만 켠다', 'Macie를 켠다', 'Config 규칙을 추가한다'],
+  opts: ['GuardDuty Runtime Monitoring과 RDS Protection을 켠다', 'Inspector를 켜서 EKS 파드 런타임 위협과 RDS 로그인 이상을 함께 탐지하고 결과를 Security Hub로 보낸다', 'Macie를 켠다', 'Config 규칙을 추가한다'],
   ans: [0],
   exp: 'GuardDuty는 기본 탐지(CloudTrail, VPC 흐름 로그, DNS) 외에 **보호 플랜**으로 탐지 범위를 넓힌다. **Runtime Monitoring**(EKS, ECS Fargate, EC2 에이전트), **RDS Protection**(Aurora·RDS 로그인 이상), **S3 Protection**, **EKS 감사 로그 모니터링**, **Malware Protection**, **Lambda Protection** 등이 있다.',
   tip: 'GuardDuty 확장 = 보호 플랜(Runtime, RDS, S3, EKS, Malware, Lambda).',
@@ -294,7 +294,7 @@ QB.push(
 {
   id: 'b16-35', cat: 'security', domain: 'secure', svc: ['임시 자격 증명 무효화'],
   q: '침해가 의심되는 IAM 역할의 이미 발급된 임시 자격 증명(세션)을 즉시 무효화해야 한다. 역할은 계속 다른 정상 워크로드에서도 쓰인다. 어떻게 해야 하는가?',
-  opts: ['IAM 콘솔의 "활성 세션 취소"로 특정 시각 이전에 발급된 세션을 모두 거부하는 정책을 붙인다', '역할을 삭제한다', '역할의 신뢰 정책을 지운다', 'KMS 키를 교체한다'],
+  opts: ['"활성 세션 취소"로 특정 시각 이전 세션을 거부한다', '역할을 삭제하고 같은 이름으로 다시 만들어 정상 워크로드가 새 세션을 받아 계속 동작하게 한다', '역할의 신뢰 정책을 지운다', 'KMS 키를 교체한다'],
   ans: [0],
   exp: '**활성 세션 취소**는 역할에 `aws:TokenIssueTime`이 지정 시각보다 이른 요청을 **Deny**하는 인라인 정책을 붙여, **이미 발급된 임시 자격 증명을 즉시 무효화**한다. 정상 워크로드는 새 세션을 받아 계속 동작한다. 역할을 지우면 정상 워크로드까지 중단된다.',
   tip: '발급된 임시 자격 증명 무효화 → Revoke active sessions(TokenIssueTime).',
